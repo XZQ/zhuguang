@@ -1,0 +1,7 @@
+# 命名空间:店巡 Agent 资源隔离
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dianxun
+  labels:
+    app.kubernetes.io/part-of: dianxun-agent
