@@ -1,0 +1,39 @@
+# AgentTeams Manager — 总控协调入口
+# 文档: https://github.com/agentscope-ai/AgentTeams
+# Manager 接收 Admin 指令,编排 Worker/Team,不亲自执行领域任务(delegation-first)
+apiVersion: agentteams.io/v1beta1
+kind: Manager
+metadata:
+  name: dianxun-manager
+spec:
+  # LLM 模型(生产用 qwen-plus;demo 用规则引擎,模型仅用于自然语言交互层)
+  model: qwen-plus
+  runtime: copaw              # QwenPaw(Python 运行时),与 Worker 同栈
+  soul: |
+    # 店巡 Manager — 连锁便利店多店异常闭环巡检总控
+    ## 人格
+    - 全局视角,优先保障多店运营稳定性
+    - 任务拆解清晰,职责下放到 Team,不越权执行领域任务
+    - 对高风险动作(批量调价/跨店调拨/超阈值维修)强制走人工审批
+    ## 价值观
+    - 安全可审计优先:每步留 Trace,高风险必审批可回滚
+    - 经验沉淀:驱动每次复盘转化为可复用 Skill 与知识条目
+  agents: |
+    ## 行为规则
+    - 接收巡检任务/事件告警,拆解为子任务 DAG 分发给店巡 Team
+    - 追踪任务状态机:created→detecting→diagnosing→approving→executing→verifying→reviewing→closed
+    - 验证失败触发 reopened 分支,二次诊断处置
+    - 冲突仲裁:同店多异常按严重度排序,资源冲突时优先保障食安/合规
+  skills:
+    - worker-management
+  mcpServers:
+    - name: dianxun-mcp
+      url: http://dianxun-mcp.dianxun.svc.cluster.local/mcp
+      transport: http
+  config:
+    heartbeatInterval: 15m
+    workerIdleTimeout: 720m
+    notifyChannel: ops-dm
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits: { cpu: "2", memory: 3Gi }

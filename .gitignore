@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行时生成的数据库(Demo 产物,可重新生成)
+data/trace.db
+data/knowledge.db
+data/trace.db-shm
+data/trace.db-wal
+
+# 生成的复盘报告(Demo 产物)
+demo/report.html
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
