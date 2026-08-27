@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "work-order-dispatch input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "incident_id",
+    "action_id",
+    "store_id",
+    "device_id",
+    "fault",
+    "budget",
+    "idempotency_key"
+  ],
+  "properties": {
+    "incident_id": { "type": "string" },
+    "action_id": { "type": "string" },
+    "store_id": { "type": "string" },
+    "device_id": { "type": "string" },
+    "fault": { "type": "string" },
+    "budget": { "type": "number", "minimum": 0 },
+    "approval_id": { "type": ["string", "null"] },
+    "idempotency_key": { "type": "string", "minLength": 1 }
+  }
+}

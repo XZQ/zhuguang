@@ -1,0 +1,23 @@
+{
+  "success": {
+    "input": { "store_id": "S03", "device_id": "FROST-S03", "alarm_max_c": 8.0 },
+    "output": {
+      "detected": true,
+      "partial": false,
+      "severity": "critical",
+      "affected_batches": ["BATCH-S03-DAIRY-001"],
+      "evidence": [{ "evidence_id": "ev_demo" }]
+    }
+  },
+  "failure": {
+    "input": { "store_id": "S03", "device_id": "UNKNOWN", "alarm_max_c": 8.0 },
+    "output": {
+      "detected": false,
+      "partial": true,
+      "severity": "high",
+      "affected_batches": [],
+      "evidence": [],
+      "errors": [{ "code": "SOURCE_UNAVAILABLE" }]
+    }
+  }
+}

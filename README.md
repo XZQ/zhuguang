@@ -2,7 +2,7 @@
 
 面向连锁便利店的多 Agent 异常闭环系统。复赛版本采用“一主两辅”：以冷柜失温作为首要完整验证场景，缺货与价签异常保留为补充展示和独立回归入口。
 
-> 当前状态：M0、M1 已完成，M2～M5 正在按 [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) 实施。有状态 SQLite 核心和 12 个 P0 MCP 函数已通过本地测试；五阶段 Agent 闭环与真实 AgentTeams 协同仍未完成，不能提前作为完成证据。
+> 当前状态：M0～M2 已完成，M3～M5 正在按 [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) 实施。五阶段冷柜本地闭环和 A/D/E 三条路径已通过；外部系统仍是有状态 Mock，真实 AgentTeams 协同仍待目标环境验证。
 
 ## 唯一事实口径
 
@@ -98,6 +98,34 @@ python -W error::ResourceWarning -m unittest -v tests.test_stateful_core
 
 M1 已通过 8 项回归验证：相同 seed 的业务快照哈希一致；全新数据库可自动建表；停售、批次处置、审批和工单写入后可通过查询函数看到；审批默认 `pending`；高预算维修未批准时不会执行；相同幂等键不会产生重复副作用。
 
+## 冷柜五阶段闭环（M2）
+
+本地 Adapter 与后续 AgentTeams Adapter 共用 `IncidentService`、Policy、Skill、MCP 和 Scenario。固定三条演示路径：
+
+```powershell
+# 场景 A：压缩机故障；审批通过；设备恢复；批次分别转移/报损；最终 CLOSED
+uv run dianxun demo-run demo/state/scenarios/coldchain-compressor-failure.json
+
+# 场景 D：维修审批超时；不创建工单；保持停售与隔离；停在 WAITING_EXTERNAL
+uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
+
+# 场景 E：设备恢复但商品仍不安全；Auditor 拒绝关闭；停在 WAITING_APPROVAL
+uv run dianxun demo-run demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json
+```
+
+也可执行 `python demo/run_coldchain.py` 跑场景 A。每条命令仅在实际终态与 Scenario 的 `expected_final_state` 一致时退出 `0`。
+
+M2 的 6 个 P0 Skill 均已在 [`skills/`](skills/) 下提供独立 `SKILL.md`、manifest、输入/输出 Schema 与成功/失败样例。验证命令：
+
+```powershell
+$env:PYTHONPATH = "src"
+python -W error::ResourceWarning -m unittest -v `
+  tests.test_stateful_core tests.test_coldchain_workflow
+uv run --with jsonschema python -m unittest -v tests.test_skill_contracts
+```
+
+当前共 15 项有状态核心/工作流回归和 1 项全量 Skill 契约门禁。场景 A 的 `CLOSED` 必须经过 Auditor 对设备、批次、停售、审批、工单和审计数据的重新查询；场景 E 证明“设备恢复”不会自动放行商品。
+
 ## 改造前历史入口（非验收入口）
 
 原仓库曾通过下面命令运行静态 CSV 三场景 Demo：
@@ -107,7 +135,7 @@ $env:PYTHONPATH = "src"
 python demo/run_demo.py
 ```
 
-截至 2026-08-28，已提交 CSV 的时间锚点过期，原入口可能因“无异常”分支的旧状态机缺陷退出非零；审批和验证逻辑也不满足 P0 门禁。因此它只保留作迁移参考，不是当前支持路径。M1 的支持路径是上一节的 SQLite 与 MCP 命令；M2 会提供场景 A、D、E 的五阶段入口。
+截至 2026-08-28，已提交 CSV 的时间锚点过期，原入口可能因“无异常”分支的旧状态机缺陷退出非零；审批和验证逻辑也不满足 P0 门禁。因此它只保留作迁移参考，不是冷柜验收入口。冷柜验收使用上一节 A/D/E 命令；缺货和价签独立入口将在 M4 做回归门禁。
 
 ## 文档索引
 

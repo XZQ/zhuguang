@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "review-report input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["incident", "verification", "scenario"],
+  "properties": {
+    "incident": { "type": "object" },
+    "verification": { "type": "object" },
+    "scenario": { "type": "object" }
+  }
+}

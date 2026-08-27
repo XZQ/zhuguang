@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "name": "outcome-verify",
+  "version": "1.0.0",
+  "priority": "P0",
+  "agent": "Auditor",
+  "entrypoint": "dianxun.skills.outcome_verify",
+  "permissions": [
+    "query_device_context",
+    "query_inventory_batches",
+    "query_sales_holds",
+    "query_workorder",
+    "query_approval"
+  ],
+  "writes_business_state": false,
+  "error_codes": ["QUERY_PARTIAL", "DEVICE_NOT_RECOVERED", "GOODS_UNSAFE", "APPROVAL_INCOMPLETE"],
+  "quality_metrics": ["safe_closure_rate", "false_closure_rate", "evidence_completeness"]
+}

@@ -40,6 +40,11 @@ DEFAULT_POLICY_PATH = _resource(
     _ROOT / "config" / "policies" / "coldchain-demo.v1.json",
     _SHARE / "config" / "policies" / "coldchain-demo.v1.json",
 )
+DEFAULT_SCENARIO_DIR = _resource(
+    _ROOT / "demo" / "state" / "scenarios",
+    _SHARE / "demo" / "state" / "scenarios",
+)
+DEFAULT_SCENARIO_PATH = DEFAULT_SCENARIO_DIR / "coldchain-compressor-failure.json"
 
 
 def _canonical(value: Any) -> str:

@@ -13,9 +13,13 @@
 """
 
 from __future__ import annotations
-from typing import Any
+
+from typing import TYPE_CHECKING, Any
 
 from .. import mcp, trace
+
+if TYPE_CHECKING:
+    from ..mcp.p0 import MCPService
 
 
 def work_order_dispatch(store_id: str, equipment_id: str, fault_summary: str,
@@ -63,4 +67,77 @@ def work_order_dispatch(store_id: str, equipment_id: str, fault_summary: str,
             "note": "工单已派发服务商并通知店长;付款单待服务商完工后人工处理",
         }
         sp.output = {"workorder_id": wo["workorder_id"], "status": wo["status"]}
+        return result
+
+
+def dispatch_stateful_workorder(
+    *,
+    service: MCPService,
+    incident_id: str,
+    action_id: str,
+    store_id: str,
+    device_id: str,
+    fault: str,
+    budget: float,
+    approval_id: str | None,
+    idempotency_key: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    """Dispatch through the stateful MCP boundary after rechecking approval."""
+    with trace.span(
+        "work-order-dispatch",
+        "skill",
+        trace_id,
+        input={"incident_id": incident_id, "action_id": action_id, "budget": budget},
+    ) as sp:
+        if approval_id:
+            approval = service.query_approval(
+                approval_id=approval_id,
+                action_id=action_id,
+                incident_id=incident_id,
+                actor="Executor",
+            )
+            rows = approval["data"]["approvals"] if approval["ok"] else []
+            if not rows or rows[0]["status"] != "approved":
+                result = {
+                    "ok": False,
+                    "waiting": True,
+                    "approval": rows[0] if rows else None,
+                    "error": approval["error"] if not approval["ok"] else None,
+                    "compensation": "keep_sales_hold_and_escalate",
+                }
+                sp.output = result
+                return result
+        with trace.span(
+            "create_workorder",
+            "mcp",
+            trace_id,
+            input={"incident_id": incident_id, "action_id": action_id},
+        ) as tool_span:
+            response = service.create_workorder(
+                incident_id=incident_id,
+                action_id=action_id,
+                store_id=store_id,
+                device_id=device_id,
+                fault=fault,
+                budget=budget,
+                approval_id=approval_id,
+                idempotency_key=idempotency_key,
+                actor="Executor",
+            )
+            tool_span.output = {
+                "ok": response["ok"],
+                "request_id": response["request_id"],
+                "audit_ref": response["audit_ref"],
+            }
+        result = {
+            "ok": response["ok"],
+            "waiting": False,
+            "data": response["data"],
+            "error": response["error"],
+            "request_id": response["request_id"],
+            "audit_ref": response["audit_ref"],
+            "compensation": "cancel_or_reassign_workorder",
+        }
+        sp.output = {"ok": result["ok"], "workorder": result.get("data")}
         return result

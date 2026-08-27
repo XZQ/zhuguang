@@ -14,12 +14,15 @@
 """
 
 from __future__ import annotations
+
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from .. import mcp
-from .. import trace
+from .. import mcp, trace
+
+if TYPE_CHECKING:
+    from ..mcp.p0 import MCPService
 
 # 默认阈值(可被 thresholds 参数覆盖)
 _DEFAULTS = {
@@ -193,3 +196,125 @@ def _check_price(store_id: str, cfg: dict, tid: str) -> list[dict] | None:
                 "price_tag_pos_mismatch",
             ))
     return out
+
+
+def detect_coldchain_event(
+    *,
+    service: MCPService,
+    store_id: str,
+    device_id: str,
+    trace_id: str,
+    alarm_max_c: float,
+    minimum_over_samples: int = 2,
+) -> dict[str, Any]:
+    """Detect a cold-chain event from stateful facts without inferring its cause."""
+    with trace.span(
+        "anomaly-detect",
+        "skill",
+        trace_id,
+        input={"store_id": store_id, "device_id": device_id},
+    ) as sp:
+        with trace.span(
+            "query_device_context",
+            "mcp",
+            trace_id,
+            input={"store_id": store_id, "device_id": device_id},
+        ) as device_span:
+            device_response = service.query_device_context(
+                store_id=store_id,
+                device_id=device_id,
+                actor="Sentry",
+            )
+            device_span.output = {
+                "ok": device_response["ok"],
+                "request_id": device_response["request_id"],
+                "partial": device_response["partial"],
+            }
+        with trace.span(
+            "query_inventory_batches",
+            "mcp",
+            trace_id,
+            input={"store_id": store_id, "device_id": device_id},
+        ) as batch_span:
+            batch_response = service.query_inventory_batches(
+                store_id=store_id,
+                device_id=device_id,
+                actor="Sentry",
+            )
+            batch_span.output = {
+                "ok": batch_response["ok"],
+                "request_id": batch_response["request_id"],
+                "partial": batch_response["partial"],
+            }
+
+        responses = [device_response, batch_response]
+        evidence = [
+            item
+            for response in responses
+            if response["ok"]
+            for item in response["data"].get("evidence", [])
+        ]
+        if not device_response["ok"] or not batch_response["ok"]:
+            result = {
+                "detected": False,
+                "partial": True,
+                "severity": "high",
+                "device_id": device_id,
+                "store_id": store_id,
+                "affected_batches": [],
+                "evidence": evidence,
+                "errors": [response["error"] for response in responses if not response["ok"]],
+                "containment_request": {"required": True, "reason": "evidence_source_failure"},
+            }
+            sp.output = result
+            return result
+
+        device = device_response["data"]["devices"][0]
+        readings = sorted(
+            device.get("temperature_series", []),
+            key=lambda item: item["observed_at"],
+        )
+        latest = readings[-max(1, minimum_over_samples) :]
+        sustained_over = len(latest) >= minimum_over_samples and all(
+            float(item["temp_c"]) > alarm_max_c for item in latest
+        )
+        health = device.get("health", {})
+        equipment_fault = health.get("state") != "normal"
+        detected = sustained_over or equipment_fault
+        max_temp = max((float(item["temp_c"]) for item in readings), default=None)
+        severity = (
+            "critical"
+            if detected
+            and (equipment_fault or (max_temp is not None and max_temp >= alarm_max_c + 1))
+            else "high"
+        )
+        batches = batch_response["data"]["batches"]
+        result = {
+            "detected": detected,
+            "partial": any(response["partial"] for response in responses),
+            "severity": severity,
+            "incident_type": "coldchain_temperature_loss",
+            "device_id": device_id,
+            "store_id": store_id,
+            "affected_batches": [item["batch_id"] for item in batches],
+            "device": device,
+            "batches": batches,
+            "evidence": evidence,
+            "observations": {
+                "sustained_over_threshold": sustained_over,
+                "minimum_over_samples": minimum_over_samples,
+                "alarm_max_c": alarm_max_c,
+                "max_temp_c": max_temp,
+                "equipment_fault": equipment_fault,
+            },
+            "containment_request": {
+                "required": detected,
+                "actions": ["apply_sales_hold", "quarantine_batches", "request_manual_evidence"],
+            },
+        }
+        sp.output = {
+            "detected": detected,
+            "severity": severity,
+            "affected_batch_count": len(batches),
+        }
+        return result

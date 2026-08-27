@@ -1,0 +1,40 @@
+{
+  "success": {
+    "input": { "incident_id": "INC-COLD-A", "store_id": "S03", "device_id": "FROST-S03" },
+    "output": {
+      "hypotheses": [
+        {
+          "hypothesis_id": "INC-COLD-A:compressor-failure",
+          "label": "compressor_failure",
+          "confidence": 0.94,
+          "supporting_evidence_ids": ["ev_device"],
+          "contradicting_evidence_ids": [],
+          "missing_evidence": [],
+          "next_checks": ["inspect_compressor"]
+        }
+      ],
+      "evidence": [{ "evidence_id": "ev_device" }],
+      "quality": "good",
+      "rag": { "status": "disabled", "hits": [] }
+    }
+  },
+  "failure": {
+    "input": { "incident_id": "INC-COLD-X", "store_id": "S03", "device_id": "UNKNOWN" },
+    "output": {
+      "hypotheses": [
+        {
+          "hypothesis_id": "INC-COLD-X:insufficient-evidence",
+          "label": "insufficient_evidence",
+          "confidence": 0.2,
+          "supporting_evidence_ids": [],
+          "contradicting_evidence_ids": [],
+          "missing_evidence": ["device_context"],
+          "next_checks": ["retry_device_query"]
+        }
+      ],
+      "evidence": [],
+      "quality": "partial",
+      "rag": { "status": "disabled", "hits": [] }
+    }
+  }
+}

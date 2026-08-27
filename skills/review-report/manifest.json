@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "review-report",
+  "version": "1.0.0",
+  "priority": "P0",
+  "agent": "Auditor",
+  "entrypoint": "dianxun.skills.review_incident",
+  "permissions": ["incident_read", "trace_read", "knowledge_candidate_write"],
+  "writes_business_state": false,
+  "error_codes": ["INCIDENT_NOT_RESOLVED", "TRACE_PARTIAL", "EVIDENCE_INCOMPLETE"],
+  "quality_metrics": ["batch_linkage_completeness", "trace_completeness"]
+}

@@ -3,7 +3,8 @@
 九要素(详见 skills/review-report.md):
   用途    对已闭环事件生成复盘报告,沉淀为知识条目/Skill 更新建议
   输入    anomaly_id(s), closed_events[], knowledge_base_schema
-  输出    ReviewReport{timeline, root_cause, actions_taken, validation, lessons_learned, knowledge_entries[]}
+  输出    ReviewReport{timeline, root_cause, actions_taken, validation,
+          lessons_learned, knowledge_entries[]}
   安全    报告仅总部可见;知识入库前过质量门(去重/格式);敏感信息自动脱敏
   失败    Trace 不完整→标"部分证据,可信度降级";知识置信度低→标待人工确认,不直进正式库
   协同    稽核 Auditor 调用;写回知识库→下次诊断 RAG 命中→飞轮闭合
@@ -13,8 +14,8 @@
 """
 
 from __future__ import annotations
+
 import uuid
-from typing import Any
 
 from .. import trace
 from ..knowledge import store as _kb
@@ -54,7 +55,11 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
                         f"验证:{validation.get('result', '—')}",
                 "tags": [a.get("type", "通用"), a.get("store_id", "")],
                 "confidence": min(
-                    (task_ctx.get("root_causes", [{}])[0].get("confidence", 0.5) if task_ctx.get("root_causes") else 0.5),
+                    (
+                        task_ctx.get("root_causes", [{}])[0].get("confidence", 0.5)
+                        if task_ctx.get("root_causes")
+                        else 0.5
+                    ),
                     validation.get("confidence", 0.8),
                 ),
             }
@@ -122,3 +127,82 @@ def _skill_update_suggestions(ctx: dict, validation: dict) -> list[dict]:
             "reason": "首假设根因未验证通过,需扩充假设空间",
         })
     return suggestions
+
+
+def review_incident(
+    *,
+    incident: dict,
+    verification: dict,
+    scenario: dict,
+    trace_id: str,
+) -> dict:
+    """Generate an incident-scoped review without pretending P1 RAG is enabled."""
+    incident_id = incident["incident_id"]
+    with trace.span(
+        "review-report",
+        "skill",
+        trace_id,
+        input={"incident_id": incident_id, "scenario_id": scenario["scenario_id"]},
+    ) as sp:
+        hypotheses = incident.get("hypotheses", [])
+        top = hypotheses[0] if hypotheses else None
+        actions = incident.get("actions", [])
+        verifications = incident.get("verifications", [])
+        batch_reviews = []
+        for batch_id in incident.get("affected_batches", []):
+            related_actions = [
+                action
+                for action in actions
+                if batch_id in action.get("request", {}).get("batch_ids", [])
+                or action.get("target") == batch_id
+            ]
+            related_verifications = [
+                item for item in verifications if item.get("subject") in {"batches", "sales_hold"}
+            ]
+            batch_reviews.append(
+                {
+                    "batch_id": batch_id,
+                    "final_disposition": incident.get("batch_dispositions", {}).get(batch_id),
+                    "action_ids": [item["action_id"] for item in related_actions],
+                    "verification_ids": [item["verification_id"] for item in related_verifications],
+                }
+            )
+
+        report = {
+            "report_id": f"review:{incident_id}",
+            "incident_id": incident_id,
+            "scenario_id": scenario["scenario_id"],
+            "trace_id": trace_id,
+            "root_cause": {
+                "label": top.get("label") if top else "insufficient_evidence",
+                "confidence": top.get("confidence") if top else 0.0,
+                "evidence_ids": top.get("supporting_evidence_ids", []) if top else [],
+            },
+            "actions": [
+                {
+                    "action_id": item["action_id"],
+                    "action_type": item["action_type"],
+                    "status": item["status"],
+                    "approval_id": item.get("approval_id"),
+                }
+                for item in actions
+            ],
+            "batch_reviews": batch_reviews,
+            "verification": verification,
+            "lessons": [
+                "containment_precedes_complete_diagnosis",
+                "device_recovery_does_not_release_goods",
+                "auditor_requeries_business_state",
+            ],
+            "knowledge": {
+                "retrieval_status": "disabled",
+                "candidate_status": "pending_human_review",
+                "reason": "P1 RAG is outside the P0 completion claim",
+            },
+            "skill_update_suggestions": [],
+        }
+        sp.output = {
+            "batch_review_count": len(batch_reviews),
+            "knowledge_status": "pending_human_review",
+        }
+        return report

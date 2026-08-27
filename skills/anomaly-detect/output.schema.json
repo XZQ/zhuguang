@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "anomaly-detect output",
+  "type": "object",
+  "required": ["detected", "partial", "severity", "affected_batches", "evidence"],
+  "properties": {
+    "detected": { "type": "boolean" },
+    "partial": { "type": "boolean" },
+    "severity": { "enum": ["low", "medium", "high", "critical"] },
+    "affected_batches": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "object" } },
+    "errors": { "type": "array", "items": { "type": "object" } }
+  }
+}

@@ -529,6 +529,35 @@ class StateStore:
         )
         return [self._decode_json_columns(row) for row in rows]
 
+    def list_actions(
+        self,
+        *,
+        incident_id: str,
+        action_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        rows = self._filtered_rows(
+            "actions",
+            "action_id",
+            {"incident_id": incident_id, "action_id": action_id},
+        )
+        return [self._decode_json_columns(row) for row in rows]
+
+    def list_manual_evidence(self, *, incident_id: str) -> list[dict[str, Any]]:
+        rows = self._filtered_rows(
+            "manual_evidence",
+            "evidence_id",
+            {"incident_id": incident_id},
+        )
+        return [self._decode_json_columns(row) for row in rows]
+
+    def list_audit_log(self, *, incident_id: str) -> list[dict[str, Any]]:
+        rows = self._filtered_rows(
+            "audit_log",
+            "created_at, audit_id",
+            {"incident_id": incident_id},
+        )
+        return [self._decode_json_columns(row) for row in rows]
+
     def get_incident(self, incident_id: str) -> dict[str, Any] | None:
         with closing(self.connect()) as conn:
             row = conn.execute(
@@ -716,6 +745,10 @@ class StateStore:
     def expire_approvals(self) -> int:
         now = self.now()
         with self.transaction() as conn:
+            expiring = conn.execute(
+                "SELECT approval_id FROM approvals WHERE status = ? AND deadline <= ?",
+                (ApprovalStatus.PENDING.value, now),
+            ).fetchall()
             cursor = conn.execute(
                 """UPDATE approvals SET status = ?, decided_at = ?, decided_by = ?,
                    decision_reason = ? WHERE status = ? AND deadline <= ?""",
@@ -728,6 +761,14 @@ class StateStore:
                     now,
                 ),
             )
+            approval_ids = [row["approval_id"] for row in expiring]
+            if approval_ids:
+                placeholders = ",".join("?" for _ in approval_ids)
+                conn.execute(
+                    f"""UPDATE actions SET status = 'timeout', updated_at = ?
+                        WHERE approval_id IN ({placeholders})""",
+                    [now, *approval_ids],
+                )
             return cursor.rowcount
 
     def inject_tool_failure(
@@ -771,6 +812,9 @@ class StateStore:
             "approvals": {"approval_id", "action_id", "incident_id"},
             "workorders": {"workorder_id", "action_id", "incident_id"},
             "verifications": {"incident_id", "subject"},
+            "actions": {"incident_id", "action_id"},
+            "manual_evidence": {"incident_id"},
+            "audit_log": {"incident_id"},
         }
         if table not in allowed or set(filters) - allowed[table]:
             raise ValueError("Unsafe table or filter")

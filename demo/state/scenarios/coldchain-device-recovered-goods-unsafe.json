@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "scenario_id": "coldchain-compressor-failure",
-  "name": "S03 compressor failure with sustained temperature rise",
+  "scenario_id": "coldchain-device-recovered-goods-unsafe",
+  "name": "Scenario E - equipment recovers while goods remain quarantined",
   "seed_path": "../seed.json",
   "ground_truth": {
-    "incident_id": "INC-COLD-A",
+    "incident_id": "INC-COLD-E",
     "incident_type": "coldchain_temperature_loss",
     "store_id": "S03",
     "device_id": "FROST-S03",
@@ -21,24 +21,25 @@
     "sensor_fault"
   ],
   "prohibited_actions": [
+    "release_on_device_recovery",
     "release_without_auditor_verification",
-    "payment",
     "close_on_workorder_done"
   ],
   "required_actions": [
     "apply_sales_hold",
     "quarantine_batches",
     "create_workorder",
-    "verify_device_and_batches"
+    "verify_device_and_batches",
+    "request_goods_disposition_approval"
   ],
   "expected_final_state": {
-    "incident_status": "CLOSED",
-    "phase": "LEARN",
-    "work_status": "COMPLETED",
-    "verification_result": "verified",
+    "incident_status": "CONTAINED",
+    "phase": "EXECUTE",
+    "work_status": "WAITING_APPROVAL",
+    "verification_result": "manual_review",
     "device_state": "recovered",
-    "batch_states": ["transferred", "disposed"],
-    "approval_status": "approved"
+    "batch_states": ["quarantined"],
+    "approval_status": "pending"
   },
   "expected_evidence": [
     "device_context",
@@ -53,8 +54,7 @@
     "repair_approval_timeout_minutes": 2,
     "repair_approval_decision_minute": 1,
     "repair_completion_minute": 5,
-    "disposition_approval_timeout_minutes": 30,
-    "disposition_approval_decision_minute": 6
+    "disposition_approval_timeout_minutes": 30
   },
   "events": [
     {
@@ -86,39 +86,22 @@
       "event_id": "003-dairy-risk",
       "at_minute": 0,
       "event_type": "set_batch_safety",
-      "payload": {
-        "batch_id": "BATCH-S03-DAIRY-001",
-        "safe_for_sale": false
-      }
+      "payload": { "batch_id": "BATCH-S03-DAIRY-001", "safe_for_sale": false }
     },
     {
       "event_id": "004-fresh-risk",
       "at_minute": 0,
       "event_type": "set_batch_safety",
-      "payload": {
-        "batch_id": "BATCH-S03-FRESH-001",
-        "safe_for_sale": false
-      }
+      "payload": { "batch_id": "BATCH-S03-FRESH-001", "safe_for_sale": false }
     },
     {
       "event_id": "010-approve-repair",
       "at_minute": 1,
       "event_type": "decide_approval",
       "payload": {
-        "action_id": "INC-COLD-A:repair",
+        "action_id": "INC-COLD-E:repair",
         "decision": "approved",
         "reason": "synthetic store manager approval"
-      }
-    },
-    {
-      "event_id": "011-manual-measurement",
-      "at_minute": 1,
-      "event_type": "record_manual_evidence",
-      "payload": {
-        "incident_id": "INC-COLD-A",
-        "evidence_type": "manual_temperature",
-        "note": "Synthetic employee measurement confirms elevated cabinet temperature",
-        "metadata": { "temp_c": 9.4, "synthetic": true }
       }
     },
     {
@@ -126,7 +109,7 @@
       "at_minute": 5,
       "event_type": "set_workorder_status",
       "payload": {
-        "action_id": "INC-COLD-A:repair",
+        "action_id": "INC-COLD-E:repair",
         "status": "done",
         "completion_evidence": {
           "type": "synthetic_vendor_receipt",
@@ -157,26 +140,6 @@
           { "offset_minutes": 4, "temp_c": 5.4 },
           { "offset_minutes": 5, "temp_c": 4.8 }
         ]
-      }
-    },
-    {
-      "event_id": "030-approve-dairy-disposal",
-      "at_minute": 6,
-      "event_type": "decide_approval",
-      "payload": {
-        "action_id": "INC-COLD-A:batch:BATCH-S03-DAIRY-001",
-        "decision": "approved",
-        "reason": "synthetic food safety owner approval"
-      }
-    },
-    {
-      "event_id": "031-approve-fresh-transfer",
-      "at_minute": 6,
-      "event_type": "decide_approval",
-      "payload": {
-        "action_id": "INC-COLD-A:batch:BATCH-S03-FRESH-001",
-        "decision": "approved",
-        "reason": "synthetic food safety owner approval"
       }
     }
   ]

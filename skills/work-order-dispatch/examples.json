@@ -1,0 +1,42 @@
+{
+  "success": {
+    "input": {
+      "incident_id": "INC-COLD-A",
+      "action_id": "INC-COLD-A:repair",
+      "store_id": "S03",
+      "device_id": "FROST-S03",
+      "fault": "compressor_failure",
+      "budget": 2500,
+      "approval_id": "approval_000001",
+      "idempotency_key": "INC-COLD-A:repair:v1"
+    },
+    "output": {
+      "ok": true,
+      "waiting": false,
+      "data": { "workorder_id": "wo_000001", "status": "assigned" },
+      "error": null,
+      "request_id": "req_demo",
+      "audit_ref": "audit_demo",
+      "compensation": "cancel_or_reassign_workorder"
+    }
+  },
+  "failure": {
+    "input": {
+      "incident_id": "INC-COLD-D",
+      "action_id": "INC-COLD-D:repair",
+      "store_id": "S03",
+      "device_id": "FROST-S03",
+      "fault": "compressor_failure",
+      "budget": 2500,
+      "approval_id": "approval_timeout",
+      "idempotency_key": "INC-COLD-D:repair:v1"
+    },
+    "output": {
+      "ok": false,
+      "waiting": true,
+      "approval": { "status": "timeout" },
+      "error": null,
+      "compensation": "keep_sales_hold_and_escalate"
+    }
+  }
+}

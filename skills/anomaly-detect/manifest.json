@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "anomaly-detect",
+  "version": "1.0.0",
+  "priority": "P0",
+  "agent": "Sentry",
+  "entrypoint": "dianxun.skills.detect_coldchain_event",
+  "permissions": ["query_device_context", "query_inventory_batches"],
+  "writes_business_state": false,
+  "error_codes": ["SOURCE_UNAVAILABLE", "PARTIAL_EVIDENCE", "INVALID_INPUT"],
+  "quality_metrics": ["detection_accuracy", "evidence_field_completeness"]
+}

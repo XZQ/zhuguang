@@ -79,6 +79,16 @@
     "simulated": "通过有状态Mock产生真实输入、输出和状态变化",
     "planned": "只有设计或接口，尚无可运行证据"
   },
+  "implementation": {
+    "completed_milestones": ["M0", "M1", "M2"],
+    "local_demo_scenarios": {
+      "A": "demo/state/scenarios/coldchain-compressor-failure.json",
+      "D": "demo/state/scenarios/coldchain-approval-timeout.json",
+      "E": "demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json"
+    },
+    "p0_skill_contract_root": "skills",
+    "agentteams_runtime_evidence": "pending_external_validation"
+  },
   "schemas": {
     "incident": "schemas/incident-case.v1.schema.json",
     "mcp_envelope": "schemas/mcp-envelope.v1.schema.json",
