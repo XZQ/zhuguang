@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "project_version": "0.2.0-dev",
+  "updated_at": "2026-08-28",
+  "owner": "XZQ",
+  "positioning": "连锁便利店多Agent异常闭环系统",
+  "display_strategy": {
+    "primary": "coldchain_temperature_loss",
+    "supplemental": [
+      "stockout",
+      "price_tag_mismatch"
+    ]
+  },
+  "topology": {
+    "framework_managers": 1,
+    "framework_manager": "AgentTeams Manager",
+    "business_agents": [
+      "Orchestrator",
+      "Sentry",
+      "Diagnoser",
+      "Executor",
+      "Auditor"
+    ]
+  },
+  "phases": [
+    "DETECT_CONTAIN",
+    "DIAGNOSE_DECIDE",
+    "EXECUTE",
+    "VERIFY",
+    "LEARN"
+  ],
+  "skills": [
+    { "name": "anomaly-detect", "priority": "P0", "owner": "Sentry" },
+    { "name": "coldchain-risk-assess", "priority": "P0", "owner": "Diagnoser" },
+    { "name": "rootcause-drilldown", "priority": "P0", "owner": "Diagnoser" },
+    { "name": "work-order-dispatch", "priority": "P0", "owner": "Executor" },
+    { "name": "outcome-verify", "priority": "P0", "owner": "Auditor" },
+    { "name": "review-report", "priority": "P0", "owner": "Auditor" },
+    { "name": "cross-store-benchmark", "priority": "P1", "owner": "Diagnoser" },
+    { "name": "restock-order-gen", "priority": "P2", "owner": "Executor" },
+    { "name": "price-tag-check", "priority": "P2", "owner": "Sentry/Executor" }
+  ],
+  "p0_mcp": {
+    "queries": [
+      "query_device_context",
+      "query_inventory_batches",
+      "query_sales_holds",
+      "query_workorder",
+      "query_approval"
+    ],
+    "actions": [
+      "apply_sales_hold",
+      "release_sales_hold",
+      "apply_batch_disposition",
+      "create_workorder",
+      "create_approval",
+      "decide_approval",
+      "record_manual_evidence"
+    ]
+  },
+  "agentteams": {
+    "version": "v1.2.3",
+    "commit": "223ddc2b8073e4c8b93bcbb15e1d717f196c04d9",
+    "dashboard_version": "v1.2.4",
+    "default_model": "qwen3.5-plus",
+    "manager_runtime": "qwenpaw",
+    "worker_runtime": "qwenpaw",
+    "crd_api_version": "agentteams.io/v1beta1",
+    "package_manifest_version": "1.0",
+    "apply_entrypoint": "install/agentteams-apply.sh -f",
+    "verification": {
+      "official_release_and_tag_docs": "verified",
+      "local_runtime": "unavailable",
+      "cloud_studio_runtime": "pending"
+    }
+  },
+  "implementation_levels": {
+    "implemented": "代码存在、自动化测试通过且Demo真实调用",
+    "simulated": "通过有状态Mock产生真实输入、输出和状态变化",
+    "planned": "只有设计或接口，尚无可运行证据"
+  },
+  "schemas": {
+    "incident": "schemas/incident-case.v1.schema.json",
+    "policy": "config/policies/coldchain-demo.v1.json"
+  }
+}

@@ -1,12 +1,12 @@
-"""店巡 Agent — 连锁便利店多店异常闭环巡检系统。
+"""店巡 Agent：连锁便利店多 Agent 异常闭环系统。
 
-核心包结构:
-- mcp/      工具连接层:7 个 MCP 工具(读 csv 模拟 POS/WMS/IoT/价格/IM/审批/工单)
-- skills/   能力抽象层:7 个核心 Skill(九要素齐全)
-- agents/   Agent 协同层:闭环状态机编排
-- context_bus 上下文总线:跨 Agent 传递诊断结论/处置状态
-- trace    可观测:全链路 Trace 埋点(LoongSuite/OpenTelemetry GenAI 兼容)
-- knowledge/ RAG:复盘知识条目存储(本地 SQLite,PolarDB 可替换)
+复赛目标口径为 1 个 AgentTeams Framework Manager 与 5 个业务 Agent，
+冷柜失温是首要完整验证场景，缺货和价签是补充展示场景。P0 包含
+6 个核心 Skill 与 12 个有状态 MCP 函数；具体事实以
+``config/project-facts.json`` 为准。
+
+0.2.0 开发线正在从静态 CSV 基线迁移到 IncidentService + SQLite 的
+唯一业务核心。只有通过测试并由 Demo 真实调用的能力才可声明已实现。
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0.dev0"
