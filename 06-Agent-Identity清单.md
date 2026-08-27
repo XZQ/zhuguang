@@ -1,123 +1,124 @@
 # Agent Identity 清单
 
-> 对应赛题 1.2:说明多 Agent 系统中各 Agent 的身份属性、能力边界和协同关系。
-> 部署态:见 `agentteams/workers/*.yaml`(AgentTeams Worker CR 的 spec.identity/soul/agents)。
-> 代码态:见 `src/dianxun/agents/orchestrator.py`。
+> 唯一统计口径：1 个 AgentTeams Framework Manager + 5 个业务 Agent。Orchestrator 是 5 个业务 Agent 之一，同时担任 Team Leader；不是额外的第 6 个业务 Agent。
 
-## 概览
+## 1. 拓扑与证据边界
 
-店巡 Agent 采用 **Manager → Team Leader → Workers** 三层架构,共 6 个 Agent 实体(1 Manager + 1 Team Leader + 4 Worker),形成端到端闭环。
-
-```
-Admin(人类运营)
-  └─ Manager · dianxun-manager         协调入口,编排 Team
-       └─ Team · dianxun-patrol-team
-            ├─ Orchestrator [Team Leader]  总控
-            ├─ Sentry      [Worker]        巡检
-            ├─ Diagnoser   [Worker]        诊断
-            ├─ Executor    [Worker]        处置
-            └─ Auditor     [Worker]        稽核
+```text
+AgentTeams Framework Manager
+  └─ dianxun-patrol-team
+       ├─ Orchestrator（Team Leader）
+       ├─ Sentry
+       ├─ Diagnoser
+       ├─ Executor
+       └─ Auditor
 ```
 
----
+仓库已提供 Manager、Team、5 个 Worker YAML 和 Worker ZIP，且静态契约测试通过。当前机器未完成真实 AgentTeams Team Room 和 Worker 委派，因此本文件描述的是**已实现的身份/权限契约和本地逻辑角色**，不是动态运行证据。
 
-## Agent 1 · Manager(协调入口)
+## 2. Framework Manager（框架协调实体）
 
-| 属性 | 内容 |
+| 属性 | 定义 |
 |---|---|
-| **名称** | dianxun-manager |
-| **身份** | 协调型 Agent,任务分发与 Team/Worker 编排入口 |
-| **运行时** | copaw(QwenPaw / Python) |
-| **能力边界** | 只做编排,不执行领域任务(delegation-first);不持有真实 API Key,仅 consumer token |
-| **可用 Skill** | worker-management(AgentTeams 内置) |
-| **MCP 工具** | 经 dianxun-mcp 网关访问全部 7 工具(只读为主) |
-| **数据权限** | 全部门店域(总部视角) |
-| **协同关系** | 接收 Admin 指令 → 下发 Team Leader → 不绕过 Leader 直接调度 Worker |
+| 资源 | `agentteams/manager.yaml` |
+| 身份 | AgentTeams 框架入口，不计入业务 Agent 数量 |
+| 责任 | 接收 Admin 任务、委派给 `dianxun-patrol-team`、汇总阶段回执与阻塞 |
+| 可用 Skill | AgentTeams 内置 `worker-management` |
+| 领域 MCP | 无 |
+| 禁止 | 穿透 Team 指挥领域 Worker、替代 Worker 调工具、根据聊天消息宣布业务成功 |
 
-## Agent 2 · Orchestrator(总控 / Team Leader)
+Manager 的 `state: Running` 是声明式期望状态；只有目标平台实际资源状态才能证明正在运行。
 
-| 属性 | 内容 |
+## 3. 五个业务 Agent
+
+### A1. Orchestrator（Team Leader）
+
+| 属性 | 定义 |
 |---|---|
-| **名称** | orchestrator |
-| **身份** | Team Leader,任务拆解、调度、状态追踪、冲突仲裁 |
-| **运行时** | copaw |
-| **能力边界** | 遵循 delegation-first,把任务分派给 Worker,自己不做异常检测/诊断/处置等执行 |
-| **可用 Skill** | 全部 7 个(调度层,按规则选择) |
-| **关键产出** | 任务子图 DAG、状态机流转记录 |
-| **数据权限** | 全部门店域 |
-| **协同关系** | 派 Sentry(检测)→ Diagnoser(诊断)→ Executor(处置)→ Auditor(验证);验证失败触发 reopened 二次闭环 |
-| **代码** | `src/dianxun/agents/orchestrator.py` → `Orchestrator` 类 |
+| 核心职责 | 事件拆解、角色委派、阶段推进、等待/超时管理、失败回开、向 Manager 汇报 |
+| 关键输入 | incident_id、Scenario/业务输入、各 Worker 的结构化回执 |
+| 关键输出 | phase 计划、owner/deadline/timeout_action、Evidence refs、事件摘要 |
+| Skill / MCP | 不直接执行领域 Skill 或写 MCP；delegation-first |
+| 权限 | 可通过 `IncidentService` 请求合法阶段迁移；不能直接改数据库终态 |
+| 禁止 | 冒充 Sentry/Diagnoser/Executor/Auditor、绕过审批、把“消息已发送”当成功 |
 
-## Agent 3 · Sentry(巡检 / Worker)
+### A2. Sentry（只读巡检）
 
-| 属性 | 内容 |
+| 属性 | 定义 |
 |---|---|
-| **名称** | sentry |
-| **身份** | 巡检员,多源聚合、异常识别、降噪定级 |
-| **运行时** | copaw |
-| **能力边界** | **只读**,绝不写业务数据;聚合数据不透传明细 PII;结果经置信度过滤防刷屏 |
-| **可用 Skill** | `anomaly-detect`(看家)、`price-tag-check` |
-| **关键产出** | 异常清单(带 anomaly_id / type / severity / confidence / evidence / matched_rule) |
-| **数据权限** | 全部门店只读(POS/WMS/IoT/价格) |
-| **降级策略** | 单源不可用标 partial;全源不可用标 degraded 进降噪模式 |
-| **协同关系** | 输出喂 Diagnoser;严重价签不一致(收银>标价)直接升级 Executor |
-| **代码** | `SentryAgent.detect()` |
+| 核心职责 | 冷柜异常检测、证据质量检查、严重度分级、提出遏制请求 |
+| 关键输入 | 设备/门店/时间窗、Policy、IoT 上下文 |
+| 关键输出 | anomaly、severity、quality、partial、containment_request、Evidence refs |
+| Skill | `anomaly-detect` |
+| MCP | `query_device_context`；通过 Skill 获取关联批次上下文 |
+| 权限 | L0 只读 |
+| 禁止 | 写业务状态、确认根因、解除停售 |
 
-## Agent 4 · Diagnoser(诊断 / Worker)
+### A3. Diagnoser（只读诊断）
 
-| 属性 | 内容 |
+| 属性 | 定义 |
 |---|---|
-| **名称** | diagnoser |
-| **身份** | 运营专家,跨店横向对标、维度下钻、根因定位(**差异化核心**) |
-| **运行时** | copaw |
-| **能力边界** | **只读**;供应商级信息仅总部角色;禁止把诊断结论直接写回业务系统(只生成建议) |
-| **可用 Skill** | `cross-store-benchmark`(看家)、`rootcause-drilldown` |
-| **关键产出** | 根因报告(多假设按置信度排序 + 下钻路径 + 核验计划) |
-| **数据权限** | 全部门店聚合统计(不返回其他门店明细,防信息泄露) |
-| **防幻觉机制** | 知识库 RAG 无命中时明确"无历史案例",不编造;多假设并列不武断 |
-| **协同关系** | 读 Sentry 异常清单;输出经上下文总线传 Executor;报告全文写审计库供 Auditor |
-| **代码** | `DiagnoserAgent.diagnose()` |
+| 核心职责 | 设备与商品风险分别评估，形成证据关联的 Top-K 根因假设和检查计划 |
+| 关键输入 | anomaly、设备/批次 Evidence、版本化冷链 Policy |
+| 关键输出 | batch risk、ranked hypotheses、支持/反证、证据缺口、建议动作 |
+| Skill | `coldchain-risk-assess`、`rootcause-drilldown` |
+| MCP | `query_device_context`、`query_inventory_batches` |
+| 权限 | L0 只读 |
+| 禁止 | 把相关性写成确定因果、伪造 RAG 命中、直接执行处置 |
 
-## Agent 5 · Executor(处置 / Worker)
+### A4. Executor（受控执行）
 
-| 属性 | 内容 |
+| 属性 | 定义 |
 |---|---|
-| **名称** | executor |
-| **身份** | 店务专员,处置方案生成、执行、审批触发、回滚 |
-| **运行时** | copaw |
-| **能力边界** | **写操作必审批**:维修>2000 / 补货>5000 / 批量调价>20SKU 强制人工;**付款环节绝不执行**(只生成待付款单);写操作带 idempotency_key 可回滚 |
-| **可用 Skill** | `restock-order-gen`、`work-order-dispatch`(写操作) |
-| **关键产出** | 处置工单、补货单、改价单(均含审批记录) |
-| **数据权限** | 本店写权限(经审批);跨店调拨需额外授权 |
-| **协同关系** | 读 Diagnoser 根因;执行后状态写上下文;触发 Auditor 验证 |
-| **代码** | `ExecutorAgent.handle()` |
+| 核心职责 | 先行停售/隔离、发起审批、创建维修工单、执行获批批次处置和解除停售 |
+| 关键输入 | Diagnoser 建议、Policy 决策、approval、Auditor release guard |
+| 关键输出 | action/approval/workorder/hold refs、request_id、audit_ref、等待状态 |
+| Skill | `work-order-dispatch` |
+| MCP | 5 个 Executor 动作：`apply_sales_hold`、`release_sales_hold`、`apply_batch_disposition`、`create_workorder`、`create_approval` |
+| 权限 | L1 预授权动作；L2 动作需批准；所有写操作要求幂等键 |
+| 禁止 | 自批、自验、自行关闭事件、付款、未审批执行 L2 |
 
-## Agent 6 · Auditor(稽核 / Worker)
+### A5. Auditor（独立稽核）
 
-| 属性 | 内容 |
+| 属性 | 定义 |
 |---|---|
-| **名称** | auditor |
-| **身份** | 稽核员,恢复验证、效果评估、复盘沉淀(**经验飞轮引擎**) |
-| **运行时** | copaw |
-| **能力边界** | 验证用数据说话(温度回基线/库存回升/价格一致);知识入库前过质量门(去重/置信度/脱敏);报告仅总部可见 |
-| **可用 Skill** | `review-report`(看家) |
-| **关键产出** | 验证报告(带置信度/方法)、复盘报告、知识条目、Skill 更新建议 |
-| **数据权限** | 全门店只读 + 知识库读写 |
-| **飞轮机制** | 复盘写入知识库 → 下次 Diagnoser 的 RAG 检索命中 → 诊断更准 |
-| **协同关系** | 读 Executor 处置;验证失败触发 reopened;复盘后驱动经验沉淀 |
-| **代码** | `AuditorAgent.verify()` / `.review()` |
+| 核心职责 | 独立重查设备和商品事实，生成 release guard，验证最终状态并复盘 |
+| 关键输入 | incident_id、期望状态、MCP 查询结果、动作/审批/工单引用 |
+| 关键输出 | subject verifications、partial tools、attempts、结论、复盘和知识候选 |
+| Skill | `outcome-verify`、`review-report` |
+| MCP | `query_sales_holds`、`query_workorder`、`query_approval`，并通过 Skill 重查设备和批次 |
+| 权限 | L0 只读和领域验证记录；不直接执行受控业务写 |
+| 禁止 | 信任 Executor 回执代替重查、直接解除停售、把候选知识写成已发布 RAG |
 
----
+## 4. Human / ScenarioEngine（外部可信主体）
 
-## 能力边界矩阵(防越权)
+它们不是业务 Agent，但拥有两个受限入口：
 
-| Agent | 读写 | 审批 | 跨店数据 | 付款 | 知识库 |
-|---|---|---|---|---|---|
-| Manager | — | — | 全域 | ❌ | — |
-| Orchestrator | 调度 | 触发 | 全域 | ❌ | — |
-| Sentry | 只读 | ❌ | 聚合 | ❌ | — |
-| Diagnoser | 只读 | ❌ | 仅统计值 | ❌ | 读(RAG) |
-| Executor | **写(经审批)** | **触发** | 本店 | **❌ 绝不** | — |
-| Auditor | 只读+知识库 | ❌ | 全域 | ❌ | **读写** |
+- `decide_approval`：批准、拒绝或超时；
+- `record_manual_evidence`：记录测温、照片 URI/哈希或人工说明。
 
-**核心安全原则**:付款环节任何 Agent 都不可执行;所有写操作经审批且可回滚;跨店数据只暴露聚合统计。
+本地 Demo 由 ScenarioEngine 确定性模拟人工输入，只验证等待与审批语义。真实部署必须接入可认证人员、排班、SLA、委托关系和不可抵赖审计。
+
+## 5. 权限矩阵
+
+| 能力 | Manager | Orchestrator | Sentry | Diagnoser | Executor | Auditor | Human/ScenarioEngine |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Team/任务委派 | 是 | Team 内 | 否 | 否 | 否 | 否 | 否 |
+| 设备/批次查询 | 否 | 经委派 | 是 | 是 | 按动作需要 | 是 | 可提供证据 |
+| 先行停售/隔离 | 否 | 仅委派 | 否 | 否 | 是 | 否 | 否 |
+| 创建审批/工单 | 否 | 仅委派 | 否 | 否 | 是 | 否 | 否 |
+| 决定审批 | 否 | 否 | 否 | 否 | 否 | 否 | 是 |
+| 批次处置/解除停售 | 否 | 仅委派 | 否 | 否 | 经审批 | 否 | 否 |
+| 独立业务验证 | 否 | 否 | 否 | 否 | 否 | 是 | 可补人工证据 |
+| 迁移事件阶段 | 否 | 经 IncidentService | 否 | 否 | 否 | 提供依据 | 否 |
+| 付款 | 否 | 否 | 否 | 否 | 否 | 否 | 不在本系统 |
+
+## 6. 协作不变量
+
+1. 先遏制，后追求完整诊断。
+2. Diagnoser 输出 Top-K，不把证据不足包装成确定根因。
+3. Executor 的动作回执不是验证证据。
+4. Auditor 必须重查；关键查询 partial 时不能关闭。
+5. 设备恢复和商品批次安全分别判定。
+6. 只有 `IncidentService` 可聚合 `RESOLVED` 并在 LEARN 后迁移 `CLOSED`。
+7. AgentTeams 静态资源、LocalDemoAdapter 或本地 MCP 烟测都不能替代真实 Worker 委派证据。

@@ -1,17 +1,22 @@
-# Skill price-tag-check — 价签与促销合规校验
+# price-tag-check
 
-> 店巡 Agent · S5/7 · 9 要素说明卡(赛题必选项)
-> 项目总索引见 [../README.md](../README.md),全部 7 个 Skill 汇总见 [../03-Skill九要素卡.md](../03-Skill九要素卡.md)
+> 当前优先级：P2 补充场景；不进入冷柜 P0 Worker ZIP。
 
-## 九要素
+- 名称：`price-tag-check`
+- 用途：比较系统价、价签价和 POS 价，识别不一致。
+- 输入：门店、SKU、检查时间。
+- 输出：不一致项、严重度和建议。
+- 调用条件：价签补充入口。
+- 依赖：改造前 price/POS CSV Adapter。
+- 失败处理：数据缺失时降级为可用来源比对并标记 partial。
+- 安全边界：当前只做本地演示；真实改价审批、价签设备和生产回滚未接入。
+- 复用价值：可复用于零售价格一致性检查。
+- 协同关系：由历史 Sentry/Executor 流程调用，不属于冷柜 P0 主链。
 
-- **名称**:price-tag-check
-- **用途**:比对系统价格、货架价签价、收银价三方一致性,校验促销规则(组合折扣/限时价/会员价)是否冲突,输出价签异常与促销合规报告
-- **输入**:`store_id`、`sku_list[]`、`check_time`
-- **输出**:`PriceCheckReport { mismatches[{sku, system_price, tag_price, pos_price, rule_violation?, severity}], compliance_summary }`
-- **调用条件**:日常巡检(每日)或促销上线前预检;收银价以 POS 流水为准
-- **依赖工具**:MCP-pos(收银价)、MCP-price(系统价/促销规则)、价签系统(货架标签)
-- **失败处理**:价签系统无响应 → 以"系统价 vs 收银价"两方比对降级执行;促销规则解析失败 → 该规则标黄提示人工
-- **安全边界**:**纠错写操作(改价签/改收银价)必须审批**;批量调价(>20 SKU)强制人工确认;操作留痕可回滚
-- **复用价值**:中高。零售、电商价格治理同构,合规角度可扩展到广告法违禁词等
-- **协同关系**:巡检 Sentry 常规触发;严重不一致(收银价高于标价)直接升级给处置 Executor 走紧急审批
+回归入口：
+
+```powershell
+uv run python demo/run_supplementary.py price-tag
+```
+
+统一清单见 [`../03-Skill九要素卡.md`](../03-Skill九要素卡.md)。

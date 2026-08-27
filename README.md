@@ -1,179 +1,175 @@
 # 店巡 Agent（筑光）
 
-面向连锁便利店的多 Agent 异常闭环系统。复赛版本采用“一主两辅”：以冷柜失温作为首要完整验证场景，缺货与价签异常保留为补充展示和独立回归入口。
+面向连锁便利店的多 Agent 异常闭环基础设施。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
 
-> 当前状态：M0～M2 已完成；M3 的 Worker ZIP、v1.2.3 YAML、MCP Deployment 和本地 `mcporter` 兼容烟测已完成，真实 Team Room/Worker 委派仍待具备 Docker、Kubernetes 与 AgentTeams 的目标环境验证；M4～M5 正在实施。
+当前仓库已完成有状态业务核心、冷柜五阶段闭环、6 个确定性评测场景、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
+
+## 当前可验证结论
+
+| 结论 | 当前结果 | 证据 |
+|---|---:|---|
+| 冷柜 P0 场景 | 6/6 通过 | [`evidence/m4/report.md`](evidence/m4/report.md) |
+| Ground truth Top-1 / Top-3 | 6/6、6/6 | [`evidence/m4/results.json`](evidence/m4/results.json) |
+| Evidence 关键字段完整率 | 45/45 | 同上 |
+| 适用阶段 Trace 覆盖率 | 26/26 | 同上 |
+| 未授权写、未审批受控写、错误放行、错误关闭、重复副作用 | 均为 0 | 同上 |
+| 自动化测试 | 28 项通过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
+| AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
+
+上述指标来自固定 seed 和有状态 Mock，只证明仓库内确定性行为，不代表真实门店收益、监管合规或生产可用性。
 
 ## 唯一事实口径
 
 - 拓扑：1 个 AgentTeams Framework Manager + 5 个业务 Agent（Orchestrator、Sentry、Diagnoser、Executor、Auditor）。
 - 业务流程：发现与遏制、诊断与决策、处置执行、独立验证、复盘演进。
-- 场景：冷柜失温为首要完整验证；缺货、价签为补充展示。
 - Skill：目标 9 个，其中 P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。
-- MCP：P0 固定 12 个函数（5 个查询、7 个受控动作）。
-- 业务核心：`IncidentService` 是状态迁移和业务状态的唯一事实入口；本地 Demo 直接复用该核心，AgentTeams Worker 通过同一 MCP/Skill 契约接入。
-- 证据等级：只有“代码存在、测试通过、Demo 真实调用”才标记为“已实现”；有状态外部系统替身标记为“模拟实现”；仅设计的能力标记为“规划”。
+- MCP：P0 固定 12 个函数，包括 5 个查询和 7 个受控动作。
+- 业务核心：`IncidentService` 是阶段迁移和事件状态的唯一事实入口。
+- 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
 
-机器可读清单见 [`config/project-facts.json`](config/project-facts.json)，当前实现状态见 [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md)。
+机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md)。
 
-## 冻结版本
+## 为什么把冷柜失温作为主展示场景
 
-| 项目 | 锁定值 | 当前证据 |
-|---|---|---|
-| AgentTeams | `v1.2.3`（commit `223ddc2`） | 官方 Release 与该 Tag 文档已核对 |
-| Framework Manager Runtime | `qwenpaw` | 官方推荐值；待目标环境动态验证 |
-| Worker Runtime | `qwenpaw` | 官方推荐值；待目标环境动态验证 |
-| CRD | `agentteams.io/v1beta1` | 官方 `v1.2.3` 资源文档已核对 |
-| Dashboard | `v1.2.4` | AgentTeams `v1.2.3` 默认配套版本 |
-| Python | `>=3.11` | 本地核心保持标准库优先 |
+项目没有删除缺货和价签能力，而是把展示层次收敛为“一主两辅”。冷柜事件同时具备安全遏制、设备诊断、商品批次处置、人工审批、外部维修、独立验证和失败回开，能够在一条事件链中证明多 Agent 协作的必要性。缺货与价签继续保留独立入口，用于证明底层能力可扩展，但不与冷柜争夺主叙事。
 
-AgentTeams 官方来源：
+系统坚持两个业务约束：**设备恢复不等于商品安全，工单完成不等于事件关闭**。Executor 只能执行受控动作；Auditor 必须重新查询设备、商品批次、停售、审批和工单状态；最终 `RESOLVED` / `CLOSED` 由 `IncidentService` 按规则聚合。
 
-- [v1.2.3 Release](https://github.com/agentscope-ai/AgentTeams/releases/tag/v1.2.3)
-- [Resource Management](https://github.com/agentscope-ai/AgentTeams/blob/v1.2.3/docs/usage/resource-management.md)
-- [Worker 导入指南](https://github.com/agentscope-ai/AgentTeams/blob/v1.2.3/docs/zh-cn/usage/import-worker.md)
-
-## 目标闭环
+## 五阶段闭环
 
 ```text
-发现异常
-  -> 先停售/隔离，阻断风险扩散
-  -> 形成 Top-K 根因假设和检查计划
-  -> 策略判定、审批与受控执行
-  -> Auditor 重新查询设备、批次、停售、审批和工单状态
-  -> IncidentService 聚合为 RESOLVED
-  -> 复盘完成后迁移为 CLOSED
+1. 发现与遏制
+   Sentry 识别异常；Executor 先停售并隔离受影响批次
+2. 诊断与决策
+   Diagnoser 输出证据关联的 Top-K 假设；Policy 决定是否需要审批
+3. 处置执行
+   Executor 经授权创建工单、处置批次或等待人工输入
+4. 独立验证
+   Auditor 重新查询业务事实；partial 或不安全结果会阻断关闭或回开
+5. 复盘演进
+   Auditor 生成复盘与待审知识候选；不虚构 RAG 命中或自动发布
 ```
 
-设备恢复不等于商品安全，工单完成也不等于事件关闭。Executor 无权宣布成功；Auditor 只能提出验证结果和放行建议，最终状态由 `IncidentService` 按规则计算。
+主阶段之外，事件还独立记录 `incident_status`、`work_status`、审批、工单、商品批次和停售状态，以表达等待、失败和并发，而不是把所有信息压进一条线性状态机。
 
-## 当前仓库结构
+## 快速开始
 
-```text
-config/                    冻结事实与版本化 Policy
-schemas/                   Incident、MCP、Scenario Schema
-src/dianxun/               业务核心、Skill、MCP 与本地 Adapter
-demo/                      确定性场景与本地运行入口
-agentteams/                AgentTeams 资源与 MCP Deployment
-packages/dianxun-worker/   官方格式 Worker 包源目录
-packages/dianxun-mcp/      MCP 独立镜像 Dockerfile
-scripts/                   确定性构建与验证辅助脚本
-dist/                      提交的 Worker ZIP 与 SHA-256
-tests/                     单元、集成、契约与评测测试
-evidence/                  可复现、脱敏的静态证据和说明
-ppt/                       演示稿源文件与导出 PDF
-```
-
-上述结构是复赛目标结构；未出现的目录会随对应里程碑加入。不会用规划目录冒充已交付能力。
-
-## 有状态核心与 MCP（M1）
-
-Python 3.11+ 和 [uv](https://docs.astral.sh/uv/) 环境下：
-
-```powershell
-# 安装本项目（当前核心无第三方运行依赖）
-uv sync
-
-# 用固定 seed 重置 runtime.db
-uv run dianxun state-init
-
-# 注入压缩机故障场景；虚拟时钟固定，不依赖系统当前日期
-uv run dianxun scenario-reset demo/state/scenarios/coldchain-compressor-failure.json
-
-# 核对 12 个 P0 MCP 函数
-uv run dianxun mcp-tools
-
-# 直接查询场景注入后的同一 SQLite 业务状态
-uv run dianxun mcp-call query_device_context `
-  --arguments '{"device_id":"FROST-S03","facets":["temperature","health"]}'
-
-# 启动 Streamable HTTP / JSON-RPC Adapter（默认 127.0.0.1:8080）
-uv run dianxun-mcp
-```
-
-运行时数据库位于 `demo/state/runtime.db`，不会提交。重建 Seed 和执行 M1 回归：
-
-```powershell
-python 04-模拟数据生成脚本.py --check
-$env:PYTHONPATH = "src"
-python -W error::ResourceWarning -m unittest -v tests.test_stateful_core
-```
-
-M1 已通过 8 项回归验证：相同 seed 的业务快照哈希一致；全新数据库可自动建表；停售、批次处置、审批和工单写入后可通过查询函数看到；审批默认 `pending`；高预算维修未批准时不会执行；相同幂等键不会产生重复副作用。
-
-## 冷柜五阶段闭环（M2）
-
-本地 Adapter 与后续 AgentTeams Adapter 共用 `IncidentService`、Policy、Skill、MCP 和 Scenario。固定三条演示路径：
-
-```powershell
-# 场景 A：压缩机故障；审批通过；设备恢复；批次分别转移/报损；最终 CLOSED
-uv run dianxun demo-run demo/state/scenarios/coldchain-compressor-failure.json
-
-# 场景 D：维修审批超时；不创建工单；保持停售与隔离；停在 WAITING_EXTERNAL
-uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
-
-# 场景 E：设备恢复但商品仍不安全；Auditor 拒绝关闭；停在 WAITING_APPROVAL
-uv run dianxun demo-run demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json
-```
-
-也可执行 `python demo/run_coldchain.py` 跑场景 A。每条命令仅在实际终态与 Scenario 的 `expected_final_state` 一致时退出 `0`。
-
-M2 的 6 个 P0 Skill 均已在 [`skills/`](skills/) 下提供独立 `SKILL.md`、manifest、输入/输出 Schema 与成功/失败样例。验证命令：
-
-```powershell
-$env:PYTHONPATH = "src"
-python -W error::ResourceWarning -m unittest -v `
-  tests.test_stateful_core tests.test_coldchain_workflow
-uv run --with jsonschema python -m unittest -v tests.test_skill_contracts
-```
-
-当前共 15 项有状态核心/工作流回归和 1 项全量 Skill 契约门禁。场景 A 的 `CLOSED` 必须经过 Auditor 对设备、批次、停售、审批、工单和审计数据的重新查询；场景 E 证明“设备恢复”不会自动放行商品。
-
-## AgentTeams 工程交付（M3 静态部分）
-
-Worker 包已按官方 `v1.2.3` 结构重建，根目录包含 `manifest.json 1.0`、`config/` 和 6 个 P0 `skills/`；Manager/Worker 使用 `qwenpaw + qwen3.5-plus`，Worker YAML 的 `spec.package` 指向仓库中真实 ZIP。MCP 提供 PVC、单副本 Deployment 和 Service，镜像 build context 固定为仓库根目录。
+要求 Python 3.11+ 和 [uv](https://docs.astral.sh/uv/)。
 
 ```powershell
 uv sync --group dev
-uv run python scripts/build_worker_package.py
-uv run python -m unittest -v tests.test_agentteams_artifacts
+uv run dianxun evaluate
 ```
 
-当前 Worker ZIP SHA-256 为 `d0689b24bd4610a0a29db16972e67133ae808663c4eeb4dcfe4f5040e7488747`，5 项 AgentTeams artifact 契约测试通过。本机还使用 AgentTeams 同款 `mcporter` 对本地 MCP 完成 12 工具发现和 `query_device_context` 真实调用。部署和动态烟测步骤见 [`agentteams/README.md`](agentteams/README.md)。
+`dianxun evaluate` 会在临时 SQLite/Trace 数据库中逐个运行 6 个场景，并确定性重写：
 
-这只证明包、资源、MCP 传输和客户端兼容性；本机没有 Docker、Kubernetes 与 `agt`，因此 M3 的 Team Room、Worker 委派、平台运行状态和对应 Trace 仍标记为“外部待验证”。
+- `evidence/m4/results.json`
+- `evidence/m4/report.md`
 
-## 改造前历史入口（非验收入口）
+命令只有在全部本地 P0 门禁通过时才退出 `0`。
 
-原仓库曾通过下面命令运行静态 CSV 三场景 Demo：
+### 运行单个冷柜场景
 
 ```powershell
-$env:PYTHONPATH = "src"
-python demo/run_demo.py
+uv run dianxun demo-run demo/state/scenarios/coldchain-compressor-failure.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-sensor-false-positive.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-door-left-open.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-workorder-query-partial.json
 ```
 
-截至 2026-08-28，已提交 CSV 的时间锚点过期，原入口可能因“无异常”分支的旧状态机缺陷退出非零；审批和验证逻辑也不满足 P0 门禁。因此它只保留作迁移参考，不是冷柜验收入口。冷柜验收使用上一节 A/D/E 命令；缺货和价签独立入口将在 M4 做回归门禁。
+六条路径分别验证：压缩机故障、传感器误报、门未关闭、审批超时、设备恢复但商品仍不安全、工单查询部分失败。每个 Scenario 声明预期终态；不一致时命令退出非零。
+
+### 运行补充场景
+
+```powershell
+uv run python demo/run_supplementary.py stockout
+uv run python demo/run_supplementary.py price-tag
+```
+
+两个入口使用隔离的临时 Trace 数据库，只证明缺货和价签的历史能力仍可运行；冷柜验收以六场景评测为准。
+
+### 调用有状态 MCP
+
+```powershell
+uv run dianxun state-init
+uv run dianxun scenario-reset demo/state/scenarios/coldchain-compressor-failure.json
+uv run dianxun mcp-tools
+uv run dianxun mcp-call query_device_context `
+  --arguments '{"device_id":"FROST-S03","facets":["temperature","health"]}'
+uv run dianxun-mcp
+```
+
+默认 Streamable HTTP / JSON-RPC Adapter 监听 `127.0.0.1:8080`。运行时数据库为 `demo/state/runtime.db`，已被 Git 忽略。
+
+Linux/macOS 只需去掉 PowerShell 的反引号续行；其余命令相同。
+
+## 验证与构建
+
+```powershell
+# 模拟数据完整性
+uv run python 04-模拟数据生成脚本.py --check
+
+# 全量测试
+uv run --group dev python -W error::ResourceWarning -m unittest discover -v
+
+# 代码质量
+uv run --group dev ruff check .
+uv run --group dev ruff format --check .
+
+# 确定性 Worker ZIP
+uv run python scripts/build_worker_package.py
+uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
+```
+
+当前 Worker ZIP SHA-256：
+
+```text
+0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea
+```
+
+AgentTeams 版本固定为 `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），CRD 为 `agentteams.io/v1beta1`，Manager/Worker runtime 为 `qwenpaw`。构建、部署和动态验收步骤见 [`agentteams/README.md`](agentteams/README.md)。
+
+## 仓库结构
+
+```text
+config/                    冻结事实与版本化比赛 Policy
+schemas/                   Incident、MCP、Scenario Schema
+src/dianxun/               领域核心、Skill、MCP、Adapter 与评测器
+demo/                      六个冷柜场景和两个补充入口
+agentteams/                Manager/Team/Worker 与 MCP Kubernetes 资源
+packages/dianxun-worker/   AgentTeams Worker 包源目录
+packages/dianxun-mcp/      MCP 镜像 Dockerfile
+scripts/                   确定性构建脚本
+dist/                      Worker ZIP 与 SHA-256
+tests/                     单元、集成、契约与评测门禁
+evidence/m4/               脱敏、可复现的本地评测结果
+ppt/                       HTML 演示稿源文件与导出 PDF
+docs/                      实现状态、比赛核对和真实场景差距
+```
 
 ## 文档索引
 
 | 文档 | 内容 |
 |---|---|
-| [`01-作品简介-500字.md`](01-作品简介-500字.md) | 参赛作品简介 |
-| [`02-方案PPT结构.md`](02-方案PPT结构.md) | 演示叙事与页级结构 |
-| [`03-Skill九要素卡.md`](03-Skill九要素卡.md) | Skill 唯一清单与九要素 |
-| [`04-模拟数据生成脚本.py`](04-模拟数据生成脚本.py) | 可重复数据生成入口 |
-| [`05-MCP工具契约.md`](05-MCP工具契约.md) | MCP 函数契约 |
-| [`06-Agent-Identity清单.md`](06-Agent-Identity清单.md) | 业务 Agent 身份、权限和边界 |
-| [`07-多Agent协同设计.md`](07-多Agent协同设计.md) | 五阶段与官方八项要求映射 |
-| [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) | 完整改造与验收方案 |
+| [`01-作品简介-500字.md`](01-作品简介-500字.md) | 500 字以内作品简介 |
+| [`02-方案PPT结构.md`](02-方案PPT结构.md) | 10 页答辩叙事与证据来源 |
+| [`03-Skill九要素卡.md`](03-Skill九要素卡.md) | 9 个目标 Skill 与 6 个 P0 工程契约 |
+| [`04-模拟数据生成脚本.py`](04-模拟数据生成脚本.py) | 确定性数据生成与校验入口 |
+| [`05-MCP工具契约.md`](05-MCP工具契约.md) | 12 个 P0 MCP 函数、安全和失败语义 |
+| [`06-Agent-Identity清单.md`](06-Agent-Identity清单.md) | 1 Manager + 5 业务 Agent 的身份边界 |
+| [`07-多Agent协同设计.md`](07-多Agent协同设计.md) | 五阶段与赛事八项要求映射 |
+| [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) | 完整改造方案与里程碑记录 |
+| [`docs/Demo视频脚本与证据清单.md`](docs/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
 
-## 安全与证据边界
+## 安全与已知边界
 
-- 不提交真实 API Key、审批身份、照片原件或顾客数据。
-- 所有 P0 写操作必须校验调用者、Policy、审批和幂等键，并写审计日志。
-- 动态数据库和敏感运行日志不提交；只提交脱敏样例、生成命令和校验和。
-- 未在真实 AgentTeams 环境跑通前，不声明 Team Room、Worker 委派或平台 Trace 已完成。
-- 冷链阈值配置仅用于比赛 Demo，不替代企业 HACCP、设备说明书或当地监管要求。
+- 冷链 Policy 只用于比赛合成数据，不替代商品标签、企业 HACCP、设备说明书或所在地法规。
+- POS、库存、IoT、审批和维修商均为有状态 Mock；没有真实企业接口、真实人员 SLA 或真实食品处置授权。
+- RAG、自动回滚、Nacos、Higress、RocketMQ、PolarDB 和 LoongSuite 属于规划或生产替换方向，当前不声明已实现。
+- AgentTeams YAML、Worker ZIP 和本地 MCP 兼容烟测不等于真实多 Agent 动态协同。
+- 不提交 API Key、真实审批身份、顾客数据、照片原件、运行时数据库或含敏感内容的 Trace。
 
 ## License
 

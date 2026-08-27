@@ -82,20 +82,46 @@
     "planned": "只有设计或接口，尚无可运行证据"
   },
   "implementation": {
-    "completed_milestones": ["M0", "M1", "M2"],
+    "completed_milestones": ["M0", "M1", "M2", "M4"],
     "local_demo_scenarios": {
       "A": "demo/state/scenarios/coldchain-compressor-failure.json",
+      "B": "demo/state/scenarios/coldchain-sensor-false-positive.json",
+      "C": "demo/state/scenarios/coldchain-door-left-open.json",
       "D": "demo/state/scenarios/coldchain-approval-timeout.json",
-      "E": "demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json"
+      "E": "demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json",
+      "F": "demo/state/scenarios/coldchain-workorder-query-partial.json"
     },
+    "supplementary_demo_entries": ["stockout", "price-tag"],
     "p0_skill_contract_root": "skills",
     "m3_repository_artifacts": {
       "status": "implemented_static_external_runtime_pending",
       "worker_package": "dist/dianxun-worker.zip",
-      "worker_package_sha256": "d0689b24bd4610a0a29db16972e67133ae808663c4eeb4dcfe4f5040e7488747",
+      "worker_package_sha256": "0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea",
       "worker_package_files": 33,
       "artifact_contract_tests": 5,
       "mcp_deployment": "agentteams/mcp/deployment.yaml"
+    },
+    "m4_evaluation": {
+      "suite_id": "dianxun-p0-coldchain-v1",
+      "scenario_passed": 6,
+      "scenario_count": 6,
+      "top1_hits": 6,
+      "top3_hits": 6,
+      "complete_evidence_records": 45,
+      "evidence_records": 45,
+      "covered_trace_phases": 26,
+      "expected_trace_phases": 26,
+      "safety_violations": 0,
+      "full_unittest_count": 28,
+      "report": "evidence/m4/report.md",
+      "results": "evidence/m4/results.json"
+    },
+    "m5_materials": {
+      "documents": "implemented",
+      "presentation_source": "implemented",
+      "pdf": "implemented",
+      "video_script": "implemented",
+      "recorded_video": "pending_external_agentteams_runtime"
     },
     "agentteams_runtime_evidence": "pending_external_validation"
   },

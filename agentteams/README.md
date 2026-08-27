@@ -19,7 +19,7 @@ packages/dianxun-mcp/Dockerfile
 dist/dianxun-worker.zip
 ```
 
-Worker YAML 的 `spec.package` 指向公共仓库中真实的 HTTP ZIP，而不是普通目录。ZIP 的 SHA-256 位于 `dist/dianxun-worker.zip.sha256`。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须将该镜像推送到可访问的镜像仓库并替换镜像地址。
+Worker YAML 的 `spec.package` 指向公共仓库中真实的 HTTP ZIP，而不是普通目录。ZIP 的 SHA-256 位于 `dist/dianxun-worker.zip.sha256`，当前值为 `0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea`。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须将该镜像推送到可访问的镜像仓库并替换镜像地址。
 
 当前仓库只提交脱敏、可复现的配置。只有真实平台产生的 Team Room、委派消息、MCP 调用和资源状态才是动态证据；本地契约测试不能替代它们。
 
@@ -34,6 +34,8 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 ```
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
+
+仓库内当前有 5 项 AgentTeams artifact 契约测试；整个项目的 28 项自动化测试和六场景评测也已通过。这些结果验证静态包、业务核心和本地 MCP 行为，不验证平台动态委派。
 
 ## 2. 构建和部署 MCP
 
@@ -98,6 +100,8 @@ kubectl -n dianxun get deployment,pod,service,pvc
 4. 至少一条 Worker 通过 `dianxun-mcp` 产生真实工具返回；
 5. Auditor 重新查询设备与商品状态，而非复述 Executor；
 6. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致。
+
+建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/Demo视频脚本与证据清单.md`](../docs/Demo视频脚本与证据清单.md)。
 
 保存证据前必须脱敏。若当前机器没有 Docker、Kubernetes 或 AgentTeams，不得把 ZIP 校验、YAML 解析或本地 MCP 调用写成“真实 AgentTeams 已跑通”。
 

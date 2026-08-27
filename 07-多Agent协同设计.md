@@ -1,145 +1,181 @@
 # 多 Agent 协同设计
 
-> 对应赛题 1.1 / 1.3:多 Agent 以 AgentTeams 为协同基点,说明 5 维度映射;说明 8 步端到端闭环。
-> 本设计已落地为可运行代码(`src/dianxun/agents/orchestrator.py`)与 AgentTeams 部署配置(`agentteams/`)。
+> 本文把两套视角分开：**五阶段**用于讲业务闭环，**八项要求**用于横向检查协同证据。二者不是两条流程；八项要求分布在五阶段之中。
 
----
+## 1. 协同基点与当前状态
 
-## 一、AgentTeams 五维度映射(赛题 1.1 必答)
+目标运行基点为 AgentTeams `v1.2.3`：
 
-赛题要求:多 Agent 设计必须以 AgentTeams 为协同基点,说明**角色编排、任务拆解、上下文传递、协同执行、状态追踪**如何映射到该框架能力。
+- 1 个 Framework Manager；
+- 1 个 Team：`dianxun-patrol-team`；
+- 5 个业务 Agent，其中 Orchestrator 是 Team Leader，另外 4 个为领域 Worker；
+- 6 个 P0 Skill 进入确定性 Worker ZIP；
+- Worker 通过 `dianxun-mcp` 访问同一有状态业务世界。
 
-### 1. 角色编排(Identity & Roles)
+仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
 
-| AgentTeams 能力 | 店巡映射 | 落地 |
-|---|---|---|
-| Worker CR 的 `spec.identity` / `spec.soul` | 5 个 Agent 的身份声明(总控/巡检/诊断/处置/稽核) | `agentteams/workers/*.yaml` |
-| Team CR 的 `workerMembers.role`(team_leader/worker) | Orchestrator = team_leader,其余 4 个 = worker | `agentteams/team.yaml` |
-| 三层组织(Manager→Team Leader→Workers) | Manager 协调入口 → Team Leader 调度 → Worker 执行 | 见 06-Agent-Identity清单.md |
-| 最小权限 + 凭证零暴露 | Worker 只持 consumer token,真实 Key 由 Higress 网关/KMS 管理 | MCP 经网关授权 |
+## 2. AgentTeams 五维映射
 
-**设计要点**:Manager 与 Team Leader 严格 delegation 边界——Manager 只与 Team Leader 通信,不绕过 Leader 直接调度 Worker。Team Leader 遵循 delegation-first,只拆解调度,不亲自执行领域任务。
-
-### 2. 任务拆解(Task Decomposition)
-
-| AgentTeams 能力 | 店巡映射 |
-|---|---|
-| Manager 把任务分发给 Team Leader | Manager 收到巡检指令 → 下发给 dianxun-patrol-team 的 Orchestrator |
-| Team Leader 把任务拆为子任务 DAG | Orchestrator 把"巡检某区域"拆为:① 检测(→Sentry)② 逐异常诊断(→Diagnoser)③ 处置(→Executor)④ 验证(→Auditor)⑤ 复盘 |
-| Team Leader 任务委派(delegation) | 每个子任务 @mention 对应 Worker,不自己执行 |
-
-**代码实现**:`Orchestrator.run_task()` 内的 for 循环即任务拆解 DAG——按异常严重度排序,每个异常走"诊断→处置→验证"子链。
-
-### 3. 上下文传递(Context Sharing)
-
-| AgentTeams 能力 | 店巡映射 |
-|---|---|
-| Matrix Team Room 共享对话 | 所有 Agent 在同一 Team Room,异常清单/根因/处置状态全程可见 |
-| MinIO 共享文件系统 | 任务上下文快照(TaskContext.snapshot)落共享存储,降 Token 消耗 |
-| 上下文总线 | `src/dianxun/context_bus.py` 的 `ContextBus` + `TaskContext`,贯穿 anomalies→root_causes→actions→validation→review |
-
-**共享上下文关键字段**:诊断结论、处置状态、审批意见跨 Agent 传递,而非点对点传参(解耦)。
-
-### 4. 协同执行(Coordinated Execution)
-
-| AgentTeams 能力 | 店巡映射 |
-|---|---|
-| Worker 间 @mention 协同 | Sentry 检出高危 → @Diagnoser;严重价签不一致 → @Executor 紧急;Executor 完工 → @Auditor 验证 |
-| peerMentions(允许 Worker 间相互 @mention) | `team.yaml` 的 `peerMentions: true` |
-| 协同执行序列 | 检测→诊断→处置→验证 的严格顺序由 Orchestrator 编排;并行场景(多店同时巡检)由 Manager 调度多 Team |
-| 冲突仲裁 | 同店多异常按严重度排序;资源冲突时 Orchestrator 优先保障食安/合规类(严重价签>冷柜>缺货) |
-
-**协同执行示例(冷柜超温)**:
-1. Sentry @Orchestrator:"S03 冷柜超温,严重度高"
-2. Orchestrator @Diagnoser:"诊断 S03"
-3. Diagnoser @Orchestrator:"根因=压缩机故障,zscore=3.16 单店孤立"
-4. Orchestrator @Executor:"处置 S03,维修>2000 需审批"
-5. Executor @Auditor:"工单已派发,请 2h 后验证"
-6. Auditor @Orchestrator:"温度已回基线,resolved"
-
-### 5. 状态追踪(State Tracking)
-
-| AgentTeams 能力 | 店巡映射 |
-|---|---|
-| 任务生命周期管理 | TaskContext 状态机 + transitions 审计记录 |
-| 状态可见性 | 所有状态流转写入 Trace + 上下文,人类可随时进 Room 观察 |
-| Controller 调和(reconcile) | Worker 容器状态 Running/Sleeping/Stopped;任务状态 created→...→closed |
-
-**状态机**:
-```
-created → detecting → diagnosing → approving → executing → verifying → reviewing → closed
-                                                              ↓ 失败
-                                                         reopened → diagnosing(二次)
-```
-每个流转校验合法性(`_STATE_GRAPH`)并记录 actor/note/时间(可审计)。验证失败走 reopened 分支二次处置。
-
----
-
-## 二、8 步端到端闭环(赛题 1.3 必答)
-
-赛题要求:说明多 Agent 如何完成**任务输入→任务拆解→上下文传递→工具调用→结果验证→执行证据沉淀→审批与回滚→经验沉淀**。
-
-### 步骤 1 · 任务输入
-- **谁**:Sentry(接收) / Orchestrator(解析)
-- **来源**:scheduled(每小时定时巡检)/ event(IoT 超温告警推送)/ manual(运营手动触发)
-- **示例**:`demo/run_demo.py` 的 `orch.run_task("TASK-COLDCHAIN", scope={"store_ids":["S03","S07"],"data_sources":["iot"]}, trigger="event")`
-
-### 步骤 2 · 任务拆解
-- **谁**:Orchestrator(Team Leader)
-- **动作**:按严重度排序异常,逐个生成子任务 DAG(诊断→处置→验证)
-- **代码**:`orchestrator.py` 的 `for anom in ctx.anomalies` 循环
-
-### 步骤 3 · 上下文传递
-- **载体**:ContextBus + Matrix Team Room + MinIO
-- **内容**:异常清单(anomalies)→ 根因报告(root_causes)→ 处置动作(actions)→ 验证结果(validation)
-- **代码**:`context_bus.py` 的 `TaskContext` 各阶段字段
-
-### 步骤 4 · 工具调用
-- **谁**:各 Worker 调对应 Skill + MCP 工具
-- **调用链**:Skill(能力抽象层)→ MCP 工具(连接层)→ 数据源(csv 模拟 POS/WMS/IoT)
-- **示例**:Diagnoser 调 `cross-store-benchmark` → 内部调 `mcp.query_device_series` → 读 iot_coldchain.csv
-- **代码**:`skills/*.py` 内部调 `dianxun.mcp.*`
-
-### 步骤 5 · 结果验证
-- **谁**:Auditor
-- **方法**:复测核验(冷柜温度回基线/库存回升/价格三方一致)
-- **失败处理**:触发 reopened 回 Diagnoser 二次诊断处置
-- **代码**:`AuditorAgent.verify()`
-
-### 步骤 6 · 执行证据沉淀
-- **载体**:全链路 Trace(data/trace.db,生产 PolarDB)
-- **覆盖**:Skill 调用 / MCP 工具 / Agent 编排 / LLM 推理(demo 用规则引擎代理)
-- **语义**:对齐 OpenTelemetry GenAI;支持在线检索(`trace.query_trace`)与离线评估
-- **代码**:`trace.py` 的 `span()` 自动埋点
-
-### 步骤 7 · 审批与回滚
-- **审批**:维修>2000 / 补货>5000 / 批量调价>20SKU → 经 `mcp-approval` 人工确认,超时降级为"仅通知"
-- **回滚**:处置指令留快照(`apply_price_change` 的 change_id),验证失败调 `revert_price_change` 回退
-- **安全边界**:付款环节绝不由 Agent 执行(只生成待付款单)
-- **代码**:`mcp/approval.py` + `mcp/price.py`
-
-### 步骤 8 · 经验沉淀
-- **谁**:Auditor 调 `review-report` Skill
-- **动作**:生成复盘报告 → 知识条目过质量门(≥0.6 入库,<0.6 待人工)→ 写知识库
-- **飞轮**:下次 Diagnoser 的 RAG 检索命中历史经验 → 诊断更准 → "越巡越准"
-- **Skill 迭代**:输出 Skill 更新建议(误报调阈值/处置失败补假设)
-- **代码**:`skills/review_report.py` + `knowledge/store.py`
-
----
-
-## 三、验证:8 步闭环已跑通
-
-`demo/run_demo.py` 三场景全跑,每步有 Trace 证据:
-
-| 步骤 | 场景1 冷柜超温 | 场景2 缺货 | 场景3 价签 |
+| 维度 | 店巡映射 | 仓库内证据 | 平台待取证 |
 |---|---|---|---|
-| 1 输入 | event 触发 S03/S07 | scheduled S05 | scheduled S08 |
-| 2 拆解 | 2异常逐个处理 | 6异常排序 | 1异常 |
-| 3 上下文 | anomalies→root_causes→actions | 同 | 同 |
-| 4 工具 | cross-store-benchmark zscore=3.16 | restock-order-gen | apply_price_change |
-| 5 验证 | 温度 resolved | 库存 resolved | 价格 resolved |
-| 6 证据 | 9 spans Trace | 15 spans | 5 spans |
-| 7 审批 | 维修¥2500 审批 | 补货审批 | 改价审批 |
-| 8 沉淀 | 2 知识入库 | 6 知识入库 | 1 知识入库 |
+| 角色编排 | Manager → Team Leader → Sentry/Diagnoser/Executor/Auditor | `agentteams/*.yaml`、Identity/Skill/MCP 声明 | 资源实际 Running、Room 成员 |
+| 任务拆解 | Orchestrator 按五阶段分派结构化子任务 | Worker 行为契约、LocalDemo 阶段输出 | Orchestrator 的真实 @委派消息 |
+| 上下文传递 | 传 incident_id、phase、Evidence refs、request_id，不复制大原始数据 | IncidentCase/Evidence Schema、MCP Envelope | 同一任务跨 Worker 的消息链 |
+| 协同执行 | 读、诊断、写、验证职责分离；人工审批可等待/超时 | Policy、ScenarioEngine、六场景测试 | Worker 调 MCP 和人工节点的同一平台 Trace |
+| 状态追踪 | phase + incident_status + work_status + 批次/审批/工单实体状态 | StateStore、IncidentService、Trace | 平台任务状态与业务状态关联截图/导出 |
 
-**累计**:29 个 Trace span、9 条知识条目入库(飞轮资产)。运行:`python3 demo/run_demo.py`
+## 3. 五阶段业务闭环
+
+### 阶段 1：DETECT_CONTAIN - 发现与遏制
+
+1. Sentry 调用 `anomaly-detect`，查询设备上下文并检查 Evidence 质量。
+2. Orchestrator 建立 IncidentCase 和结构化上下文。
+3. 风险成立或证据不足时，立即委派 Executor 对关联商品停售、隔离。
+4. 遏制动作写入有状态 MCP，随后可重查。
+
+关键原则：遏制是可逆/受控的风险阻断，不需要等到根因完全确定。
+
+### 阶段 2：DIAGNOSE_DECIDE - 诊断与决策
+
+1. Diagnoser 分别评估设备异常和商品批次暴露。
+2. `rootcause-drilldown` 输出 Top-K 假设、支持/反证证据和下一步检查。
+3. 当前 Top-1 可以作为维修工单 fault，但不是永久真相。
+4. Policy 对维修预算、商品处置和放行逐动作判定权限与审批。
+
+关键原则：规则负责确定性约束，Agent 负责证据收集、不确定性表达和任务协调。
+
+### 阶段 3：EXECUTE - 处置执行
+
+1. Executor 创建必要审批；低预算工单不创建无意义审批。
+2. Human/ScenarioEngine 决定 approved/rejected/timeout。
+3. 获批后创建幂等工单、执行各批次处置；未获批则保持遏制并记录 owner/deadline/timeout_action。
+4. 维修商/ScenarioEngine 推进外部状态，Agent 无权伪造“done”。
+
+关键原则：审批是一个真实等待状态，不是同步布尔值；动作成功不等于事件成功。
+
+### 阶段 4：VERIFY - 独立验证
+
+1. Auditor 重新查询设备、批次、停售、审批和工单。
+2. 首次通过可生成 `release_guard`，但 Auditor 不直接解除停售。
+3. Executor 绑定审批和 verification 执行解除停售。
+4. Auditor 再次重查最终状态。
+5. 任一关键查询 `partial`、商品仍不安全或业务事实冲突时，保持遏制并回开/阻断关闭。
+
+关键原则：设备恢复、商品安全和停售解除是三个不同事实。
+
+### 阶段 5：LEARN - 复盘演进
+
+1. `IncidentService` 在独立验证通过后聚合为 `RESOLVED`。
+2. Auditor 调用 `review-report` 生成时间线、批次关联、改进项和待审知识候选。
+3. Orchestrator 只有在 LEARN 完成后请求迁移 `CLOSED`。
+4. 当前不宣称知识候选已进入生产 RAG，也不自动修改 Skill/Policy。
+
+## 4. 八项要求如何嵌入五阶段
+
+| 官方检查项 | 主要阶段 | 当前实现证据 |
+|---|---|---|
+| 任务输入 | 阶段 1 | Scenario Schema、CLI、固定 seed |
+| 任务拆解 | 阶段 1～3 | Orchestrator 阶段输出与 AgentTeams Team Leader 契约 |
+| 上下文传递 | 全阶段 | IncidentCase、Evidence refs、request_id、ContextBus |
+| 工具调用 | 阶段 1～4 | 12 个 MCP 函数、Envelope、审计 |
+| 结果验证 | 阶段 4 | outcome-verify、Auditor 重查、两次放行验证 |
+| 执行证据沉淀 | 全阶段 | Evidence、audit、隔离 Trace、M4 report |
+| 审批与回滚/补偿 | 阶段 3～4 | pending/timeout、审批绑定、停售保持、reopen；通用自动回滚未声明已实现 |
+| 经验沉淀 | 阶段 5 | review-report 和 pending knowledge candidates；真实 RAG 为 P1 未启用 |
+
+因此：
+
+- “五阶段”回答业务怎样从异常走到安全关闭；
+- “八项要求”回答这条链是否具备输入、工具、证据、审批、验证和学习；
+- 同一 Evidence 可以同时证明一个业务阶段和一个横向要求，但不能因为文档有映射就宣称平台已运行。
+
+## 5. 六个确定性场景
+
+| ID | 场景 | 协同与安全重点 | 终态 |
+|---|---|---|---|
+| A | 压缩机故障 | Top-1 工单、审批、商品分批处置、双重验证 | CLOSED |
+| B | 传感器误报 | 可疑数据降权、人工证据、两次验证后才解除停售 | CLOSED |
+| C | 门未关闭 | 现场证据纠正假设；关门后仍评估商品 | CLOSED |
+| D | 审批超时 | 不创建受控工单，owner 升级区域负责人 | CONTAINED / WAITING_EXTERNAL |
+| E | 设备恢复但商品不安全 | 拒绝关闭，回到商品处置审批 | CONTAINED / WAITING_APPROVAL |
+| F | 工单查询 partial | Auditor 不信动作回执，阻断关闭 | CONTAINED / BLOCKED |
+
+运行：
+
+```powershell
+uv run dianxun evaluate
+```
+
+当前本地结果：
+
+- 场景、Top-1、Top-3 均 6/6；
+- Evidence 关键字段 45/45；
+- 适用阶段 Trace 26/26；
+- 未授权写、未审批受控写、错误放行、错误关闭和重复副作用均为 0。
+
+这些指标来自有状态 Mock 和隔离数据库；不能换写成真实门店经营效果。
+
+## 6. 失败、等待和回开
+
+```text
+正常：
+DETECT_CONTAIN -> DIAGNOSE_DECIDE -> EXECUTE -> VERIFY -> LEARN
+      CONTAINED      CONTAINED        MITIGATING     RESOLVED   CLOSED
+
+审批超时：
+EXECUTE + WAITING_EXTERNAL + owner=regional_manager
+  └─ 保持停售/隔离，不创建未获批工单
+
+商品仍不安全：
+VERIFY -> EXECUTE + WAITING_APPROVAL
+  └─ 设备可 recovered，但批次和停售保持受控
+
+工具 partial：
+VERIFY -> EXECUTE + BLOCKED
+  └─ 记录 partial_tools，保持遏制，等待重试/人工
+```
+
+状态迁移必须通过 `IncidentService`。Executor 无权设置 `RESOLVED/CLOSED`；Auditor 只提供验证事实；Orchestrator 只请求合法迁移。
+
+## 7. 上下文和 Evidence 契约
+
+Agent 之间只传递最小必要引用：
+
+```json
+{
+  "incident_id": "INC-...",
+  "phase": "VERIFY",
+  "owner": "Auditor",
+  "evidence_refs": ["EV-..."],
+  "request_ids": ["req-..."],
+  "approval_refs": ["APR-..."],
+  "workorder_refs": ["WO-..."],
+  "expected_output": "verification_result"
+}
+```
+
+每条关键 Evidence 包含：
+
+- `incident_id`；
+- `source`；
+- `observed_at` 与 `collected_at`；
+- `request_id`；
+- `quality`；
+- `immutable_hash`。
+
+照片和原始附件只保存 URI、哈希和脱敏摘要，不进入仓库证据。
+
+## 8. 动态 AgentTeams 验收
+
+在目标环境中，只有同一 incident 同时具备以下证据，才可把 M3 从“外部待验证”改为“已实现”：
+
+1. Manager 只委派 Orchestrator；
+2. Orchestrator 分别委派四个领域 Worker；
+3. Worker 回执包含 incident_id、phase、Evidence refs 和 request_id；
+4. 至少一次真实 Worker → `dianxun-mcp` 调用；
+5. 审批等待/超时在 Room 中真实可见；
+6. Auditor 独立查询，而非复述 Executor；
+7. AgentTeams 资源和 MCP Kubernetes 资源为实际 Running；
+8. 平台消息、业务状态、MCP 返回和 Trace 可关联到同一 incident。
+
+静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足这 8 项。
