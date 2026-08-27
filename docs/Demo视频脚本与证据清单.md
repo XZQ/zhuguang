@@ -1,0 +1,169 @@
+# Demo 视频脚本与证据清单
+
+> 状态：录制脚本已完成；最终视频尚未在真实 AgentTeams 环境录制。本文用于保证录屏真实、可复现，不是视频完成证明。
+
+## 1. 交付建议
+
+录制两段短视频，总时长控制在 8～10 分钟：
+
+1. 正常闭环：场景 A 压缩机故障，约 5～6 分钟；
+2. 失败分支：场景 F 工单查询 partial（可补场景 D 审批超时），约 3～4 分钟。
+
+每段均保留屏幕时间、命令、incident_id、request_id 和关键业务状态。剪辑只能压缩等待时间，不能替换真实返回或补造平台消息。
+
+## 2. 录制前门禁
+
+```powershell
+git status --short --branch
+git rev-parse HEAD
+uv sync --group dev
+uv run dianxun evaluate
+uv run --group dev python -W error::ResourceWarning -m unittest discover -v
+Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
+```
+
+预期：
+
+- 工作区无非预期改动；
+- 六场景 6/6；
+- 全量测试 28 项通过；
+- ZIP SHA-256 为 `0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea`。
+
+## 3. 视频一：正常闭环（场景 A）
+
+### 镜头 1 - 任务与初始状态（30 秒）
+
+展示：
+
+- 场景文件名 `coldchain-compressor-failure.json`；
+- 固定 anchor time；
+- 设备、受影响批次、预期终态；
+- 说明阈值来自比赛 Demo Policy。
+
+话术：
+
+> 这不是把一条温度告警交给多个 Agent 复述。系统要关闭的是一个包含设备和商品批次的 Incident。
+
+### 镜头 2 - AgentTeams 动态委派（60 秒，外部环境必录）
+
+在 Team Room 中提交固定任务并完整展示：
+
+1. Manager 只委派 Orchestrator；
+2. Orchestrator 委派 Sentry；
+3. Sentry 回执带 incident_id、phase、Evidence refs；
+4. Orchestrator 再按阶段委派 Diagnoser、Executor、Auditor。
+
+不得用 YAML、PPT 动画或预制聊天截图替代这一镜头。若目标环境不可用，明确显示“本段未录制”，不要声称视频已完成。
+
+### 镜头 3 - 先遏制后诊断（60 秒）
+
+展示真实 MCP 返回：
+
+- `query_device_context`；
+- `apply_sales_hold`；
+- `query_inventory_batches`；
+- Top-K hypotheses。
+
+强调：
+
+- 商品先停售/隔离；
+- 当前 Top-1 是压缩机故障，但其他假设仍保留；
+- 跨店正常不是确定根因。
+
+### 镜头 4 - 审批、维修与批次处置（90 秒）
+
+展示：
+
+- 高预算工单的 pending approval；
+- Human/真实审批入口批准；
+- `create_workorder`；
+- 每个批次独立 disposition；
+- request_id、approval_id、workorder_id 和 audit_ref。
+
+不得把 ScenarioEngine 的本地决定说成真实企业审批。外部视频应使用可认证人员入口。
+
+### 镜头 5 - 两步放行与关闭（90 秒）
+
+展示：
+
+1. Auditor 首次重查设备、批次、停售、审批、工单；
+2. 生成 release guard；
+3. Executor 绑定审批和 verification 解除停售；
+4. Auditor 第二次重查；
+5. Incident 从 `RESOLVED` 进入 LEARN，再迁移 `CLOSED`。
+
+核心话术：
+
+> 设备恢复不等于商品安全；Executor 的成功回执不等于 Auditor 的业务验证。
+
+### 镜头 6 - 证据与复盘（30 秒）
+
+展示：
+
+- Trace 中五阶段；
+- Evidence 关键字段；
+- review report 和 pending knowledge candidate；
+- 明确 RAG 当前未启用。
+
+## 4. 视频二：失败分支（场景 F）
+
+### 镜头 1 - 注入 partial（30 秒）
+
+展示场景定义中 `query_workorder` 的部分失败注入和预期终态。
+
+### 镜头 2 - Auditor 独立查询（60 秒）
+
+展示 Executor 已有工单动作记录，但 Auditor 查询得到 `status=partial`。强调动作 receipt 不能替代业务事实。
+
+### 镜头 3 - 阻断关闭（60 秒）
+
+展示：
+
+- `partial_tools` 包含 `query_workorder`；
+- sales hold 仍 active；
+- incident 为 `CONTAINED`；
+- work_status 为 `BLOCKED`；
+- 没有错误 `CLOSED`。
+
+### 镜头 4 - 可选审批超时对照（45 秒）
+
+运行场景 D，展示：
+
+- approval=timeout；
+- 未创建受控维修工单；
+- owner=regional_manager；
+- 保持停售和隔离。
+
+## 5. 本地复现命令
+
+本地录制可先展示确定性业务结果，但不能替代 AgentTeams 镜头：
+
+```powershell
+uv run dianxun demo-run demo/state/scenarios/coldchain-compressor-failure.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-workorder-query-partial.json
+uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
+```
+
+## 6. 最终证据清单
+
+| 证据 | 正常视频 | 失败视频 | 来源 |
+|---|---:|---:|---|
+| Team Room 与真实委派 | 必须 | 必须 | AgentTeams 平台 |
+| Worker 真实 MCP 调用 | 必须 | 必须 | 平台/MCP 日志 |
+| incident_id 与 request_id | 必须 | 必须 | 消息、MCP、Trace |
+| 审批主体和状态 | 必须 | 可选 | 审批记录 |
+| 设备与批次分别验证 | 必须 | 必须 | Auditor 查询 |
+| 解除停售前后两次验证 | 必须 | 不适用 | verification attempts |
+| partial/timeout 保持遏制 | 不适用 | 必须 | 业务状态 |
+| 最终状态与 Scenario 预期一致 | 必须 | 必须 | IncidentCase |
+| 敏感信息脱敏 | 必须 | 必须 | 成片复核 |
+
+## 7. 成片验收
+
+- 不出现 API Key、真实顾客数据、员工手机号、照片原件或内部地址。
+- 不用旁白覆盖错误终态；画面中的状态必须与 narration 一致。
+- 不把本地 ScenarioEngine 审批说成真实人工审批。
+- 不把 YAML `state: Running` 说成集群实际 Running。
+- 不声称 RAG、自动回滚或生产云组件已经运行。
+- 提交前由第二人对照本清单逐镜头复核。
+
