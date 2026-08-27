@@ -31,6 +31,14 @@
     },
     "evidence": { "type": "array", "items": { "type": "object" } },
     "quality": { "enum": ["good", "partial"] },
+    "data_quality": {
+      "type": "object",
+      "properties": {
+        "trusted_readings": { "type": "integer", "minimum": 0 },
+        "excluded_readings": { "type": "integer", "minimum": 0 },
+        "manual_measurements": { "type": "integer", "minimum": 0 }
+      }
+    },
     "rag": {
       "type": "object",
       "required": ["status", "hits"],

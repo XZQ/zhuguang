@@ -24,8 +24,9 @@ if TYPE_CHECKING:
     from ..mcp.p0 import MCPService
 
 
-def rootcause_drilldown(anomaly: dict, benchmark: dict | None = None,
-                         trace_id: str | None = None) -> dict:
+def rootcause_drilldown(
+    anomaly: dict, benchmark: dict | None = None, trace_id: str | None = None
+) -> dict:
     """对单个异常做根因下钻。
 
     Args:
@@ -38,8 +39,12 @@ def rootcause_drilldown(anomaly: dict, benchmark: dict | None = None,
     """
     tid = trace_id or trace.new_trace_id()
     atype = anomaly.get("type", "")
-    with trace.span("rootcause-drilldown", "skill", tid,
-                    input={"anomaly_id": anomaly.get("anomaly_id"), "type": atype}) as sp:
+    with trace.span(
+        "rootcause-drilldown",
+        "skill",
+        tid,
+        input={"anomaly_id": anomaly.get("anomaly_id"), "type": atype},
+    ) as sp:
         # 按异常类型分发到不同根因逻辑
         if atype == "冷柜超温":
             report = _drill_coldchain(anomaly, benchmark, tid)
@@ -63,29 +68,35 @@ def _drill_coldchain(anomaly: dict, bench: dict | None, tid: str) -> dict:
 
     # 假设1: 设备故障(对标店同型号正常 → 排除环境)
     if bench and bench.get("conclusion") == "单店孤立异常":
-        hypotheses.append({
-            "hypothesis": "压缩机/制冷组件故障",
-            "confidence": 0.85,
-            "reasoning": (
-                f"同商圈对标店温度正常(p50={bench.get('p50')}℃),排除天气/环境因素,"
-                f"目标店 max_temp={ev.get('max_temp')}℃ 显著偏高"
-                f"(zscore={bench.get('zscore')})"
-            ),
-        })
+        hypotheses.append(
+            {
+                "hypothesis": "压缩机/制冷组件故障",
+                "confidence": 0.85,
+                "reasoning": (
+                    f"同商圈对标店温度正常(p50={bench.get('p50')}℃),排除天气/环境因素,"
+                    f"目标店 max_temp={ev.get('max_temp')}℃ 显著偏高"
+                    f"(zscore={bench.get('zscore')})"
+                ),
+            }
+        )
     else:
-        hypotheses.append({
-            "hypothesis": "疑似设备故障(需对标确认)",
-            "confidence": 0.6,
-            "reasoning": f"目标店温度 {ev.get('max_temp')}℃ 超阈值,缺对标数据无法排除环境因素",
-        })
+        hypotheses.append(
+            {
+                "hypothesis": "疑似设备故障(需对标确认)",
+                "confidence": 0.6,
+                "reasoning": f"目标店温度 {ev.get('max_temp')}℃ 超阈值,缺对标数据无法排除环境因素",
+            }
+        )
 
     # 假设2: 配置问题(目标温度设错)——检查是否集群性
     if bench and bench.get("conclusion") == "集群性异常":
-        hypotheses.append({
-            "hypothesis": "目标温度配置错误或环境温升",
-            "confidence": 0.7,
-            "reasoning": f"对标店也普遍超温(mean={bench.get('mean')}℃),倾向系统性因素",
-        })
+        hypotheses.append(
+            {
+                "hypothesis": "目标温度配置错误或环境温升",
+                "confidence": 0.7,
+                "reasoning": f"对标店也普遍超温(mean={bench.get('mean')}℃),倾向系统性因素",
+            }
+        )
 
     hypotheses.sort(key=lambda h: h["confidence"], reverse=True)
     # 联动:检查关联临期商品
@@ -125,8 +136,10 @@ def _drill_stockout(anomaly: dict, bench: dict | None, tid: str) -> dict:
     return {
         "report_id": "rc_" + uuid.uuid4().hex[:10],
         "anomaly_id": anomaly.get("anomaly_id"),
-        "store_id": anomaly["store_id"], "type": anomaly["type"],
-        "hypothesis": hypothesis, "confidence": confidence,
+        "store_id": anomaly["store_id"],
+        "type": anomaly["type"],
+        "hypothesis": hypothesis,
+        "confidence": confidence,
         "alternatives": [],
         "drilldown_path": ["门店", "SKU", "供应商", "补货周期"],
         "contributing_factors": {"sku_id": ev.get("sku_id"), "stock": ev.get("stock")},
@@ -141,14 +154,17 @@ def _drill_price(anomaly: dict, bench: dict | None, tid: str) -> dict:
     return {
         "report_id": "rc_" + uuid.uuid4().hex[:10],
         "anomaly_id": anomaly.get("anomaly_id"),
-        "store_id": anomaly["store_id"], "type": anomaly["type"],
+        "store_id": anomaly["store_id"],
+        "type": anomaly["type"],
         "hypothesis": "促销价签未同步更新/人工贴错",
         "confidence": 0.82,
         "alternatives": [{"hypothesis": "系统价下发延迟", "confidence": 0.5}],
         "drilldown_path": ["门店", "SKU", "系统价 vs 价签 vs 收银价"],
         "contributing_factors": ev,
-        "check_plan": {"next_actions": ["批量改价(>20SKU走审批)", "重新打印价签"],
-                       "validation": "三方价格一致"},
+        "check_plan": {
+            "next_actions": ["批量改价(>20SKU走审批)", "重新打印价签"],
+            "validation": "三方价格一致",
+        },
         "rag_hits": [],
     }
 
@@ -157,14 +173,17 @@ def _drill_expiry(anomaly: dict, bench: dict | None, tid: str) -> dict:
     return {
         "report_id": "rc_" + uuid.uuid4().hex[:10],
         "anomaly_id": anomaly.get("anomaly_id"),
-        "store_id": anomaly["store_id"], "type": anomaly["type"],
+        "store_id": anomaly["store_id"],
+        "type": anomaly["type"],
         "hypothesis": "动销不足导致临期积压",
         "confidence": 0.65,
         "alternatives": [],
         "drilldown_path": ["门店", "品类", "动销率"],
         "contributing_factors": anomaly.get("evidence", {}),
-        "check_plan": {"next_actions": ["贴临期标签/移待售区", "生成促销"],
-                       "validation": "商品售出或下架"},
+        "check_plan": {
+            "next_actions": ["贴临期标签/移待售区", "生成促销"],
+            "validation": "商品售出或下架",
+        },
         "rag_hits": [],
     }
 
@@ -173,9 +192,12 @@ def _drill_generic(anomaly: dict, bench: dict | None, tid: str) -> dict:
     return {
         "report_id": "rc_" + uuid.uuid4().hex[:10],
         "anomaly_id": anomaly.get("anomaly_id"),
-        "store_id": anomaly.get("store_id", ""), "type": anomaly.get("type", "未知"),
-        "hypothesis": "待进一步分析", "confidence": 0.4,
-        "alternatives": [], "drilldown_path": [],
+        "store_id": anomaly.get("store_id", ""),
+        "type": anomaly.get("type", "未知"),
+        "hypothesis": "待进一步分析",
+        "confidence": 0.4,
+        "alternatives": [],
+        "drilldown_path": [],
         "contributing_factors": anomaly.get("evidence", {}),
         "check_plan": {"next_actions": ["人工介入"], "validation": ""},
         "rag_hits": [],
@@ -206,6 +228,7 @@ def diagnose_coldchain_hypotheses(
             response = service.query_device_context(
                 store_id=store_id,
                 device_id=device_id,
+                incident_id=incident_id,
                 facets=["health", "door", "power", "temperature", "maintenance"],
                 actor="Diagnoser",
             )
@@ -236,12 +259,50 @@ def diagnose_coldchain_hypotheses(
         device = response["data"]["devices"][0]
         evidence = response["data"].get("evidence", [])
         evidence_ids = [item["evidence_id"] for item in evidence]
+        manual_evidence = service.store.list_manual_evidence(incident_id=incident_id)
+        manual_evidence_ids = [item["evidence_id"] for item in manual_evidence]
         health = device.get("health", {})
         power_on = device.get("power", {}).get("state") == "on"
         door_closed = device.get("door", {}).get("state") == "closed"
         compressor_stalled = health.get("compressor_state") in {"stalled", "fault", "off"}
+        equipment_normal = (
+            health.get("state") == "normal"
+            and health.get("compressor_state") == "running"
+            and power_on
+            and door_closed
+        )
+        readings = device.get("temperature_series", [])
+        trusted_readings = [
+            item for item in readings if str(item.get("quality", "good")).lower() == "good"
+        ]
+        questionable_readings = [item for item in readings if item not in trusted_readings]
+        maximum = float(service.policy.policy["temperature"]["refrigerated_max_celsius"])
+        trusted_over = any(float(item["temp_c"]) > maximum for item in trusted_readings)
+        questionable_over = any(float(item["temp_c"]) > maximum for item in questionable_readings)
+        manual_temperatures = [
+            float(metadata["temp_c"])
+            for item in manual_evidence
+            if (metadata := (item.get("metadata") or {})).get("temp_c") is not None
+        ]
+        manual_normal = bool(manual_temperatures) and all(
+            temperature <= maximum for temperature in manual_temperatures
+        )
 
-        compressor_confidence = 0.94 if power_on and door_closed and compressor_stalled else 0.55
+        compressor_confidence = 0.94 if power_on and door_closed and compressor_stalled else 0.16
+        door_confidence = 0.91 if not door_closed and power_on else 0.08
+        power_confidence = 0.91 if not power_on else 0.05
+        if questionable_over and equipment_normal and manual_normal and not trusted_over:
+            sensor_confidence = 0.96
+            sensor_missing: list[str] = ["backup_sensor"]
+            sensor_support = [*evidence_ids, *manual_evidence_ids]
+        elif questionable_over and equipment_normal:
+            sensor_confidence = 0.58
+            sensor_missing = ["backup_sensor", "manual_measurement"]
+            sensor_support = evidence_ids
+        else:
+            sensor_confidence = 0.14
+            sensor_missing = ["backup_sensor"]
+            sensor_support = []
         hypotheses = [
             Hypothesis(
                 hypothesis_id=f"{incident_id}:compressor-failure",
@@ -256,7 +317,7 @@ def diagnose_coldchain_hypotheses(
             Hypothesis(
                 hypothesis_id=f"{incident_id}:door-left-open",
                 label="door_left_open",
-                confidence=0.12 if door_closed else 0.72,
+                confidence=door_confidence,
                 supporting_evidence_ids=[] if door_closed else evidence_ids,
                 contradicting_evidence_ids=evidence_ids if door_closed else [],
                 missing_evidence=["door_event_history"],
@@ -265,7 +326,7 @@ def diagnose_coldchain_hypotheses(
             Hypothesis(
                 hypothesis_id=f"{incident_id}:power-failure",
                 label="power_failure",
-                confidence=0.08 if power_on else 0.8,
+                confidence=power_confidence,
                 supporting_evidence_ids=[] if power_on else evidence_ids,
                 contradicting_evidence_ids=evidence_ids if power_on else [],
                 missing_evidence=["voltage_history"],
@@ -274,19 +335,25 @@ def diagnose_coldchain_hypotheses(
             Hypothesis(
                 hypothesis_id=f"{incident_id}:sensor-fault",
                 label="sensor_fault",
-                confidence=0.22,
-                supporting_evidence_ids=[],
-                contradicting_evidence_ids=[],
-                missing_evidence=["backup_sensor", "manual_measurement"],
+                confidence=sensor_confidence,
+                supporting_evidence_ids=sensor_support,
+                contradicting_evidence_ids=evidence_ids if trusted_over else [],
+                missing_evidence=sensor_missing,
                 next_checks=["compare_backup_sensor", "request_manual_measurement"],
+                policy_notes=["suspect_readings_cannot_prove_product_exposure"],
             ),
         ]
         hypotheses.sort(key=lambda item: item.confidence, reverse=True)
         result = {
             "hypotheses": hypotheses[:3],
             "evidence": evidence,
-            "quality": "good" if evidence else "partial",
+            "quality": "partial" if questionable_readings or not evidence else "good",
             "rag": {"status": "disabled", "hits": []},
+            "data_quality": {
+                "trusted_readings": len(trusted_readings),
+                "excluded_readings": len(questionable_readings),
+                "manual_measurements": len(manual_temperatures),
+            },
         }
         sp.output = {
             "quality": result["quality"],

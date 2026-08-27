@@ -26,20 +26,22 @@ if TYPE_CHECKING:
 
 # 默认阈值(可被 thresholds 参数覆盖)
 _DEFAULTS = {
-    "cold_temp_alarm": 5.0,      # 冷柜温度告警阈值(℃)
-    "stockout_ratio": 0.0,       # 缺货: stock=0
-    "low_stock_ratio": 0.5,      # 低库存: stock < safety_stock*0.5
-    "expiry_days": 3,            # 临期阈值
+    "cold_temp_alarm": 5.0,  # 冷柜温度告警阈值(℃)
+    "stockout_ratio": 0.0,  # 缺货: stock=0
+    "low_stock_ratio": 0.5,  # 低库存: stock < safety_stock*0.5
+    "expiry_days": 3,  # 临期阈值
     "price_mismatch_eps": 0.01,  # 价签不一致容差(元)
-    "min_confidence": 0.6,       # 最低置信度过滤(防刷屏)
+    "min_confidence": 0.6,  # 最低置信度过滤(防刷屏)
 }
 
 
-def anomaly_detect(window: dict | None = None,
-                   store_ids: list[str] | None = None,
-                   data_sources: list[str] | None = None,
-                   thresholds: dict | None = None,
-                   trace_id: str | None = None) -> dict:
+def anomaly_detect(
+    window: dict | None = None,
+    store_ids: list[str] | None = None,
+    data_sources: list[str] | None = None,
+    thresholds: dict | None = None,
+    trace_id: str | None = None,
+) -> dict:
     """检测多源异常,返回带置信度的异常清单。
 
     Args:
@@ -53,8 +55,9 @@ def anomaly_detect(window: dict | None = None,
         {anomalies:[...], partial:bool, degraded:bool, checked_stores:[]}
     """
     tid = trace_id or trace.new_trace_id()
-    with trace.span("anomaly-detect", "skill", tid,
-                    input={"store_ids": store_ids, "sources": data_sources}) as sp:
+    with trace.span(
+        "anomaly-detect", "skill", tid, input={"store_ids": store_ids, "sources": data_sources}
+    ) as sp:
         cfg = {**_DEFAULTS, **(thresholds or {})}
         sources = data_sources or ["iot", "wms", "price"]
         stores = store_ids or _all_stores()
@@ -104,17 +107,19 @@ def anomaly_detect(window: dict | None = None,
 def _all_stores() -> list[str]:
     """从门店主数据取全部门店。"""
     from ..mcp._csv_store import load_csv
+
     rows = load_csv("stores.csv")
     return [r["store_id"] for r in rows] if rows else [f"S{i:02d}" for i in range(1, 13)]
 
 
-def _new_anomaly(store_id: str, atype: str, severity: str, confidence: float,
-                 evidence: dict, matched_rule: str) -> dict:
+def _new_anomaly(
+    store_id: str, atype: str, severity: str, confidence: float, evidence: dict, matched_rule: str
+) -> dict:
     return {
         "anomaly_id": "an_" + uuid.uuid4().hex[:10],
         "store_id": store_id,
-        "type": atype,                # 缺货/临期/价签/冷柜/低库存
-        "severity": severity,         # 低/中/高/严重
+        "type": atype,  # 缺货/临期/价签/冷柜/低库存
+        "severity": severity,  # 低/中/高/严重
         "confidence": round(confidence, 2),
         "evidence": evidence,
         "matched_rule": matched_rule,
@@ -139,13 +144,23 @@ def _check_coldchain(store_id: str, cfg: dict, tid: str) -> list[dict] | None:
     over = [t for t in temps if t > cfg["cold_temp_alarm"]]
     over_ratio = len(over) / len(temps) if temps else 1.0
     sev = "严重" if over_ratio > 0.5 else "高"
-    return [_new_anomaly(
-        store_id, "冷柜超温", sev, 0.92,
-        {"device_id": d.get("device_id", f"FROST-{store_id}"), "max_temp": max_temp,
-         "avg_temp": d.get("avg_temp"), "over_ratio": round(over_ratio, 2),
-         "threshold": cfg["cold_temp_alarm"], "window": "近14天"},
-        "cold_temp_continuous_over_threshold",
-    )]
+    return [
+        _new_anomaly(
+            store_id,
+            "冷柜超温",
+            sev,
+            0.92,
+            {
+                "device_id": d.get("device_id", f"FROST-{store_id}"),
+                "max_temp": max_temp,
+                "avg_temp": d.get("avg_temp"),
+                "over_ratio": round(over_ratio, 2),
+                "threshold": cfg["cold_temp_alarm"],
+                "window": "近14天",
+            },
+            "cold_temp_continuous_over_threshold",
+        )
+    ]
 
 
 def _check_inventory(store_id: str, cfg: dict, tid: str) -> list[dict] | None:
@@ -156,25 +171,38 @@ def _check_inventory(store_id: str, cfg: dict, tid: str) -> list[dict] | None:
     out: list[dict] = []
     for r in res["rows"]:
         if r["stock"] <= 0:
-            out.append(_new_anomaly(
-                store_id, "缺货", "高", 0.95,
-                {"sku_id": r["sku_id"], "stock": 0, "safety_stock": r["safety_stock"]},
-                "stock_zero",
-            ))
+            out.append(
+                _new_anomaly(
+                    store_id,
+                    "缺货",
+                    "高",
+                    0.95,
+                    {"sku_id": r["sku_id"], "stock": 0, "safety_stock": r["safety_stock"]},
+                    "stock_zero",
+                )
+            )
         elif r["stock"] < r["safety_stock"] * cfg["low_stock_ratio"]:
-            out.append(_new_anomaly(
-                store_id, "低库存", "中", 0.75,
-                {"sku_id": r["sku_id"], "stock": r["stock"],
-                 "safety_stock": r["safety_stock"]},
-                "stock_below_half_safety",
-            ))
+            out.append(
+                _new_anomaly(
+                    store_id,
+                    "低库存",
+                    "中",
+                    0.75,
+                    {"sku_id": r["sku_id"], "stock": r["stock"], "safety_stock": r["safety_stock"]},
+                    "stock_below_half_safety",
+                )
+            )
         if r["days_to_expire"] <= cfg["expiry_days"] and r["cat"] in ("乳品", "鲜食"):
-            out.append(_new_anomaly(
-                store_id, "临期", "中", 0.8,
-                {"sku_id": r["sku_id"], "days_to_expire": r["days_to_expire"],
-                 "cat": r["cat"]},
-                "near_expiry",
-            ))
+            out.append(
+                _new_anomaly(
+                    store_id,
+                    "临期",
+                    "中",
+                    0.8,
+                    {"sku_id": r["sku_id"], "days_to_expire": r["days_to_expire"], "cat": r["cat"]},
+                    "near_expiry",
+                )
+            )
     return out
 
 
@@ -189,18 +217,28 @@ def _check_price(store_id: str, cfg: dict, tid: str) -> list[dict] | None:
         # 收银价高于标价 = 严重(顾客被多收钱,合规风险)
         if abs(r["pos_price"] - r["tag_price"]) > eps:
             sev = "严重" if r["pos_price"] > r["tag_price"] else "中"
-            out.append(_new_anomaly(
-                store_id, "价签不一致", sev, 0.88,
-                {"sku_id": r["sku_id"], "system_price": r["system_price"],
-                 "tag_price": r["tag_price"], "pos_price": r["pos_price"]},
-                "price_tag_pos_mismatch",
-            ))
+            out.append(
+                _new_anomaly(
+                    store_id,
+                    "价签不一致",
+                    sev,
+                    0.88,
+                    {
+                        "sku_id": r["sku_id"],
+                        "system_price": r["system_price"],
+                        "tag_price": r["tag_price"],
+                        "pos_price": r["pos_price"],
+                    },
+                    "price_tag_pos_mismatch",
+                )
+            )
     return out
 
 
 def detect_coldchain_event(
     *,
     service: MCPService,
+    incident_id: str,
     store_id: str,
     device_id: str,
     trace_id: str,
@@ -223,6 +261,7 @@ def detect_coldchain_event(
             device_response = service.query_device_context(
                 store_id=store_id,
                 device_id=device_id,
+                incident_id=incident_id,
                 actor="Sentry",
             )
             device_span.output = {
@@ -239,6 +278,7 @@ def detect_coldchain_event(
             batch_response = service.query_inventory_batches(
                 store_id=store_id,
                 device_id=device_id,
+                incident_id=incident_id,
                 actor="Sentry",
             )
             batch_span.output = {

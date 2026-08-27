@@ -35,6 +35,7 @@ def outcome_verify(
                 "query_device_context",
                 device_id=case.affected_assets[0],
                 store_id=case.store_id,
+                incident_id=incident_id,
                 actor="Auditor",
             ),
             "batches": _query(
@@ -42,6 +43,7 @@ def outcome_verify(
                 trace_id,
                 "query_inventory_batches",
                 batch_ids=case.affected_batches,
+                incident_id=incident_id,
                 actor="Auditor",
             ),
             "sales_hold": _query(
@@ -68,9 +70,16 @@ def outcome_verify(
         }
 
         checks = _evaluate(case, responses, policy, service)
-        for subject in ("device", "batches", "sales_hold", "approval", "audit"):
-            check = checks[subject]
+        for subject, check in checks.items():
             evidence_ids = _evidence_ids(responses.get(subject, {}))
+            if subject == "release_guard":
+                evidence_ids = sorted(
+                    {
+                        evidence_id
+                        for response in responses.values()
+                        for evidence_id in _evidence_ids(response)
+                    }
+                )
             verification = Verification(
                 verification_id=f"{incident_id}:verify:{subject}",
                 subject=subject,
@@ -79,9 +88,7 @@ def outcome_verify(
                 observed_value=check["observed"],
                 evidence_ids=evidence_ids,
                 result=(
-                    VerificationResult.PASSED
-                    if check["passed"]
-                    else VerificationResult.FAILED
+                    VerificationResult.PASSED if check["passed"] else VerificationResult.FAILED
                 ),
                 verifier="Auditor",
                 verified_at=service.store.now(),
@@ -91,10 +98,23 @@ def outcome_verify(
         failed = [name for name, check in checks.items() if not check["passed"]]
         if not failed:
             result = "verified"
+        elif failed == ["sales_hold"] and checks.get("release_guard", {}).get("passed"):
+            result = "release_ready"
         elif checks["device"]["passed"] and not checks["batches"]["passed"]:
             result = "manual_review"
         else:
             result = "reopened"
+        partial_tools = sorted(
+            name
+            for name, response in responses.items()
+            if response.get("partial") or not response.get("ok")
+        )
+        evidence = [
+            item
+            for response in responses.values()
+            if response.get("ok")
+            for item in response["data"].get("evidence", [])
+        ]
         refreshed = incidents.recompute(incident_id)
         output = {
             "incident_id": incident_id,
@@ -109,6 +129,8 @@ def outcome_verify(
                 }
             ),
             "next_actions": _next_actions(result, failed),
+            "partial_tools": partial_tools,
+            "evidence": evidence,
             "incident_status": refreshed.incident_status.value,
         }
         sp.output = {
@@ -136,7 +158,11 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
     device_rows = _rows(responses["device"], "devices")
     device = device_rows[0] if device_rows else {}
     readings = sorted(device.get("temperature_series", []), key=lambda item: item["observed_at"])
-    latest = readings[-recovery_samples:]
+    trusted_readings = [
+        item for item in readings if str(item.get("quality", "good")).lower() == "good"
+    ]
+    excluded_readings = [item for item in readings if item not in trusted_readings]
+    latest = trusted_readings[-recovery_samples:]
     workorders = _rows(responses["workorder"], "workorders")
     device_passed = (
         len(latest) == recovery_samples
@@ -165,9 +191,7 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
         for item in batches
     )
     approvals = _rows(responses["approval"], "approvals")
-    approved_actions = {
-        item["action_id"] for item in approvals if item.get("status") == "approved"
-    }
+    approved_actions = {item["action_id"] for item in approvals if item.get("status") == "approved"}
     required_approval_actions = {
         action.action_id for action in case.actions if action.approval_id is not None
     }
@@ -176,7 +200,7 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
     )
     audit_rows = service.store.list_audit_log(incident_id=case.incident_id)
     audit_passed = bool(audit_rows) and all(row.get("request_id") for row in audit_rows)
-    return {
+    checks = {
         "device": {
             "passed": device_passed,
             "expected": {
@@ -185,7 +209,12 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
                 "health": "normal",
                 "workorder": "done_with_evidence",
             },
-            "observed": {"device": device, "latest_samples": latest, "workorders": workorders},
+            "observed": {
+                "device": device,
+                "latest_samples": latest,
+                "excluded_readings": excluded_readings,
+                "workorders": workorders,
+            },
         },
         "batches": {
             "passed": batches_passed,
@@ -211,6 +240,27 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
             "observed": {"entry_count": len(audit_rows)},
         },
     }
+    released_batches = [item for item in batches if item.get("disposition") == "released"]
+    if released_batches:
+        release_hold_states = {
+            item["batch_id"]: hold_by_batch.get(item["batch_id"], {}).get("status")
+            for item in released_batches
+        }
+        checks["release_guard"] = {
+            "passed": (
+                device_passed
+                and batches_passed
+                and approvals_passed
+                and audit_passed
+                and all(status in {"active", "released"} for status in release_hold_states.values())
+            ),
+            "expected": {
+                "device_batches_approvals_audit": "passed",
+                "released_batch_hold_state": ["active", "released"],
+            },
+            "observed": {"released_batch_holds": release_hold_states},
+        }
+    return checks
 
 
 def _rows(response: dict[str, Any], key: str) -> list[dict[str, Any]]:
@@ -228,6 +278,8 @@ def _evidence_ids(response: dict[str, Any]) -> list[str]:
 def _next_actions(result: str, failed: list[str]) -> list[str]:
     if result == "verified":
         return ["enter_learn"]
+    if result == "release_ready":
+        return ["request_release_approval", "executor_release_sales_hold", "verify_again"]
     if result == "manual_review":
         return ["keep_sales_hold", "request_batch_disposition_approval"]
     return ["keep_sales_hold", "re_diagnose", *[f"recheck_{item}" for item in failed]]

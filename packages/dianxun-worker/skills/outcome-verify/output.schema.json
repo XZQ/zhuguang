@@ -12,7 +12,7 @@
   ],
   "properties": {
     "incident_id": { "type": "string" },
-    "result": { "enum": ["verified", "reopened", "manual_review"] },
+    "result": { "enum": ["verified", "release_ready", "reopened", "manual_review"] },
     "checks": {
       "type": "object",
       "additionalProperties": {
@@ -28,6 +28,8 @@
     "failed_conditions": { "type": "array", "items": { "type": "string" } },
     "evidence_refs": { "type": "array", "items": { "type": "string" } },
     "next_actions": { "type": "array", "items": { "type": "string" } },
+    "partial_tools": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "object" } },
     "incident_status": { "enum": ["OPEN", "CONTAINED", "RESOLVED", "CLOSED"] }
   }
 }

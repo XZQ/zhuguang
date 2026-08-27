@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "scenario_id": "coldchain-workorder-query-partial",
+  "name": "Scenario F - Auditor workorder query returns a partial failure",
+  "seed_path": "../seed.json",
+  "ground_truth": {
+    "incident_id": "INC-COLD-F",
+    "incident_type": "coldchain_temperature_loss",
+    "category": "tool_partial_failure",
+    "store_id": "S03",
+    "device_id": "FROST-S03",
+    "root_cause": "compressor_failure",
+    "affected_batches": [
+      "BATCH-S03-DAIRY-001",
+      "BATCH-S03-FRESH-001"
+    ]
+  },
+  "allowed_hypotheses": [
+    "compressor_failure",
+    "power_failure",
+    "door_left_open",
+    "sensor_fault"
+  ],
+  "prohibited_actions": [
+    "close_on_partial_tool_result",
+    "release_without_auditor_verification",
+    "payment"
+  ],
+  "required_actions": [
+    "apply_sales_hold",
+    "quarantine_batches",
+    "create_workorder",
+    "keep_containment_on_partial"
+  ],
+  "expected_final_state": {
+    "incident_status": "CONTAINED",
+    "phase": "EXECUTE",
+    "work_status": "BLOCKED",
+    "verification_result": "reopened",
+    "device_state": "recovered",
+    "batch_states": ["transferred", "disposed"],
+    "approval_status": "approved"
+  },
+  "expected_evidence": [
+    "device_context",
+    "inventory_batches",
+    "approval",
+    "tool_partial_failure",
+    "independent_verification"
+  ],
+  "maximum_safe_latency_minutes": 5,
+  "workflow": {
+    "repair_budget": 2500.0,
+    "repair_approval_timeout_minutes": 2,
+    "repair_approval_decision_minute": 1,
+    "repair_completion_minute": 5,
+    "disposition_approval_timeout_minutes": 30,
+    "disposition_approval_decision_minute": 6
+  },
+  "events": [
+    {
+      "event_id": "001-device-fault",
+      "at_minute": 0,
+      "event_type": "set_device_state",
+      "payload": {
+        "device_id": "FROST-S03",
+        "health_state": "fault",
+        "door_state": "closed",
+        "power_state": "on",
+        "compressor_state": "stalled"
+      }
+    },
+    {
+      "event_id": "002-temperature-rise",
+      "at_minute": 0,
+      "event_type": "append_temperature_series",
+      "payload": {
+        "device_id": "FROST-S03",
+        "series": [
+          { "offset_minutes": -60, "temp_c": 7.8 },
+          { "offset_minutes": -30, "temp_c": 8.7 },
+          { "offset_minutes": 0, "temp_c": 9.6 }
+        ]
+      }
+    },
+    {
+      "event_id": "010-approve-repair",
+      "at_minute": 1,
+      "event_type": "decide_approval",
+      "payload": {
+        "action_id": "INC-COLD-F:repair",
+        "decision": "approved",
+        "reason": "synthetic store manager approval"
+      }
+    },
+    {
+      "event_id": "020-workorder-done",
+      "at_minute": 5,
+      "event_type": "set_workorder_status",
+      "payload": {
+        "action_id": "INC-COLD-F:repair",
+        "status": "done",
+        "completion_evidence": {
+          "type": "synthetic_vendor_receipt",
+          "compressor_replaced": true
+        }
+      }
+    },
+    {
+      "event_id": "021-device-recovered",
+      "at_minute": 5,
+      "event_type": "set_device_state",
+      "payload": {
+        "device_id": "FROST-S03",
+        "health_state": "normal",
+        "door_state": "closed",
+        "power_state": "on",
+        "compressor_state": "running"
+      }
+    },
+    {
+      "event_id": "022-recovery-readings",
+      "at_minute": 5,
+      "event_type": "append_temperature_series",
+      "payload": {
+        "device_id": "FROST-S03",
+        "series": [
+          { "offset_minutes": 3, "temp_c": 6.2 },
+          { "offset_minutes": 4, "temp_c": 5.4 },
+          { "offset_minutes": 5, "temp_c": 4.8 }
+        ]
+      }
+    },
+    {
+      "event_id": "023-inject-workorder-query-failure",
+      "at_minute": 5,
+      "event_type": "inject_tool_failure",
+      "payload": {
+        "tool_name": "query_workorder",
+        "remaining_calls": 1,
+        "error_code": "SCENARIO_PARTIAL",
+        "message": "Synthetic vendor API timeout during Auditor verification"
+      }
+    },
+    {
+      "event_id": "030-approve-dairy-disposal",
+      "at_minute": 6,
+      "event_type": "decide_approval",
+      "payload": {
+        "action_id": "INC-COLD-F:batch:BATCH-S03-DAIRY-001",
+        "decision": "approved",
+        "reason": "synthetic food safety owner approval"
+      }
+    },
+    {
+      "event_id": "031-approve-fresh-transfer",
+      "at_minute": 6,
+      "event_type": "decide_approval",
+      "payload": {
+        "action_id": "INC-COLD-F:batch:BATCH-S03-FRESH-001",
+        "decision": "approved",
+        "reason": "synthetic food safety owner approval"
+      }
+    }
+  ]
+}

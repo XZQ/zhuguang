@@ -5,7 +5,7 @@ description: Rank evidence-backed cold-chain root-cause hypotheses and the next 
 
 # rootcause-drilldown
 
-- Version: `1.0.0`
+- Version: `1.1.0`
 - Priority: P0
 - Agent: Diagnoser
 - Entrypoint: `dianxun.skills.diagnose_coldchain_hypotheses`
@@ -26,11 +26,13 @@ Produce evidence-linked Top-K hypotheses with supporting evidence, contradiction
 
 ## AgentTeams execution
 
-1. Call `dianxun-mcp.query_device_context` with temperature, health, door, power, and maintenance facets.
+1. Call `dianxun-mcp.query_device_context` with temperature, reading quality, health, door, power, and maintenance facets; use incident-bound manual evidence when available.
 2. Rank at most three hypotheses; for each, separate supporting evidence, contradictions, missing evidence, and next checks.
 3. Reference MCP evidence IDs and request IDs. Do not claim a cause is confirmed merely because it ranks first.
 4. Do not call write tools or claim a RAG hit without an actual retrieval result.
+5. Treat `suspect` or `bad` temperature readings as a sensor-quality hypothesis, not as proof of product exposure; require independent corroboration.
 
 ## Change log
 
+- 1.1.0: ranks sensor, door, power, and compressor hypotheses from reading quality and manual corroboration.
 - 1.0.0: replaces single-root-cause output with evidence-linked Top-K hypotheses.

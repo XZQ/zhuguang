@@ -38,6 +38,7 @@ def stable_hash(value: Any) -> str:
 @dataclass(slots=True)
 class Evidence:
     evidence_id: str
+    incident_id: str | None
     type: str
     source: str
     observed_at: str
@@ -60,8 +61,10 @@ class Evidence:
         quality: str,
         freshness: str,
         request_id: str,
+        incident_id: str | None = None,
     ) -> Evidence:
         immutable = {
+            "incident_id": incident_id,
             "type": evidence_type,
             "source": source,
             "observed_at": observed_at,
@@ -73,6 +76,7 @@ class Evidence:
         }
         return cls(
             evidence_id=f"ev_{stable_hash(immutable)[:16]}",
+            incident_id=incident_id,
             type=evidence_type,
             source=source,
             observed_at=observed_at,

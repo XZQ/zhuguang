@@ -109,6 +109,63 @@ class ColdChainWorkflowTests(unittest.TestCase):
             {field: second["incident"][field] for field in fields},
         )
 
+    def test_scenario_b_requires_two_verifications_before_controlled_release(self) -> None:
+        adapter, result = self.run_scenario("coldchain-sensor-false-positive.json")
+        case = result["incident"]
+        self.assertTrue(result["acceptance"]["passed"])
+        self.assertEqual(
+            "sensor_fault", result["phases"]["DIAGNOSE_DECIDE"]["hypotheses"][0]["label"]
+        )
+        self.assertEqual(
+            ["release_ready", "verified"],
+            [item["result"] for item in result["verification"]["attempts"]],
+        )
+        workorder = adapter.store.list_workorders(incident_id=case["incident_id"])[0]
+        self.assertEqual("sensor_fault", workorder["fault"])
+        holds = adapter.store.list_sales_holds(incident_id=case["incident_id"])
+        self.assertTrue(all(item["status"] == "released" for item in holds))
+        self.assertTrue(
+            all(item["verification_id"].endswith(":verify:release_guard") for item in holds)
+        )
+
+    def test_scenario_c_ranks_door_fault_and_still_assesses_goods(self) -> None:
+        adapter, result = self.run_scenario("coldchain-door-left-open.json")
+        diagnosis = result["phases"]["DIAGNOSE_DECIDE"]
+        self.assertTrue(result["acceptance"]["passed"])
+        self.assertEqual("door_left_open", diagnosis["hypotheses"][0]["label"])
+        recommendations = {
+            item["recommendation"] for item in diagnosis["risk_assessment"]["exposure_assessment"]
+        }
+        self.assertEqual({"disposed", "transferred"}, recommendations)
+        workorder = adapter.store.list_workorders(incident_id=result["incident"]["incident_id"])[0]
+        self.assertEqual("door_left_open", workorder["fault"])
+
+    def test_scenario_f_partial_workorder_query_blocks_closure(self) -> None:
+        adapter, result = self.run_scenario("coldchain-workorder-query-partial.json")
+        case = result["incident"]
+        self.assertTrue(result["acceptance"]["passed"])
+        self.assertEqual(["workorder"], result["verification"]["partial_tools"])
+        self.assertEqual("reopened", result["verification"]["result"])
+        self.assertNotEqual(IncidentStatus.CLOSED, case["incident_status"])
+        holds = adapter.store.list_sales_holds(incident_id=case["incident_id"])
+        self.assertTrue(all(item["status"] == "active" for item in holds))
+
+    def test_incident_bound_evidence_has_all_gate_fields(self) -> None:
+        _, result = self.run_scenario("coldchain-compressor-failure.json")
+        evidence = result["verification"]["evidence"]
+        required = {
+            "incident_id",
+            "source",
+            "observed_at",
+            "collected_at",
+            "request_id",
+            "quality",
+            "immutable_hash",
+        }
+        self.assertTrue(evidence)
+        self.assertTrue(all(required <= item.keys() for item in evidence))
+        self.assertTrue(all(item["incident_id"] == "INC-COLD-A" for item in evidence))
+
 
 if __name__ == "__main__":
     unittest.main()
