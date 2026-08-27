@@ -19,6 +19,10 @@ git rev-parse HEAD
 uv sync --group dev
 uv run dianxun evaluate
 uv run --group dev python -W error::ResourceWarning -m unittest discover -v
+uv run --group dev ruff check .
+uv run --group dev ruff format --check .
+uv run python 04-模拟数据生成脚本.py --check
+uv run python scripts/build_worker_package.py
 Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 ```
 
@@ -26,7 +30,8 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 - 工作区无非预期改动；
 - 六场景 6/6；
-- 全量测试 28 项通过；
+- 全量测试 42 项通过；
+- Ruff、格式、模拟数据和确定性 Worker 构建均通过；
 - ZIP SHA-256 为 `0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea`。
 
 ## 3. 视频一：正常闭环（场景 A）
@@ -156,6 +161,7 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 | 解除停售前后两次验证 | 必须 | 不适用 | verification attempts |
 | partial/timeout 保持遏制 | 不适用 | 必须 | 业务状态 |
 | 最终状态与 Scenario 预期一致 | 必须 | 必须 | IncidentCase |
+| 模型/runtime 与用量披露 | 必须 | 必须 | 平台配置/账单；Key 必须遮挡，无法取得账单则标记未测量 |
 | 敏感信息脱敏 | 必须 | 必须 | 成片复核 |
 
 ## 7. 成片验收
@@ -165,5 +171,6 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 - 不把本地 ScenarioEngine 审批说成真实人工审批。
 - 不把 YAML `state: Running` 说成集群实际 Running。
 - 不声称 RAG、自动回滚或生产云组件已经运行。
+- 不把本地 M4 结果说成 `qwen3.5-plus` 模型效果；模型 Key 必须遮挡，费用无真实账单时明确“未测量”。
+- 当前 P0 为自定义 Skill；组委会口径未确认或官方 Skill 未真实调用前，不说“官方用云 Skill 已满足”。
 - 提交前由第二人对照本清单逐镜头复核。
-

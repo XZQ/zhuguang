@@ -27,7 +27,8 @@
 - 唯一事实入口：`IncidentService + StateStore + PolicyEngine`。
 - 本地入口：`LocalDemoAdapter`，用于确定性回归和评测。
 - AgentTeams 入口：1 个 Framework Manager + 5 个业务 Worker，通过同一 Skill/MCP 契约接入。
-- 工程口径：6 个 P0 Skill；12 个 P0 MCP 函数；AgentTeams `v1.2.3`。
+- 工程口径：6 个 P0 Skill；12 个 P0 MCP 函数；AgentTeams `v1.2.3`；目标运行时声明 `qwenpaw + qwen3.5-plus`。
+- 模型边界：本地确定性 Demo/M4 不调用 LLM；凭证仅运行时注入，费用取决于提供商，替换兼容模型后必须重跑结构化输出、工具调用、延迟、费用和安全门禁。
 - 明确边界：POS/WMS/IoT/审批/维修商当前均为有状态 Mock；平台动态协同待外部验证。
 
 ## P4 多 Agent 协同：五个角色形成职责分离
@@ -70,6 +71,7 @@
 - 每个 P0 Skill 都有 `SKILL.md`、manifest、输入/输出 Schema、成功/失败样例和版本记录。
 - Worker ZIP 只包含 6 个 P0 Skill，避免把规划能力冒充已交付能力。
 - 当前 SHA-256：`0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea`。
+- 当前 P0 均为自定义可复用 Skill；官网与手册 FAQ 对“阿里云官方用云 Skills”的措辞冲突，提交前需组委会确认，不能自行标记为完全满足。
 
 ## P8 MCP 与安全：五查、七动作、四道闸
 
@@ -86,7 +88,7 @@
 - Evidence 关键字段完整 45/45。
 - 适用阶段 Trace 覆盖 26/26。
 - 未授权业务写、未审批受控写、错误放行、错误关闭、重复副作用均为 0。
-- 全量自动化测试 28 项通过。
+- 全量自动化测试 42 项通过。
 - 标注口径：固定 seed + 隔离 SQLite/Trace + 有状态 Mock；不是生产 KPI 或真实经营收益。
 
 ## P10 交付与边界：仓库内可复现，平台证据不冒充
@@ -94,6 +96,7 @@
 - 已交付：代码、六场景、评测报告、6 个 P0 Skill 契约、12 MCP、Worker ZIP、AgentTeams/Kubernetes YAML、HTML 演示稿和 PDF。
 - 可复现命令：`uv run dianxun evaluate`。
 - 外部待验证：Team Room、Worker 委派、Kubernetes Running、同一任务的平台 MCP/Trace。
+- 外部待确认：是否必须真实使用阿里云官方用云 Skill；若是，必须增加必要的真实调用、失败处理和证据，不能装饰性堆叠。
 - 结束句：不是让 Agent 更会“说已完成”，而是让事件只有在证据闭环后才能关闭。
 - 仓库：[github.com/XZQ/zhuguang](https://github.com/XZQ/zhuguang)
 

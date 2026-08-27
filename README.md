@@ -13,7 +13,7 @@
 | Evidence 关键字段完整率 | 45/45 | 同上 |
 | 适用阶段 Trace 覆盖率 | 26/26 | 同上 |
 | 未授权写、未审批受控写、错误放行、错误关闭、重复副作用 | 均为 0 | 同上 |
-| 自动化测试 | 28 项通过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
+| 自动化测试 | 42 项通过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
 | AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
 
 上述指标来自固定 seed 和有状态 Mock，只证明仓库内确定性行为，不代表真实门店收益、监管合规或生产可用性。
@@ -26,6 +26,8 @@
 - MCP：P0 固定 12 个函数，包括 5 个查询和 7 个受控动作。
 - 业务核心：`IncidentService` 是阶段迁移和事件状态的唯一事实入口。
 - 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
+- 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
+- Skill：当前 6 个 P0 均为自定义可复用 Skill；官网与参赛手册 FAQ 对“阿里云官方用云 Skills”的措辞存在差异，状态为“待组委会确认”。
 
 机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md)。
 
@@ -131,6 +133,13 @@ uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 
 AgentTeams 版本固定为 `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），CRD 为 `agentteams.io/v1beta1`，Manager/Worker runtime 为 `qwenpaw`。构建、部署和动态验收步骤见 [`agentteams/README.md`](agentteams/README.md)。
 
+### 模型、凭证、费用与替代边界
+
+- `qwen3.5-plus` 只用于目标 AgentTeams Manager/Worker 的任务拆解、结构化协作和工具编排；本地 `uv run dianxun evaluate` 不调用它，因此 6/6 和 42 项测试不是模型效果指标。
+- 模型凭证只允许由目标 AgentTeams/Kubernetes 运行时通过 Secret、环境变量或外部密钥系统注入；仓库 YAML、Worker ZIP、Trace 和视频不得包含 Key。
+- 模型费用取决于实际提供商、输入/输出 Token、调用次数和部署资源；当前没有真实平台运行账单，不能给出已验证成本。
+- 可替换为 AgentTeams/QwenPaw 支持且满足结构化输出与工具调用要求的兼容模型。迁移通常不改领域模型和 MCP 契约，但必须调整 `spec.model`/提供商凭证，并重跑结构化输出、工具调用、延迟、费用与安全回归。
+
 ## 仓库结构
 
 ```text
@@ -161,6 +170,9 @@ docs/                      实现状态、比赛核对和真实场景差距
 | [`06-Agent-Identity清单.md`](06-Agent-Identity清单.md) | 1 Manager + 5 业务 Agent 的身份边界 |
 | [`07-多Agent协同设计.md`](07-多Agent协同设计.md) | 五阶段与赛事八项要求映射 |
 | [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) | 完整改造方案与里程碑记录 |
+| [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md) | 仓库事实、里程碑状态和证据边界 |
+| [`docs/比赛要求符合性矩阵.md`](docs/比赛要求符合性矩阵.md) | 官网/手册逐项核对、缺口和可提交口径 |
+| [`docs/真实门店差距与演进路线.md`](docs/真实门店差距与演进路线.md) | 与真实门店、HACCP、人员和企业系统的差距及灰度路线 |
 | [`docs/Demo视频脚本与证据清单.md`](docs/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
 
 ## 安全与已知边界
@@ -169,6 +181,7 @@ docs/                      实现状态、比赛核对和真实场景差距
 - POS、库存、IoT、审批和维修商均为有状态 Mock；没有真实企业接口、真实人员 SLA 或真实食品处置授权。
 - RAG、自动回滚、Nacos、Higress、RocketMQ、PolarDB 和 LoongSuite 属于规划或生产替换方向，当前不声明已实现。
 - AgentTeams YAML、Worker ZIP 和本地 MCP 兼容烟测不等于真实多 Agent 动态协同。
+- 当前 P0 仅使用自定义 Skill；“官方用云 Skills”是否为硬门槛仍需组委会书面确认。
 - 不提交 API Key、真实审批身份、顾客数据、照片原件、运行时数据库或含敏感内容的 Trace。
 
 ## License

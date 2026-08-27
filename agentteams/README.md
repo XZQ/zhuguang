@@ -35,9 +35,17 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内当前有 5 项 AgentTeams artifact 契约测试；整个项目的 28 项自动化测试和六场景评测也已通过。这些结果验证静态包、业务核心和本地 MCP 行为，不验证平台动态委派。
+仓库内当前有 5 项 AgentTeams artifact 契约测试；整个项目的 42 项自动化测试和六场景评测也已通过。这些结果验证静态包、业务核心和本地 MCP 行为，不验证平台动态委派或 `qwen3.5-plus` 模型效果。
 
-## 2. 构建和部署 MCP
+## 2. 模型、凭证、费用与 Skill 类型
+
+- Manager 与 5 个 Worker 的 YAML 均声明 `qwenpaw + qwen3.5-plus`；模型只用于目标 AgentTeams 的任务拆解、结构化协作和工具编排。本地 Demo/M4 不调用 LLM。
+- 模型/API 凭证必须由 AgentTeams/Kubernetes 运行时通过 Secret、环境变量或外部密钥系统注入，不得写入 YAML、ZIP、日志、Trace 或视频。
+- 费用取决于实际提供商、输入/输出 Token、调用次数和集群资源；当前没有真实平台账单，动态验收时应保存脱敏用量/费用证据，无法取得则标记“未测量”。
+- 可换为 AgentTeams/QwenPaw 支持且满足结构化输出和工具调用要求的兼容模型；需修改 `spec.model`/提供商配置，并重跑工具调用、结构化回执、延迟、费用和安全回归。
+- 当前 Worker 包中的 6 个 P0 均为自定义可复用 Skill。官网与手册 FAQ 对“阿里云官方用云 Skills”的措辞冲突待组委会确认；未取得结论或真实官方 Skill 调用证据前，不标记为完全满足。
+
+## 3. 构建和部署 MCP
 
 Docker build context 必须是仓库根目录：
 
@@ -65,7 +73,7 @@ kubectl -n dianxun get pod,service,pvc
 http://dianxun-mcp.dianxun.svc.cluster.local/mcp
 ```
 
-## 3. 应用 AgentTeams 资源
+## 4. 应用 AgentTeams 资源
 
 先安装并运行官方 AgentTeams `v1.2.3`。官方稳定入口是 `install/agentteams-apply.sh -f <yaml>`；当前 `agt apply` 不支持 `--recursive`、`--dry-run`、`--prune` 或 `--watch`。
 
@@ -83,7 +91,7 @@ bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/team.yaml
 
 Team 必须最后创建，因为它引用 5 个已存在的 Worker CR。Windows 可在 WSL 执行上面的官方 Bash 入口，或使用官方 `install/agentteams-import.ps1 -File <yaml>` 转发 YAML。
 
-## 4. 动态烟测与证据
+## 5. 动态烟测与证据
 
 ```bash
 docker exec agentteams-manager agt get managers dianxun-manager -o json
@@ -100,6 +108,7 @@ kubectl -n dianxun get deployment,pod,service,pvc
 4. 至少一条 Worker 通过 `dianxun-mcp` 产生真实工具返回；
 5. Auditor 重新查询设备与商品状态，而非复述 Executor；
 6. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致。
+7. 记录实际 model/runtime、脱敏的凭证来源类型和可获得的 Token/费用数据；不得显示 Key。
 
 建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/Demo视频脚本与证据清单.md`](../docs/Demo视频脚本与证据清单.md)。
 

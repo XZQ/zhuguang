@@ -11,6 +11,7 @@
 - 5 个业务 Agent，其中 Orchestrator 是 Team Leader，另外 4 个为领域 Worker；
 - 6 个 P0 Skill 进入确定性 Worker ZIP；
 - Worker 通过 `dianxun-mcp` 访问同一有状态业务世界。
+- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
 
 仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
 
@@ -111,6 +112,7 @@ uv run dianxun evaluate
 - 场景、Top-1、Top-3 均 6/6；
 - Evidence 关键字段 45/45；
 - 适用阶段 Trace 26/26；
+- 全量自动化测试 42 项通过；
 - 未授权写、未审批受控写、错误放行、错误关闭和重复副作用均为 0。
 
 这些指标来自有状态 Mock 和隔离数据库；不能换写成真实门店经营效果。
@@ -179,3 +181,9 @@ Agent 之间只传递最小必要引用：
 8. 平台消息、业务状态、MCP 返回和 Trace 可关联到同一 incident。
 
 静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足这 8 项。
+
+## 9. 模型与 Skill 生态边界
+
+- `qwen3.5-plus` 只负责目标 AgentTeams 中的任务拆解、结构化协作和工具编排；Policy、权限、幂等和事件终态仍由确定性业务核心约束。
+- 模型凭证仅运行时注入，费用随提供商和实际 Token/资源用量变化；当前没有真实平台账单。兼容模型替换后需重跑结构化输出、工具调用、延迟、费用和安全回归。
+- 当前 P0 均为自定义可复用 Skill。官网与手册 FAQ 对“阿里云官方用云 Skills”的措辞冲突尚待组委会确认；取得书面结论或真实官方 Skill 调用证据前，不标记为完全满足。
