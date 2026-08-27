@@ -42,8 +42,11 @@ def main(argv: list[str] | None = None) -> int:
                 scope=definition["scope"],
                 trigger=definition["trigger"],
             )
-    if result.get("result") == "no_anomaly":
-        print(f"Supplementary scenario {args.scenario} found no expected anomaly", file=sys.stderr)
+    if result.get("result") in {"no_anomaly", "failed"}:
+        print(
+            f"Supplementary scenario {args.scenario} did not close safely: {result.get('result')}",
+            file=sys.stderr,
+        )
         return 1
     print(f"Supplementary scenario {args.scenario} completed")
     return 0

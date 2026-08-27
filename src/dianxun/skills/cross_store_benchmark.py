@@ -13,16 +13,18 @@
 """
 
 from __future__ import annotations
+
 import statistics
-from typing import Any
 
-from .. import mcp
-from .. import trace
+from .. import mcp, trace
 
 
-def cross_store_benchmark(store_id: str, metric: str,
-                          benchmark_dimensions: dict | None = None,
-                          trace_id: str | None = None) -> dict:
+def cross_store_benchmark(
+    store_id: str,
+    metric: str,
+    benchmark_dimensions: dict | None = None,
+    trace_id: str | None = None,
+) -> dict:
     """跨店横向对标。
 
     Args:
@@ -35,8 +37,9 @@ def cross_store_benchmark(store_id: str, metric: str,
         BenchmarkReport
     """
     tid = trace_id or trace.new_trace_id()
-    with trace.span("cross-store-benchmark", "skill", tid,
-                    input={"store_id": store_id, "metric": metric}) as sp:
+    with trace.span(
+        "cross-store-benchmark", "skill", tid, input={"store_id": store_id, "metric": metric}
+    ) as sp:
         dims = benchmark_dimensions or _auto_dims(store_id)
         target_val, comparable_stores = _gather(store_id, metric, dims)
 
@@ -47,9 +50,13 @@ def cross_store_benchmark(store_id: str, metric: str,
 
         if len(comparable_stores) < 3:
             report = {
-                "target_store": store_id, "metric": metric, "comparable_count": 0,
-                "conclusion": "无基准", "fallback": "按固定阈值兜底",
-                "degraded": True, "evidence": [],
+                "target_store": store_id,
+                "metric": metric,
+                "comparable_count": 0,
+                "conclusion": "无基准",
+                "fallback": "按固定阈值兜底",
+                "degraded": True,
+                "evidence": [],
             }
             sp.output = report
             return report
@@ -73,7 +80,9 @@ def cross_store_benchmark(store_id: str, metric: str,
 
         # 结论判定
         if metric == "temp":
-            conclusion = "单店孤立异常" if zscore > 2 else ("集群性异常" if mean > 5 else "行业普遍正常")
+            conclusion = (
+                "单店孤立异常" if zscore > 2 else ("集群性异常" if mean > 5 else "行业普遍正常")
+            )
         else:
             # 稀疏异常(缺货/价签):目标店显著高于对标 → 单店孤立;多家偏高 → 集群性
             if target_val > p95 and target_val > 0:
@@ -92,11 +101,15 @@ def cross_store_benchmark(store_id: str, metric: str,
             "target_value": round(target_val, 2),
             "comparable_stores": [c["store_id"] for c in comparable_stores],
             "comparable_count": len(comparable_stores),
-            "p50": p50, "p90": p90, "p95": p95,
+            "p50": p50,
+            "p90": p90,
+            "p95": p95,
             "mean": round(mean, 2),
             "zscore": zscore,
             "conclusion": conclusion,
-            "evidence": [{"store_id": c["store_id"], "value": c["value"]} for c in comparable_stores],
+            "evidence": [
+                {"store_id": c["store_id"], "value": c["value"]} for c in comparable_stores
+            ],
         }
         sp.output = {"conclusion": conclusion, "zscore": zscore}
         return report
@@ -105,6 +118,7 @@ def cross_store_benchmark(store_id: str, metric: str,
 def _auto_dims(store_id: str) -> dict:
     """从门店主数据自动推断对标维度(同商圈+同店型)。"""
     from ..mcp._csv_store import load_csv
+
     rows = load_csv("stores.csv")
     me = next((r for r in rows if r["store_id"] == store_id), None)
     if not me:
@@ -115,6 +129,7 @@ def _auto_dims(store_id: str) -> dict:
 def _gather(store_id: str, metric: str, dims: dict) -> tuple[float, list[dict]]:
     """收集目标店与对标店的指标值。返回 (目标值, 对标店列表)。"""
     from ..mcp._csv_store import load_csv
+
     rows = load_csv("stores.csv")
     # 筛对标店:满足 dims 全部条件,排除自己
     comparable = []
@@ -131,7 +146,9 @@ def _gather(store_id: str, metric: str, dims: dict) -> tuple[float, list[dict]]:
         return _compute_metric(sid, metric)
 
     target = _metric_of(store_id)
-    comp_vals = [{"store_id": c["store_id"], "value": _metric_of(c["store_id"])} for c in comparable]
+    comp_vals = [
+        {"store_id": c["store_id"], "value": _metric_of(c["store_id"])} for c in comparable
+    ]
     return target, comp_vals
 
 
@@ -160,7 +177,9 @@ def _compute_metric(store_id: str, metric: str) -> float:
         res = mcp.query_stock(store_id)
         if res["degraded"] or not res["rows"]:
             return 0.0
-        exp = sum(1 for r in res["rows"] if r["days_to_expire"] <= 3 and r["cat"] in ("乳品", "鲜食"))
+        exp = sum(
+            1 for r in res["rows"] if r["days_to_expire"] <= 3 and r["cat"] in ("乳品", "鲜食")
+        )
         return exp / len(res["rows"])
     return 0.0
 

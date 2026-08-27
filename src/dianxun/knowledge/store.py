@@ -5,6 +5,7 @@
 """
 
 from __future__ import annotations
+
 import json
 import re
 import sqlite3
@@ -31,8 +32,9 @@ def init() -> None:
     _conn().close()
 
 
-def add(title: str, body: str, tags: list[str], confidence: float,
-        trace_id: str = "") -> int | None:
+def add(
+    title: str, body: str, tags: list[str], confidence: float, trace_id: str = ""
+) -> int | None:
     """新增知识条目。去重(按 title);敏感信息脱敏由调用方处理。"""
     c = _conn()
     try:
@@ -56,7 +58,8 @@ def search(query: str, topk: int = 5) -> list[dict]:
     c = _conn()
     try:
         rows = c.execute(
-            "SELECT title,body,tags_json,confidence,trace_id FROM knowledge ORDER BY confidence DESC"
+            "SELECT title,body,tags_json,confidence,trace_id "
+            "FROM knowledge ORDER BY confidence DESC"
         ).fetchall()
     finally:
         c.close()
@@ -67,10 +70,17 @@ def search(query: str, topk: int = 5) -> list[dict]:
         hay = (title + " " + body + " " + tags_json).lower()
         score = sum(1 for t in terms if t and t in hay) * conf
         if score > 0:
-            scored.append({"title": title, "body": body,
-                           "tags": json.loads(tags_json), "confidence": conf,
-                           "trace_id": tid, "score": round(score, 3),
-                           "source": "knowledge_db"})
+            scored.append(
+                {
+                    "title": title,
+                    "body": body,
+                    "tags": json.loads(tags_json),
+                    "confidence": conf,
+                    "trace_id": tid,
+                    "score": round(score, 3),
+                    "source": "knowledge_db",
+                }
+            )
     scored.sort(key=lambda x: x["score"], reverse=True)
     return scored[:topk]
 
@@ -79,10 +89,19 @@ def all_entries() -> list[dict]:
     c = _conn()
     try:
         rows = c.execute(
-            "SELECT title,body,tags_json,confidence,trace_id,created_at FROM knowledge ORDER BY created_at DESC"
+            "SELECT title,body,tags_json,confidence,trace_id,created_at "
+            "FROM knowledge ORDER BY created_at DESC"
         ).fetchall()
     finally:
         c.close()
-    return [{"title": t, "body": b, "tags": json.loads(tj), "confidence": cf,
-             "trace_id": tid, "created_at": ca}
-            for t, b, tj, cf, tid, ca in rows]
+    return [
+        {
+            "title": t,
+            "body": b,
+            "tags": json.loads(tj),
+            "confidence": cf,
+            "trace_id": tid,
+            "created_at": ca,
+        }
+        for t, b, tj, cf, tid, ca in rows
+    ]

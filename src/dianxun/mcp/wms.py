@@ -6,9 +6,8 @@
 """
 
 from __future__ import annotations
-from typing import Any
 
-from ._csv_store import load_csv, ToolResult
+from ._csv_store import ToolResult, load_csv
 
 _STOCK: list[dict] | None = None
 
@@ -31,12 +30,14 @@ def query_stock(store_id: str, sku_ids: list[str] | None = None) -> ToolResult:
             continue
         if sku_ids and r.get("sku_id") not in sku_ids:
             continue
-        out.append({
-            **r,
-            "stock": int(r["stock"]),
-            "safety_stock": int(r["safety_stock"]),
-            "days_to_expire": int(r["days_to_expire"]),
-        })
+        out.append(
+            {
+                **r,
+                "stock": int(r["stock"]),
+                "safety_stock": int(r["safety_stock"]),
+                "days_to_expire": int(r["days_to_expire"]),
+            }
+        )
     return ToolResult(out)
 
 

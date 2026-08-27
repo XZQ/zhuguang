@@ -34,19 +34,30 @@ from .workorder import confirm_done, create_workorder, track_workorder
 
 __all__ = [
     # pos
-    "query_sales", "query_realtime_sales",
+    "query_sales",
+    "query_realtime_sales",
     # wms
-    "query_stock", "query_expiry",
+    "query_stock",
+    "query_expiry",
     # iot
-    "query_device_series", "list_devices",
+    "query_device_series",
+    "list_devices",
     # price
-    "query_price", "apply_price_change", "revert_price_change",
+    "query_price",
+    "apply_price_change",
+    "revert_price_change",
     # im
-    "send_notice", "send_approval_request",
+    "send_notice",
+    "send_approval_request",
     # approval
-    "create_approval", "check_status", "cancel_approval",
+    "create_approval",
+    "check_status",
+    "cancel_approval",
     # workorder
-    "create_workorder", "track_workorder", "confirm_done",
+    "create_workorder",
+    "track_workorder",
+    "confirm_done",
     # stateful P0 entrypoints
-    "MCPService", "default_service",
+    "MCPService",
+    "default_service",
 ]

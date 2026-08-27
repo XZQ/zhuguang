@@ -12,31 +12,41 @@
 """
 
 from __future__ import annotations
+
 import json
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 # 任务状态机:对应赛题 1.3 端到端闭环的 8 步
 # created → detecting(巡检) → diagnosing(诊断) → approving(审批) →
 # executing(处置) → verifying(验证) → reviewing(复盘) → closed
 # 异常分支: any → reopened(验证失败回到诊断)
 TaskState = Literal[
-    "created", "detecting", "diagnosing", "approving",
-    "executing", "verifying", "reviewing", "closed", "reopened",
+    "created",
+    "detecting",
+    "diagnosing",
+    "approving",
+    "executing",
+    "verifying",
+    "reviewing",
+    "closed",
+    "reopened",
+    "failed",
 ]
 
 _STATE_GRAPH: dict[str, list[str]] = {
-    "created": ["detecting"],
-    "detecting": ["diagnosing"],
-    "diagnosing": ["approving"],
-    "approving": ["executing", "closed"],   # 审批驳回可直收 closed
-    "executing": ["verifying"],
-    "verifying": ["reviewing", "reopened", "diagnosing"],  # 验证失败回诊断;多异常继续下一个
-    "reopened": ["diagnosing"],
-    "reviewing": ["closed"],
+    "created": ["detecting", "failed"],
+    "detecting": ["diagnosing", "closed", "failed"],
+    "diagnosing": ["approving", "failed"],
+    "approving": ["executing", "closed", "failed"],  # 审批驳回可直收 closed
+    "executing": ["verifying", "failed"],
+    "verifying": ["reviewing", "reopened", "diagnosing", "failed"],
+    "reopened": ["diagnosing", "failed"],
+    "reviewing": ["closed", "failed"],
     "closed": [],
+    "failed": [],
 }
 
 
@@ -50,19 +60,20 @@ class TaskContext:
       Executor 读 root_causes,写 actions + approvals
       Auditor  读 actions,写 validation + review
     """
+
     task_id: str
     trace_id: str
-    trigger: str                       # 触发来源: scheduled | event | manual
-    scope: dict = field(default_factory=dict)          # 检测范围 {store_ids, window...}
+    trigger: str  # 触发来源: scheduled | event | manual
+    scope: dict = field(default_factory=dict)  # 检测范围 {store_ids, window...}
     state: TaskState = "created"
     # 各阶段产物(共享上下文总线)
-    anomalies: list[dict] = field(default_factory=list)       # 巡检产出
-    root_causes: list[dict] = field(default_factory=list)     # 诊断产出
-    actions: list[dict] = field(default_factory=list)         # 处置动作 + 审批记录
-    validation: dict | None = None                            # 验证结果
-    review: dict | None = None                                # 复盘报告
+    anomalies: list[dict] = field(default_factory=list)  # 巡检产出
+    root_causes: list[dict] = field(default_factory=list)  # 诊断产出
+    actions: list[dict] = field(default_factory=list)  # 处置动作 + 审批记录
+    validation: dict | None = None  # 验证结果
+    review: dict | None = None  # 复盘报告
     # 审计
-    transitions: list[dict] = field(default_factory=list)     # 状态流转记录
+    transitions: list[dict] = field(default_factory=list)  # 状态流转记录
     created_at: str = field(default_factory=lambda: datetime.now().isoformat(timespec="seconds"))
 
     def transition(self, new_state: TaskState, actor: str, note: str = "") -> None:
@@ -70,10 +81,15 @@ class TaskContext:
         allowed = _STATE_GRAPH.get(self.state, [])
         if new_state not in allowed:
             raise ValueError(f"非法状态流转: {self.state} → {new_state}(合法: {allowed})")
-        self.transitions.append({
-            "from": self.state, "to": new_state, "actor": actor,
-            "note": note, "at": datetime.now().isoformat(timespec="seconds"),
-        })
+        self.transitions.append(
+            {
+                "from": self.state,
+                "to": new_state,
+                "actor": actor,
+                "note": note,
+                "at": datetime.now().isoformat(timespec="seconds"),
+            }
+        )
         self.state = new_state
 
     def snapshot(self) -> dict:
@@ -94,10 +110,12 @@ class ContextBus:
     def __init__(self) -> None:
         self._tasks: dict[str, TaskContext] = {}
 
-    def create(self, task_id: str, trace_id: str, trigger: str = "scheduled",
-               scope: dict | None = None) -> TaskContext:
-        ctx = TaskContext(task_id=task_id, trace_id=trace_id, trigger=trigger,
-                          scope=scope or {})
+    def create(
+        self, task_id: str, trace_id: str, trigger: str = "scheduled", scope: dict | None = None
+    ) -> TaskContext:
+        if task_id in self._tasks:
+            raise ValueError(f"任务 {task_id} 已存在,不能覆盖原上下文")
+        ctx = TaskContext(task_id=task_id, trace_id=trace_id, trigger=trigger, scope=scope or {})
         self._tasks[task_id] = ctx
         return ctx
 

@@ -12,26 +12,31 @@
 """
 
 from __future__ import annotations
+
 import uuid
-from typing import Any
 
 from .. import mcp, trace
 
 
-def price_tag_check(store_id: str,
-                    sku_list: list[str] | None = None,
-                    check_time: str | None = None,
-                    trace_id: str | None = None) -> dict:
+def price_tag_check(
+    store_id: str,
+    sku_list: list[str] | None = None,
+    check_time: str | None = None,
+    trace_id: str | None = None,
+) -> dict:
     """价签三方一致性校验 + 促销合规。"""
     tid = trace_id or trace.new_trace_id()
-    with trace.span("price-tag-check", "skill", tid,
-                    input={"store_id": store_id}) as sp:
+    with trace.span("price-tag-check", "skill", tid, input={"store_id": store_id}) as sp:
         res = mcp.query_price(store_id, sku_list)
         if res["degraded"]:
             # 降级:仅系统价 vs 收银价(价签系统无响应)
             sp.output = {"degraded": True}
-            return {"degraded": True, "error": res["error"],
-                    "mismatches": [], "compliance_summary": {"note": "价签源降级,未完整校验"}}
+            return {
+                "degraded": True,
+                "error": res["error"],
+                "mismatches": [],
+                "compliance_summary": {"note": "价签源降级,未完整校验"},
+            }
 
         mismatches = []
         eps = 0.01
@@ -51,14 +56,16 @@ def price_tag_check(store_id: str,
             else:
                 severity = "中"
                 violation = "系统价与价签/收银不一致"
-            mismatches.append({
-                "sku_id": r["sku_id"],
-                "system_price": r["system_price"],
-                "tag_price": r["tag_price"],
-                "pos_price": r["pos_price"],
-                "severity": severity,
-                "rule_violation": violation,
-            })
+            mismatches.append(
+                {
+                    "sku_id": r["sku_id"],
+                    "system_price": r["system_price"],
+                    "tag_price": r["tag_price"],
+                    "pos_price": r["pos_price"],
+                    "severity": severity,
+                    "rule_violation": violation,
+                }
+            )
 
         # 批量>20 需人工审批改价
         batch_needs_approval = len(mismatches) > 20
@@ -74,6 +81,8 @@ def price_tag_check(store_id: str,
                 "batch_price_change_needs_approval": batch_needs_approval,
             },
         }
-        sp.output = {"mismatch_count": len(mismatches),
-                     "severe": report["compliance_summary"]["severe_count"]}
+        sp.output = {
+            "mismatch_count": len(mismatches),
+            "severe": report["compliance_summary"]["severe_count"],
+        }
         return report

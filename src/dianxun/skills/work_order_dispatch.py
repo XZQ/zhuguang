@@ -22,31 +22,42 @@ if TYPE_CHECKING:
     from ..mcp.p0 import MCPService
 
 
-def work_order_dispatch(store_id: str, equipment_id: str, fault_summary: str,
-                        severity: str, budget_estimate: float,
-                        approval_id: str | None = None,
-                        trace_id: str | None = None) -> dict:
+def work_order_dispatch(
+    store_id: str,
+    equipment_id: str,
+    fault_summary: str,
+    severity: str,
+    budget_estimate: float,
+    approval_id: str | None = None,
+    trace_id: str | None = None,
+) -> dict:
     """生成并派发维修工单。
 
     金额 > 2000 元:调用方须先取得 approval_id(经 mcp-approval 审批)。
     """
     tid = trace_id or trace.new_trace_id()
-    with trace.span("work-order-dispatch", "skill", tid,
-                    input={"store_id": store_id, "equipment": equipment_id,
-                           "budget": budget_estimate}) as sp:
+    with trace.span(
+        "work-order-dispatch",
+        "skill",
+        tid,
+        input={"store_id": store_id, "equipment": equipment_id, "budget": budget_estimate},
+    ) as sp:
         # 安全边界:高额未审批 → 拒绝派发,要求先审批
         if budget_estimate > 2000 and not approval_id:
             sp.output = {"blocked": True, "reason": "需审批"}
             return {
-                "blocked": True, "reason": "金额>2000元,需先经审批(approval_id)",
+                "blocked": True,
+                "reason": "金额>2000元,需先经审批(approval_id)",
                 "next_action": "调用 mcp-approval.create_approval 后重试",
             }
 
         # 幂等 key:用 trace+store+equipment 组合
         idem = f"{tid}:{store_id}:{equipment_id}"
         res = mcp.create_workorder(
-            store_id=store_id, equipment_id=equipment_id,
-            fault=fault_summary, budget=budget_estimate,
+            store_id=store_id,
+            equipment_id=equipment_id,
+            fault=fault_summary,
+            budget=budget_estimate,
             idempotency_key=idem,
         )
         if res["degraded"]:
@@ -55,14 +66,21 @@ def work_order_dispatch(store_id: str, equipment_id: str, fault_summary: str,
 
         wo = res["rows"][0] if res["rows"] and isinstance(res["rows"][0], dict) else res["rows"]
         # 通知店长 + 服务商
-        mcp.send_notice("dingtalk_ops", "workorder_dispatched", {
-            "title": f"维修工单 {wo['workorder_id']} 已派发",
-            "store": store_id, "equipment": equipment_id,
-            "budget": budget_estimate, "sla": wo.get("sla_deadline"),
-            "approval": approval_id,
-        })
+        mcp.send_notice(
+            "dingtalk_ops",
+            "workorder_dispatched",
+            {
+                "title": f"维修工单 {wo['workorder_id']} 已派发",
+                "store": store_id,
+                "equipment": equipment_id,
+                "budget": budget_estimate,
+                "sla": wo.get("sla_deadline"),
+                "approval": approval_id,
+            },
+        )
         result = {
-            **wo, "approval_id": approval_id,
+            **wo,
+            "approval_id": approval_id,
             "dispatched": True,
             "note": "工单已派发服务商并通知店长;付款单待服务商完工后人工处理",
         }

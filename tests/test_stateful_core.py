@@ -32,6 +32,23 @@ class StatefulCoreTests(unittest.TestCase):
         self.seed = json.loads(SEED_PATH.read_text(encoding="utf-8"))
         self.store.initialize(self.seed)
         self.service = MCPService(self.store, PolicyEngine(DEFAULT_POLICY_PATH))
+        self.incidents = IncidentService(self.store)
+        for incident_id in ("INC-M1-HOLD", "INC-M1-APPROVAL", "INC-M1-TIMEOUT"):
+            case = IncidentCase.create(
+                incident_id=incident_id,
+                tenant_id="demo",
+                store_id="S03",
+                incident_type=IncidentType.COLDCHAIN_TEMPERATURE_LOSS,
+                severity=Severity.CRITICAL,
+                trigger="test",
+                anchor_time=self.store.now(),
+            )
+            case.affected_assets = ["FROST-S03"]
+            case.affected_batches = [
+                "BATCH-S03-DAIRY-001",
+                "BATCH-S03-FRESH-001",
+            ]
+            self.incidents.create(case)
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()

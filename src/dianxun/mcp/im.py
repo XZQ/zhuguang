@@ -7,9 +7,9 @@
 """
 
 from __future__ import annotations
+
 import time
 from collections import deque
-from typing import Any
 
 from ._csv_store import ToolResult
 
@@ -21,8 +21,12 @@ def _emit(channel: str, content: dict) -> dict:
     """模拟发送:落内存 outbox 并打印(demo 可见)。"""
     global _SENT_COUNT
     _SENT_COUNT += 1
-    msg = {"message_id": f"im_{int(time.time()*1000)}_{_SENT_COUNT}",
-           "channel": channel, "content": content, "ts": time.time()}
+    msg = {
+        "message_id": f"im_{int(time.time() * 1000)}_{_SENT_COUNT}",
+        "channel": channel,
+        "content": content,
+        "ts": time.time(),
+    }
     _OUTBOX.append(msg)
     # demo 可见性
     print(f"  📨 [IM→{channel}] {content.get('title', content)[:80]}")
@@ -31,17 +35,29 @@ def _emit(channel: str, content: dict) -> dict:
 
 def send_notice(channel: str, template_id: str, payload: dict) -> ToolResult:
     """发送通知。channel 如 dingtalk_ops / feishu_alert。"""
-    content = {"template_id": template_id, "title": payload.get("title", "店巡通知"),
-               "body": payload}
+    content = {
+        "template_id": template_id,
+        "title": payload.get("title", "店巡通知"),
+        "body": payload,
+    }
     return ToolResult(_emit(channel, content))
 
 
-def send_approval_request(channel: str, title: str, content: str,
-                           approve_url: str = "#") -> ToolResult:
+def send_approval_request(
+    channel: str, title: str, content: str, approve_url: str = "#"
+) -> ToolResult:
     """发送审批请求(给人工审批人)。"""
-    return ToolResult(_emit(channel, {
-        "title": title, "body": content, "approve_url": approve_url, "type": "approval",
-    }))
+    return ToolResult(
+        _emit(
+            channel,
+            {
+                "title": title,
+                "body": content,
+                "approve_url": approve_url,
+                "type": "approval",
+            },
+        )
+    )
 
 
 def outbox() -> list[dict]:

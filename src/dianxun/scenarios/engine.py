@@ -3,15 +3,35 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..domain.enums import WorkOrderStatus
 from ..state import StateStore
+from ..validation import validate_json
 
 if TYPE_CHECKING:
     from ..mcp.p0 import MCPService
+
+_ROOT = Path(__file__).resolve().parents[3]
+_SHARE = Path(sys.prefix) / "share" / "dianxun"
+_SCENARIO_SCHEMA = (
+    _ROOT / "schemas" / "scenario.v1.schema.json"
+    if (_ROOT / "schemas" / "scenario.v1.schema.json").exists()
+    else _SHARE / "schemas" / "scenario.v1.schema.json"
+)
+_EVENT_REQUIRED_FIELDS = {
+    "set_device_state": {"device_id"},
+    "append_device_reading": {"device_id", "temp_c"},
+    "append_temperature_series": {"device_id", "series"},
+    "set_batch_safety": {"batch_id", "safe_for_sale"},
+    "set_workorder_status": {"status"},
+    "decide_approval": {"decision"},
+    "record_manual_evidence": {"incident_id", "evidence_type"},
+    "inject_tool_failure": {"tool_name"},
+}
 
 
 class ScenarioEngine:
@@ -31,7 +51,16 @@ class ScenarioEngine:
         self._validate(self.scenario)
 
     def reset(self) -> str:
-        seed_path = (self.path.parent / self.scenario["seed_path"]).resolve()
+        scenario_path = self.path.resolve()
+        seed_value = Path(self.scenario["seed_path"])
+        if seed_value.is_absolute():
+            raise ValueError("Scenario seed_path must be relative")
+        seed_path = (scenario_path.parent / seed_value).resolve()
+        allowed_root = scenario_path.parent.parent
+        if not seed_path.is_relative_to(allowed_root):
+            raise ValueError("Scenario seed_path escapes the scenario data directory")
+        if not seed_path.is_file():
+            raise ValueError(f"Scenario seed file does not exist: {seed_path}")
         digest = self.store.initialize_from_file(seed_path, reset=True)
         self.store.set_meta("scenario_id", self.scenario["scenario_id"])
         self.apply_due_events()
@@ -159,23 +188,62 @@ class ScenarioEngine:
 
     @staticmethod
     def _validate(scenario: dict[str, Any]) -> None:
-        required = {
-            "schema_version",
-            "scenario_id",
-            "name",
-            "seed_path",
-            "ground_truth",
-            "allowed_hypotheses",
-            "prohibited_actions",
-            "required_actions",
-            "expected_final_state",
-            "expected_evidence",
-            "maximum_safe_latency_minutes",
-            "events",
+        schema = json.loads(_SCENARIO_SCHEMA.read_text(encoding="utf-8"))
+        errors = validate_json(scenario, schema, path="scenario")
+        if errors:
+            raise ValueError("Invalid scenario: " + "; ".join(errors[:10]))
+        ground_truth = scenario["ground_truth"]
+        required_ground_truth = {
+            "store_id",
+            "device_id",
+            "root_cause",
+            "affected_batches",
         }
-        missing = sorted(required - scenario.keys())
-        if missing:
-            raise ValueError(f"Scenario missing fields: {missing}")
+        missing_ground_truth = sorted(required_ground_truth - ground_truth.keys())
+        if missing_ground_truth:
+            raise ValueError(f"Scenario ground_truth missing fields: {missing_ground_truth}")
+        if not isinstance(ground_truth["affected_batches"], list) or not all(
+            isinstance(item, str) and item for item in ground_truth["affected_batches"]
+        ):
+            raise ValueError("Scenario ground_truth.affected_batches must be non-empty strings")
+        if not ground_truth["affected_batches"]:
+            raise ValueError("Scenario ground_truth.affected_batches must not be empty")
         event_ids = [event["event_id"] for event in scenario["events"]]
         if len(event_ids) != len(set(event_ids)):
             raise ValueError("Scenario event_id values must be unique")
+        for event in scenario["events"]:
+            payload = event["payload"]
+            event_type = event["event_type"]
+            missing = sorted(_EVENT_REQUIRED_FIELDS[event_type] - payload.keys())
+            if missing:
+                raise ValueError(
+                    f"Scenario event {event['event_id']} missing payload fields: {missing}"
+                )
+            direct_reference = {
+                "set_workorder_status": "workorder_id",
+                "decide_approval": "approval_id",
+            }.get(event_type)
+            if direct_reference and not (payload.get("action_id") or payload.get(direct_reference)):
+                required_reference = (
+                    "workorder_id or action_id"
+                    if event_type == "set_workorder_status"
+                    else "approval_id or action_id"
+                )
+                raise ValueError(
+                    f"Scenario event {event['event_id']} requires {required_reference}"
+                )
+            if event_type == "append_temperature_series":
+                series = payload["series"]
+                if not isinstance(series, list) or not series:
+                    raise ValueError(
+                        f"Scenario event {event['event_id']} temperature series must not be empty"
+                    )
+                if any(
+                    not isinstance(item, dict)
+                    or "offset_minutes" not in item
+                    or "temp_c" not in item
+                    for item in series
+                ):
+                    raise ValueError(
+                        f"Scenario event {event['event_id']} has an invalid temperature series"
+                    )

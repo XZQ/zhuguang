@@ -11,6 +11,7 @@
 """
 
 from __future__ import annotations
+
 import html
 from datetime import datetime
 from pathlib import Path
@@ -68,7 +69,8 @@ def _doc(tasks: list[dict], kb: list[dict]) -> str:
     gen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     total_spans = sum(len(t["report"].get("timeline", [])) for t in tasks)
     total_kb = len(kb)
-    return f"""<!DOCTYPE html>
+    return (
+        f"""<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>店巡 Agent · 闭环复盘报告</title>
@@ -79,23 +81,26 @@ def _doc(tasks: list[dict], kb: list[dict]) -> str:
 {_header(gen, len(tasks), total_spans, total_kb, tasks)}
 {_flow()}
 {_kpis(tasks)}
-""" + "\n".join(_task_section(i, t) for i, t in enumerate(tasks, 1)) + f"""
+"""
+        + "\n".join(_task_section(i, t) for i, t in enumerate(tasks, 1))
+        + f"""
 {_knowledge(kb)}
 <footer><p>店巡 Agent · GOAI Agent Infra 赛道</p><p class="muted">经验飞轮驱动「越巡越准」· Powered by Data-Dense Dashboard Design System</p></footer>
 </div></body></html>"""
+    )
 
 
 def _header(gen, n_tasks, n_spans, n_kb, tasks) -> str:
     return f"""
 <header class="hero">
-  <div class="hero-mark">{_icon('activity', 22)}<span>DIANXUN</span></div>
+  <div class="hero-mark">{_icon("activity", 22)}<span>DIANXUN</span></div>
   <h1>店巡 Agent · 端到端闭环复盘报告</h1>
   <p class="sub">连锁便利店多店异常闭环巡检系统 · AgentTeams 协同基座</p>
   <div class="hero-meta">
-    <span>{_icon('clock',13)} {gen}</span>
-    <span>{_icon('layers',13)} {n_tasks} 任务</span>
-    <span>{_icon('activity',13)} {n_spans} Trace spans</span>
-    <span>{_icon('sparkles',13)} {n_kb} 知识沉淀</span>
+    <span>{_icon("clock", 13)} {gen}</span>
+    <span>{_icon("layers", 13)} {n_tasks} 任务</span>
+    <span>{_icon("activity", 13)} {n_spans} Trace spans</span>
+    <span>{_icon("sparkles", 13)} {n_kb} 知识沉淀</span>
   </div>
 </header>"""
 
@@ -111,7 +116,7 @@ def _flow() -> str:
         )
         if i < 8:
             items.append('<div class="step-arrow">›</div>')
-    return f'<section><h2>{_icon("layers",18)} 8 步端到端闭环 <span class="tag-ref">赛题 1.3</span></h2><div class="flow">{" ".join(items)}</div><p class="hint">验证失败 → reopened → 二次诊断处置(状态机分支)</p></section>'
+    return f'<section><h2>{_icon("layers", 18)} 8 步端到端闭环 <span class="tag-ref">赛题 1.3</span></h2><div class="flow">{" ".join(items)}</div><p class="hint">验证失败 → reopened → 二次诊断处置(状态机分支)</p></section>'
 
 
 def _kpis(tasks) -> str:
@@ -120,7 +125,13 @@ def _kpis(tasks) -> str:
     for t in tasks:
         for a in t["ctx"].get("anomalies", []):
             sev[a.get("severity", "低")] = sev.get(a.get("severity", "低"), 0) + 1
-        resolved += len([1 for v in (t["ctx"].get("validation", {}) or {}).get("by_anomaly", {}).values() if v.get("result") == "resolved"])
+        resolved += len(
+            [
+                1
+                for v in (t["ctx"].get("validation", {}) or {}).get("by_anomaly", {}).values()
+                if v.get("result") == "resolved"
+            ]
+        )
     cards = [
         ("闭环任务", len(tasks), "layers", "var(--primary)"),
         ("处置异常", sum(sev.values()), "activity", "var(--info)"),
@@ -132,7 +143,7 @@ def _kpis(tasks) -> str:
         f'<div class="kpi-num" style="color:{c}">{v}</div><div class="kpi-lbl">{lbl}</div></div>'
         for lbl, v, ic, c in cards
     )
-    return f'<section><h2>{_icon("activity",18)} 总览指标</h2><div class="kpi-grid">{grid}</div></section>'
+    return f'<section><h2>{_icon("activity", 18)} 总览指标</h2><div class="kpi-grid">{grid}</div></section>'
 
 
 def _task_section(idx: int, t: dict) -> str:
@@ -141,30 +152,41 @@ def _task_section(idx: int, t: dict) -> str:
     ctx = t["ctx"]
     tid = _esc(ctx.get("trace_id", ""))
     state = _esc(ctx.get("state", ""))
-    parts = [f'<section class="task"><div class="task-hd"><h2><span class="b-num">{idx:02d}</span> {title}</h2>'
-             f'<span class="badge badge-{state}">{state}</span></div>'
-             f'<div class="task-meta">{_icon("clock",12)} trace <code>{tid}</code></div>']
+    parts = [
+        f'<section class="task"><div class="task-hd"><h2><span class="b-num">{idx:02d}</span> {title}</h2>'
+        f'<span class="badge badge-{state}">{state}</span></div>'
+        f'<div class="task-meta">{_icon("clock", 12)} trace <code>{tid}</code></div>'
+    ]
 
     # 异常表
     anoms = ctx.get("anomalies", [])
     if anoms:
         rows = "".join(
-            f'<tr><td><code>{_esc(a.get("store_id"))}</code></td>'
-            f'<td>{_icon(_anom_icon(a.get("type","")),14)} {_esc(a.get("type"))}</td>'
+            f"<tr><td><code>{_esc(a.get('store_id'))}</code></td>"
+            f"<td>{_icon(_anom_icon(a.get('type', '')), 14)} {_esc(a.get('type'))}</td>"
             f'<td><span class="sev sev-{_sev_class(a.get("severity"))}">{_esc(a.get("severity"))}</span></td>'
-            f'<td><div class="conf-bar"><div style="width:{int(float(a.get("confidence",0))*100)}%"></div></div><td class="num">{a.get("confidence")}</td>'
+            f'<td><div class="conf-bar"><div style="width:{int(float(a.get("confidence", 0)) * 100)}%"></div></div><td class="num">{a.get("confidence")}</td>'
             f'<td class="mono">{_esc(a.get("matched_rule"))}</td></tr>'
             for a in anoms
         )
-        parts.append(f'<h3>{_icon("alert-triangle",15)} 检出异常 <span class="cnt">{len(anoms)}</span></h3>'
-                     f'<div class="tbl-wrap"><table class="tbl"><thead><tr>'
-                     '<th>门店</th><th>类型</th><th>严重度</th><th colspan="2">置信度</th><th>命中规则</th></tr></thead>'
-                     f'<tbody>{rows}</tbody></table></div>')
+        parts.append(
+            f'<h3>{_icon("alert-triangle", 15)} 检出异常 <span class="cnt">{len(anoms)}</span></h3>'
+            f'<div class="tbl-wrap"><table class="tbl"><thead><tr>'
+            '<th>门店</th><th>类型</th><th>严重度</th><th colspan="2">置信度</th><th>命中规则</th></tr></thead>'
+            f"<tbody>{rows}</tbody></table></div>"
+        )
 
     # 跨店对标
     rcs = ctx.get("root_causes", [])
-    bench_data = [(rc.get("store_id", ""), rc.get("contributing_factors", {}).get("max_temp", 0),
-                   rc.get("confidence", 0)) for rc in rcs if "max_temp" in rc.get("contributing_factors", {})]
+    bench_data = [
+        (
+            rc.get("store_id", ""),
+            rc.get("contributing_factors", {}).get("max_temp", 0),
+            rc.get("confidence", 0),
+        )
+        for rc in rcs
+        if "max_temp" in rc.get("contributing_factors", {})
+    ]
     if bench_data:
         parts.append(_bench(bench_data))
 
@@ -173,39 +195,43 @@ def _task_section(idx: int, t: dict) -> str:
         rc0 = rcs[0]
         cf = rc0.get("contributing_factors", {})
         parts.append(
-            f'<div class="rootcause"><div class="rc-hd">{_icon("trending-down",16)} 根因结论</div>'
+            f'<div class="rootcause"><div class="rc-hd">{_icon("trending-down", 16)} 根因结论</div>'
             f'<div class="rc-hyp">{_esc(rc0.get("hypothesis", ""))} '
             f'<span class="conf-pill">置信度 {rc0.get("confidence")}</span></div>'
-            f'<div class="rc-ctx">对标结论: {_esc(cf.get("benchmark_conclusion","—"))} · 关联临期 SKU: {_esc(cf.get("related_near_expiry_skus",[]) or "无")}</div>'
-            f'<div class="rc-plan">下一步 → {_esc(rc0.get("check_plan",{}).get("next_actions",[]))}</div></div>'
+            f'<div class="rc-ctx">对标结论: {_esc(cf.get("benchmark_conclusion", "—"))} · 关联临期 SKU: {_esc(cf.get("related_near_expiry_skus", []) or "无")}</div>'
+            f'<div class="rc-plan">下一步 → {_esc(rc0.get("check_plan", {}).get("next_actions", []))}</div></div>'
         )
 
     # 处置动作
     actions = report.get("actions_taken", []) or ctx.get("actions", [])
     if actions:
         aitems = "".join(
-            f'<div class="act"><span class="act-ic {"ok" if a.get("executed") else "warn"}">{_icon("wrench",14)}</span>'
-            f'<span class="act-tag">{_esc(a.get("type","?"))}</span>'
-            f'<span class="act-lbl">{_esc(a.get("anomaly_type",""))}</span>'
+            f'<div class="act"><span class="act-ic {"ok" if a.get("executed") else "warn"}">{_icon("wrench", 14)}</span>'
+            f'<span class="act-tag">{_esc(a.get("type", "?"))}</span>'
+            f'<span class="act-lbl">{_esc(a.get("anomaly_type", ""))}</span>'
             f'<span class="act-st {"ok" if a.get("executed") else "warn"}">{"已执行" if a.get("executed") else "待审批"}</span></div>'
             for a in actions[:8]
         )
-        parts.append(f'<h3>{_icon("wrench",15)} 处置动作 <span class="cnt">{len(actions)}</span></h3><div class="acts">{aitems}</div>')
+        parts.append(
+            f'<h3>{_icon("wrench", 15)} 处置动作 <span class="cnt">{len(actions)}</span></h3><div class="acts">{aitems}</div>'
+        )
 
     # Trace
     timeline = report.get("timeline", [])
     if timeline:
         max_ms = max((s.get("duration_ms", 1) for s in timeline), default=1) or 1
         titems = "".join(
-            f'<div class="tr" title="{_esc(s.get("name",""))} · {s.get("duration_ms",0)}ms">'
+            f'<div class="tr" title="{_esc(s.get("name", ""))} · {s.get("duration_ms", 0)}ms">'
             f'<span class="tr-n">{s.get("step")}</span>'
-            f'<span class="tr-k k-{_esc(s.get("kind",""))}">{_esc(s.get("kind",""))}</span>'
-            f'<span class="tr-name">{_esc(s.get("name",""))}</span>'
-            f'<span class="tr-bar"><span class="tr-fill" style="width:{max(8,int(s.get("duration_ms",0)/max_ms*100))}%"></span></span>'
-            f'<span class="tr-ms { "ok" if s.get("status")=="ok" else "err"}">{"✓" if s.get("status")=="ok" else "✗"} {s.get("duration_ms",0)}ms</span></div>'
+            f'<span class="tr-k k-{_esc(s.get("kind", ""))}">{_esc(s.get("kind", ""))}</span>'
+            f'<span class="tr-name">{_esc(s.get("name", ""))}</span>'
+            f'<span class="tr-bar"><span class="tr-fill" style="width:{max(8, int(s.get("duration_ms", 0) / max_ms * 100))}%"></span></span>'
+            f'<span class="tr-ms {"ok" if s.get("status") == "ok" else "err"}">{"✓" if s.get("status") == "ok" else "✗"} {s.get("duration_ms", 0)}ms</span></div>'
             for s in timeline
         )
-        parts.append(f'<h3>{_icon("database",15)} 全链路 Trace <span class="cnt">{len(timeline)} spans</span></h3><div class="trace">{titems}</div>')
+        parts.append(
+            f'<h3>{_icon("database", 15)} 全链路 Trace <span class="cnt">{len(timeline)} spans</span></h3><div class="trace">{titems}</div>'
+        )
 
     parts.append("</section>")
     return "".join(parts)
@@ -221,39 +247,50 @@ def _bench(data) -> str:
         pct = temp / scale_max * 100
         over = temp > threshold
         th_pct = threshold / scale_max * 100
-        bar = (f'<div class="bench-row"><div class="bench-lbl"><code>{_esc(sid)}</code></div>'
-               f'<div class="bench-track"><div class="bench-th" style="left:{th_pct}%"></div>'
-               f'<div class="bench-bar {"over" if over else ""}" style="width:{pct}%">'
-               f'<span class="bench-val">{temp}℃</span></div></div>'
-               f'<div class="bench-conf">conf {conf}</div></div>')
+        bar = (
+            f'<div class="bench-row"><div class="bench-lbl"><code>{_esc(sid)}</code></div>'
+            f'<div class="bench-track"><div class="bench-th" style="left:{th_pct}%"></div>'
+            f'<div class="bench-bar {"over" if over else ""}" style="width:{pct}%">'
+            f'<span class="bench-val">{temp}℃</span></div></div>'
+            f'<div class="bench-conf">conf {conf}</div></div>'
+        )
         rows.append(bar)
-    return (f'<h3>{_icon("thermometer",15)} 跨店对标 · 温度异常(阈值 5℃)</h3>'
-            f'<div class="bench">{" ".join(rows)}</div>'
-            f'<p class="hint">目标店温度显著高于阈值线 → 单店孤立异常 → 排除环境因素定位设备故障</p>')
+    return (
+        f"<h3>{_icon('thermometer', 15)} 跨店对标 · 温度异常(阈值 5℃)</h3>"
+        f'<div class="bench">{" ".join(rows)}</div>'
+        f'<p class="hint">目标店温度显著高于阈值线 → 单店孤立异常 → 排除环境因素定位设备故障</p>'
+    )
 
 
 def _knowledge(kb: list[dict]) -> str:
     if not kb:
-        return f'<section><h2>{_icon("sparkles",18)} 知识飞轮</h2><p class="empty">暂无沉淀</p></section>'
+        return f'<section><h2>{_icon("sparkles", 18)} 知识飞轮</h2><p class="empty">暂无沉淀</p></section>'
     items = []
     for e in kb:
         conf = e.get("confidence", 0)
         tags = "".join(f'<span class="tag">{_esc(t)}</span>' for t in e.get("tags", [])[:3])
         items.append(
-            f'<div class="kb-card"><div class="kb-top"><div class="kb-title">{_esc(e.get("title",""))}</div>'
+            f'<div class="kb-card"><div class="kb-top"><div class="kb-title">{_esc(e.get("title", ""))}</div>'
             f'<div class="kb-conf">{conf}</div></div>'
             f'<div class="kb-tags">{tags}</div>'
-            f'<div class="kb-conf-bar"><div style="width:{int(conf*100)}%"></div></div>'
-            f'<div class="kb-body">{_esc(e.get("body","")[:110])}…</div></div>'
+            f'<div class="kb-conf-bar"><div style="width:{int(conf * 100)}%"></div></div>'
+            f'<div class="kb-body">{_esc(e.get("body", "")[:110])}…</div></div>'
         )
-    return (f'<section><h2>{_icon("sparkles",18)} 知识飞轮 · 累计 {len(kb)} 条经验</h2>'
-            f'<div class="kb-grid">{"".join(items)}</div>'
-            f'<p class="hint">下次诊断 Agent 经 RAG 检索命中 → 诊断更准 → 越巡越准</p></section>')
+    return (
+        f"<section><h2>{_icon('sparkles', 18)} 知识飞轮 · 累计 {len(kb)} 条经验</h2>"
+        f'<div class="kb-grid">{"".join(items)}</div>'
+        f'<p class="hint">下次诊断 Agent 经 RAG 检索命中 → 诊断更准 → 越巡越准</p></section>'
+    )
 
 
 def _anom_icon(t: str) -> str:
-    return {"冷柜超温": "thermometer", "缺货": "package", "低库存": "package",
-            "价签不一致": "tag", "临期": "clock"}.get(t, "alert-triangle")
+    return {
+        "冷柜超温": "thermometer",
+        "缺货": "package",
+        "低库存": "package",
+        "价签不一致": "tag",
+        "临期": "clock",
+    }.get(t, "alert-triangle")
 
 
 def _sev_class(s) -> str:

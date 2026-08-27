@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -49,6 +50,19 @@ DEFAULT_SCENARIO_PATH = DEFAULT_SCENARIO_DIR / "coldchain-compressor-failure.jso
 
 def _canonical(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _is_finite_nonnegative_number(value: Any) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+        and value >= 0
+    )
+
+
+class ScopeViolation(PermissionError):
+    """Raised when an action targets state outside its incident boundary."""
 
 
 class MCPService:
@@ -254,13 +268,26 @@ class MCPService:
         }
 
         def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
-            known = {
-                row["batch_id"]
-                for row in self.store.list_batches(store_id=store_id, batch_ids=batch_ids)
-            }
-            missing = sorted(set(batch_ids) - known)
-            if missing:
-                raise ValueError(f"Unknown batches for store {store_id}: {missing}")
+            self._require_incident_scope(
+                conn,
+                incident_id=incident_id,
+                store_id=store_id,
+                batch_ids=batch_ids,
+            )
+            self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
+            if len(batch_ids) != len(set(batch_ids)):
+                raise ValueError("batch_ids must not contain duplicates")
+            placeholders = ",".join("?" for _ in batch_ids)
+            existing = conn.execute(
+                f"""SELECT batch_id FROM sales_holds
+                    WHERE incident_id = ? AND status = 'active'
+                    AND batch_id IN ({placeholders})""",
+                [incident_id, *batch_ids],
+            ).fetchall()
+            if existing:
+                raise ValueError(
+                    "One or more batches already have an active hold for this incident"
+                )
             holds = []
             for batch_id in batch_ids:
                 hold_id = self.store.next_id(conn, "hold")
@@ -335,24 +362,53 @@ class MCPService:
         }
 
         def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
-            self._require_approval(conn, approval_id, action_id)
+            self._require_incident_scope(conn, incident_id=incident_id)
+            self._require_approval(
+                conn,
+                approval_id=approval_id,
+                incident_id=incident_id,
+                action_id=action_id,
+                action_type="release_sales_hold",
+            )
             verification = conn.execute(
                 """SELECT * FROM verifications WHERE verification_id = ?
-                   AND incident_id = ? AND result = 'passed' AND verifier = 'Auditor'""",
+                   AND incident_id = ? AND subject = 'release_guard'
+                   AND result = 'passed' AND verifier = 'Auditor'""",
                 (verification_id, incident_id),
             ).fetchone()
             if verification is None:
-                raise PermissionError("A passed Auditor verification is required")
+                raise PermissionError("A passed Auditor release_guard verification is required")
             if not hold_ids:
                 raise ValueError("hold_ids must not be empty")
+            if len(hold_ids) != len(set(hold_ids)):
+                raise ValueError("hold_ids must not contain duplicates")
             placeholders = ",".join("?" for _ in hold_ids)
             rows = conn.execute(
-                f"""SELECT hold_id, status FROM sales_holds
-                    WHERE hold_id IN ({placeholders}) AND incident_id = ?""",
+                f"""SELECT h.hold_id, h.status, h.batch_id, h.applied_at,
+                           b.updated_at AS batch_updated_at
+                    FROM sales_holds AS h
+                    JOIN inventory_batches AS b ON b.batch_id = h.batch_id
+                    WHERE h.hold_id IN ({placeholders}) AND h.incident_id = ?""",
                 [*hold_ids, incident_id],
             ).fetchall()
             if len(rows) != len(set(hold_ids)):
                 raise ValueError("One or more holds do not belong to the incident")
+            if any(row["status"] != "active" for row in rows):
+                raise ValueError("Only active holds may be released")
+            verified_at = self._parse_time(verification["verified_at"])
+            if any(
+                verified_at < self._parse_time(row["applied_at"])
+                or verified_at < self._parse_time(row["batch_updated_at"])
+                for row in rows
+            ):
+                raise PermissionError("The Auditor release_guard verification is stale")
+            evidence_ids = json.loads(verification["evidence_ids_json"])
+            observed = json.loads(verification["observed_json"])
+            verified_hold_states = observed.get("released_batch_holds", {})
+            if not evidence_ids or not isinstance(verified_hold_states, dict):
+                raise PermissionError("The Auditor release_guard lacks fresh evidence")
+            if any(verified_hold_states.get(row["batch_id"]) != "active" for row in rows):
+                raise PermissionError("The Auditor release_guard does not cover the target holds")
             conn.execute(
                 f"""UPDATE sales_holds SET status = 'released', released_at = ?,
                     approval_id = ?, verification_id = ?
@@ -419,10 +475,26 @@ class MCPService:
         }
 
         def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+            self._require_incident_scope(
+                conn,
+                incident_id=incident_id,
+                batch_ids=batch_ids,
+            )
             if decision.approval_required:
-                self._require_approval(conn, approval_id, action_id)
+                self._require_approval(
+                    conn,
+                    approval_id=approval_id,
+                    incident_id=incident_id,
+                    action_id=action_id,
+                    action_type="apply_batch_disposition",
+                    disposition=target.value,
+                )
+            else:
+                self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
             if not batch_ids:
                 raise ValueError("batch_ids must not be empty")
+            if len(batch_ids) != len(set(batch_ids)):
+                raise ValueError("batch_ids must not contain duplicates")
             placeholders = ",".join("?" for _ in batch_ids)
             found = conn.execute(
                 f"SELECT batch_id FROM inventory_batches WHERE batch_id IN ({placeholders})",
@@ -483,6 +555,11 @@ class MCPService:
         request_id: str | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
+        if not _is_finite_nonnegative_number(budget):
+            return self._error(
+                rid, "INVALID_ARGUMENT", "budget must be a finite non-negative number"
+            )
+        budget = float(budget)
         decision = self.policy.evaluate(actor=actor, action_type="create_workorder", amount=budget)
         request = {
             "incident_id": incident_id,
@@ -496,8 +573,23 @@ class MCPService:
         }
 
         def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+            self._require_incident_scope(
+                conn,
+                incident_id=incident_id,
+                store_id=store_id,
+                device_id=device_id,
+            )
             if decision.approval_required:
-                self._require_approval(conn, approval_id, action_id)
+                self._require_approval(
+                    conn,
+                    approval_id=approval_id,
+                    incident_id=incident_id,
+                    action_id=action_id,
+                    action_type="create_workorder",
+                    amount=budget,
+                )
+            else:
+                self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
             device = conn.execute(
                 "SELECT device_id FROM devices WHERE device_id = ? AND store_id = ?",
                 (device_id, store_id),
@@ -567,6 +659,24 @@ class MCPService:
         request_id: str | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
+        if amount is not None:
+            if not _is_finite_nonnegative_number(amount):
+                return self._error(
+                    rid,
+                    "INVALID_ARGUMENT",
+                    "amount must be a finite non-negative number",
+                )
+            amount = float(amount)
+        if (
+            isinstance(timeout_minutes, bool)
+            or not isinstance(timeout_minutes, int)
+            or timeout_minutes <= 0
+        ):
+            return self._error(
+                rid,
+                "INVALID_ARGUMENT",
+                "timeout_minutes must be a positive integer",
+            )
         decision = self.policy.evaluate(
             actor=actor,
             action_type=requested_action_type,
@@ -584,8 +694,8 @@ class MCPService:
         }
 
         def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
-            if timeout_minutes <= 0:
-                raise ValueError("timeout_minutes must be positive")
+            self._require_incident_scope(conn, incident_id=incident_id)
+            self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
             approval_id = self.store.next_id(conn, "approval")
             deadline = (self._parse_time(now) + timedelta(minutes=timeout_minutes)).isoformat(
                 timespec="seconds"
@@ -660,6 +770,7 @@ class MCPService:
             return self._error(rid, "INVALID_ARGUMENT", f"Unsupported decision {decision}")
         if target is ApprovalStatus.PENDING:
             return self._error(rid, "INVALID_ARGUMENT", "Decision cannot be pending")
+        self.store.expire_approvals()
         rows = self.store.list_approvals(approval_id=approval_id)
         if not rows:
             return self._error(rid, "NOT_FOUND", f"Unknown approval {approval_id}")
@@ -732,6 +843,19 @@ class MCPService:
         rid = request_id or self._request_id()
         if actor not in {"Human", "ScenarioEngine"}:
             return self._error(rid, "FORBIDDEN", "Only Human or ScenarioEngine may record evidence")
+        if not isinstance(observed_at, str):
+            return self._error(rid, "INVALID_ARGUMENT", "observed_at must be an ISO-8601 timestamp")
+        try:
+            self._parse_time(observed_at)
+        except ValueError:
+            return self._error(rid, "INVALID_ARGUMENT", "observed_at must be an ISO-8601 timestamp")
+        if sha256 is not None:
+            try:
+                if not isinstance(sha256, str) or len(sha256) != 64:
+                    raise ValueError
+                bytes.fromhex(sha256)
+            except ValueError:
+                return self._error(rid, "INVALID_ARGUMENT", "sha256 must contain 64 hex characters")
         digest = (
             sha256
             or hashlib.sha256(
@@ -750,6 +874,13 @@ class MCPService:
         }
 
         def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+            self._require_incident_scope(conn, incident_id=incident_id)
+            if action_id is not None:
+                self._require_action_reference(
+                    conn,
+                    incident_id=incident_id,
+                    action_id=action_id,
+                )
             evidence_id = self.store.next_id(conn, "manual_ev")
             conn.execute(
                 """INSERT INTO manual_evidence(
@@ -811,7 +942,7 @@ class MCPService:
         mutation: Callable[[sqlite3.Connection, str], dict[str, Any]],
         allow_when_approval_required: bool = False,
     ) -> dict[str, Any]:
-        if not idempotency_key.strip():
+        if not isinstance(idempotency_key, str) or not idempotency_key.strip():
             return self._error(rid, "INVALID_ARGUMENT", "idempotency_key is required")
         failure = self._failure(tool_name, rid)
         if failure:
@@ -846,10 +977,42 @@ class MCPService:
             with self.store.transaction() as conn:
                 previous = self.store.idempotent_result(
                     conn,
-                    tool_name=tool_name,
                     idempotency_key=idempotency_key,
                 )
                 if previous:
+                    same_request = previous["request"] is not None and _canonical(
+                        previous["request"]
+                    ) == _canonical(request)
+                    if (
+                        previous["tool_name"] != tool_name
+                        or previous["actor"] != actor
+                        or not same_request
+                    ):
+                        error = {
+                            "code": "IDEMPOTENCY_CONFLICT",
+                            "message": (
+                                "idempotency_key was already used with a different "
+                                "tool, actor, or request"
+                            ),
+                        }
+                        audit_id = self.store.record_audit(
+                            conn,
+                            request_id=rid,
+                            actor=actor,
+                            tool_name=tool_name,
+                            incident_id=incident_id,
+                            action_id=action_id,
+                            policy=decision.to_dict(),
+                            request=request,
+                            response={"error": error},
+                            created_at=self.store.now(),
+                        )
+                        return self._error(
+                            rid,
+                            error["code"],
+                            error["message"],
+                            audit_ref=audit_id,
+                        )
                     data = {**previous["data"], "idempotent_replay": True}
                     return self._ok(rid, data, audit_ref=previous["audit_id"])
                 now = self.store.now()
@@ -876,6 +1039,8 @@ class MCPService:
                     created_at=now,
                 )
             return self._ok(rid, data, audit_ref=audit_id)
+        except ScopeViolation as exc:
+            return self._error(rid, "FORBIDDEN", str(exc))
         except PermissionError as exc:
             return self._error(rid, "APPROVAL_INVALID", str(exc))
         except (KeyError, ValueError, sqlite3.IntegrityError) as exc:
@@ -913,21 +1078,127 @@ class MCPService:
     @staticmethod
     def _require_approval(
         conn: sqlite3.Connection,
+        *,
         approval_id: str | None,
+        incident_id: str,
         action_id: str,
+        action_type: str,
+        amount: float | None = None,
+        disposition: str | None = None,
     ) -> None:
         if not approval_id:
             raise PermissionError("approval_id is required")
         row = conn.execute(
-            "SELECT action_id, status FROM approvals WHERE approval_id = ?",
+            """SELECT a.incident_id, a.action_id, a.status,
+                      x.action_type, x.tool_name, x.request_json
+               FROM approvals AS a
+               JOIN actions AS x ON x.action_id = a.action_id
+               WHERE a.approval_id = ?""",
             (approval_id,),
         ).fetchone()
         if row is None:
             raise PermissionError(f"Unknown approval {approval_id}")
+        if row["incident_id"] != incident_id:
+            raise PermissionError("Approval does not belong to this incident")
         if row["action_id"] != action_id:
             raise PermissionError("Approval does not belong to this action")
         if row["status"] != ApprovalStatus.APPROVED.value:
             raise PermissionError(f"Approval status is {row['status']}, not approved")
+        if row["tool_name"] != "create_approval":
+            raise PermissionError("Approval has already been consumed by this action")
+        approved_request = json.loads(row["request_json"])
+        if (
+            row["action_type"] != action_type
+            or approved_request.get("requested_action_type") != action_type
+        ):
+            raise PermissionError("Approval is for a different action type")
+        if amount is not None:
+            approved_amount = approved_request.get("amount")
+            if approved_amount is None or float(approved_amount) != float(amount):
+                raise PermissionError("Approval amount does not match the requested action")
+        if disposition is not None and approved_request.get("disposition") != disposition:
+            raise PermissionError("Approval disposition does not match the requested action")
+
+    @staticmethod
+    def _require_incident_scope(
+        conn: sqlite3.Connection,
+        *,
+        incident_id: str,
+        store_id: str | None = None,
+        batch_ids: list[str] | None = None,
+        device_id: str | None = None,
+    ) -> dict[str, Any]:
+        row = conn.execute(
+            "SELECT store_id, case_json FROM incidents WHERE incident_id = ?",
+            (incident_id,),
+        ).fetchone()
+        if row is None:
+            raise ValueError(f"Unknown incident {incident_id}")
+        case = json.loads(row["case_json"])
+        incident_store = str(row["store_id"])
+        if store_id is not None and store_id != incident_store:
+            raise ScopeViolation("Requested store does not belong to the incident")
+
+        if batch_ids:
+            affected = set(case.get("affected_batches", []))
+            if not set(batch_ids) <= affected:
+                raise ScopeViolation("One or more batches are outside the incident scope")
+            placeholders = ",".join("?" for _ in batch_ids)
+            rows = conn.execute(
+                f"""SELECT batch_id, store_id FROM inventory_batches
+                    WHERE batch_id IN ({placeholders})""",
+                batch_ids,
+            ).fetchall()
+            if len(rows) != len(set(batch_ids)):
+                raise ValueError("One or more batches do not exist")
+            if any(item["store_id"] != incident_store for item in rows):
+                raise ScopeViolation("One or more batches belong to another store")
+
+        if device_id is not None:
+            if device_id not in set(case.get("affected_assets", [])):
+                raise ScopeViolation("Requested device is outside the incident scope")
+            device = conn.execute(
+                "SELECT store_id FROM devices WHERE device_id = ?",
+                (device_id,),
+            ).fetchone()
+            if device is None:
+                raise ValueError(f"Unknown device {device_id}")
+            if device["store_id"] != incident_store:
+                raise ScopeViolation("Requested device belongs to another store")
+        return case
+
+    @staticmethod
+    def _ensure_new_action(
+        conn: sqlite3.Connection,
+        *,
+        incident_id: str,
+        action_id: str,
+    ) -> None:
+        row = conn.execute(
+            "SELECT incident_id, tool_name FROM actions WHERE action_id = ?",
+            (action_id,),
+        ).fetchone()
+        if row is None:
+            return
+        if row["incident_id"] != incident_id:
+            raise ScopeViolation("action_id is already owned by another incident")
+        raise ValueError(f"Action {action_id} is already claimed by {row['tool_name']}")
+
+    @staticmethod
+    def _require_action_reference(
+        conn: sqlite3.Connection,
+        *,
+        incident_id: str,
+        action_id: str,
+    ) -> None:
+        row = conn.execute(
+            "SELECT incident_id FROM actions WHERE action_id = ?",
+            (action_id,),
+        ).fetchone()
+        if row is None:
+            raise ValueError(f"Unknown action {action_id}")
+        if row["incident_id"] != incident_id:
+            raise ScopeViolation("Referenced action belongs to another incident")
 
     @staticmethod
     def _upsert_action(
@@ -943,31 +1214,48 @@ class MCPService:
         now: str,
         approval_id: str | None = None,
     ) -> None:
+        existing = conn.execute(
+            "SELECT incident_id, tool_name FROM actions WHERE action_id = ?",
+            (action_id,),
+        ).fetchone()
+        values = (
+            action_type,
+            tool_name,
+            status,
+            approval_id,
+            _canonical(request),
+            _canonical(response),
+            now,
+        )
+        if existing is None:
+            conn.execute(
+                """INSERT INTO actions(
+                    action_id, incident_id, action_type, tool_name, status,
+                    approval_id, request_json, response_json, created_at, updated_at
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    action_id,
+                    incident_id,
+                    action_type,
+                    tool_name,
+                    status,
+                    approval_id,
+                    _canonical(request),
+                    _canonical(response),
+                    now,
+                    now,
+                ),
+            )
+            return
+        if existing["incident_id"] != incident_id:
+            raise ScopeViolation("action_id is already owned by another incident")
+        if existing["tool_name"] != "create_approval":
+            raise ValueError(f"Action {action_id} has already been executed")
         conn.execute(
-            """INSERT INTO actions(
-                action_id, incident_id, action_type, tool_name, status,
-                approval_id, request_json, response_json, created_at, updated_at
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(action_id) DO UPDATE SET
-                action_type=excluded.action_type,
-                tool_name=excluded.tool_name,
-                status=excluded.status,
-                approval_id=COALESCE(excluded.approval_id, actions.approval_id),
-                request_json=excluded.request_json,
-                response_json=excluded.response_json,
-                updated_at=excluded.updated_at""",
-            (
-                action_id,
-                incident_id,
-                action_type,
-                tool_name,
-                status,
-                approval_id,
-                _canonical(request),
-                _canonical(response),
-                now,
-                now,
-            ),
+            """UPDATE actions SET action_type = ?, tool_name = ?, status = ?,
+               approval_id = COALESCE(?, approval_id), request_json = ?, response_json = ?,
+               updated_at = ? WHERE action_id = ?""",
+            (*values, action_id),
         )
 
     def _query_rows(

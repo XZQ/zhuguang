@@ -33,13 +33,22 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
     with trace.span("review-report", "skill", tid, input={"task_id": task_id}) as sp:
         # 从 trace 拉时间线
         spans = trace.query_trace(tid)
-        timeline = [{
-            "step": i + 1, "name": s["name"], "kind": s["kind"],
-            "status": s["status"], "duration_ms": s["end_ms"] - s["start_ms"],
-        } for i, s in enumerate(spans)]
+        timeline = [
+            {
+                "step": i + 1,
+                "name": s["name"],
+                "kind": s["kind"],
+                "status": s["status"],
+                "duration_ms": s["end_ms"] - s["start_ms"],
+            }
+            for i, s in enumerate(spans)
+        ]
 
-        root_cause = task_ctx.get("root_causes", [{}])[0].get("hypothesis", "—") \
-            if task_ctx.get("root_causes") else "—"
+        root_cause = (
+            task_ctx.get("root_causes", [{}])[0].get("hypothesis", "—")
+            if task_ctx.get("root_causes")
+            else "—"
+        )
         actions = task_ctx.get("actions", [])
         validation = task_ctx.get("validation", {}) or {}
 
@@ -52,7 +61,7 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
             entry = {
                 "title": f"{a.get('type')}处置经验·{a.get('store_id')}",
                 "body": f"根因:{root_cause};处置:{[x.get('type') for x in actions]};"
-                        f"验证:{validation.get('result', '—')}",
+                f"验证:{validation.get('result', '—')}",
                 "tags": [a.get("type", "通用"), a.get("store_id", "")],
                 "confidence": min(
                     (
@@ -76,7 +85,8 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
 
         report = {
             "report_id": "rv_" + uuid.uuid4().hex[:10],
-            "task_id": task_id, "trace_id": tid,
+            "task_id": task_id,
+            "trace_id": tid,
             "timeline": timeline,
             "root_cause": root_cause,
             "actions_taken": actions,
@@ -86,8 +96,10 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
             "skill_update_suggestions": skill_suggestions,
             "closed_at": task_ctx.get("transitions", [{}])[-1].get("at", "—"),
         }
-        sp.output = {"knowledge_count": len(knowledge_entries),
-                     "suggestions": len(skill_suggestions)}
+        sp.output = {
+            "knowledge_count": len(knowledge_entries),
+            "suggestions": len(skill_suggestions),
+        }
         return report
 
 
@@ -116,16 +128,22 @@ def _skill_update_suggestions(ctx: dict, validation: dict) -> list[dict]:
     suggestions = []
     # 误报/漏报复盘 → 调阈值
     if validation.get("result") == "false_positive":
-        suggestions.append({
-            "skill": "anomaly-detect", "action": "上调置信度阈值",
-            "reason": "本次为误报,当前阈值过于敏感",
-        })
+        suggestions.append(
+            {
+                "skill": "anomaly-detect",
+                "action": "上调置信度阈值",
+                "reason": "本次为误报,当前阈值过于敏感",
+            }
+        )
     # 处置未生效 → 修订根因假设
     if validation.get("result") == "failed":
-        suggestions.append({
-            "skill": "rootcause-drilldown", "action": "补充候选假设",
-            "reason": "首假设根因未验证通过,需扩充假设空间",
-        })
+        suggestions.append(
+            {
+                "skill": "rootcause-drilldown",
+                "action": "补充候选假设",
+                "reason": "首假设根因未验证通过,需扩充假设空间",
+            }
+        )
     return suggestions
 
 
