@@ -128,6 +128,12 @@ class IncidentService:
             case.evidence_refs.append(evidence.evidence_id)
         return self.save(case)
 
+    def append_evidence_ref(self, incident_id: str, evidence_id: str) -> IncidentCase:
+        case = self.get(incident_id)
+        if evidence_id not in case.evidence_refs:
+            case.evidence_refs.append(evidence_id)
+        return self.save(case)
+
     def replace_hypotheses(
         self,
         incident_id: str,
@@ -139,6 +145,44 @@ class IncidentService:
             raise ValueError("Hypothesis confidence must be between 0 and 1")
         case = self.get(incident_id)
         case.hypotheses = hypotheses
+        return self.save(case)
+
+    def append_decision(self, incident_id: str, decision: Decision) -> IncidentCase:
+        """Append one business decision through the incident aggregate."""
+        case = self.get(incident_id)
+        if any(existing.decision_id == decision.decision_id for existing in case.decisions):
+            raise ValueError(f"Decision {decision.decision_id} already exists")
+        case.decisions.append(decision)
+        return self.save(case)
+
+    def set_work_status(
+        self,
+        incident_id: str,
+        status: WorkStatus,
+        *,
+        owner: str,
+        next_wakeup_at: str | None = None,
+        reason: str,
+    ) -> IncidentCase:
+        """Persist an explicit wait/block state with ownership and wake-up metadata."""
+        case = self.get(incident_id)
+        case.work_status = status
+        case.owner = owner
+        case.next_wakeup_at = next_wakeup_at
+        case.decisions.append(
+            Decision(
+                decision_id=f"work:{status}:{len(case.decisions) + 1}",
+                policy_id="incident-work-state-v1",
+                selected_hypothesis_ids=[],
+                proposed_actions=[],
+                risk_level="L0",
+                approval_required=False,
+                approvers=[],
+                decision_reason=reason,
+                evidence_ids=[],
+                created_by="Orchestrator",
+            )
+        )
         return self.save(case)
 
     def append_action(self, incident_id: str, action: Action) -> IncidentCase:
@@ -165,7 +209,13 @@ class IncidentService:
         action.status = status
         if response is not None:
             action.response = response
-        if status in {ActionStatus.COMPLETED, ActionStatus.FAILED, ActionStatus.REJECTED}:
+        if status in {
+            ActionStatus.COMPLETED,
+            ActionStatus.FAILED,
+            ActionStatus.REJECTED,
+            ActionStatus.TIMEOUT,
+            ActionStatus.COMPENSATED,
+        }:
             action.completed_at = self.store.now()
         return self.save(case)
 
@@ -215,6 +265,20 @@ class IncidentService:
         workorders = self.store.list_workorders(incident_id=incident_id)
         case.workorder_refs = [row["workorder_id"] for row in workorders]
 
+        devices = self.store.list_devices()
+        affected_assets = set(case.affected_assets)
+        case.asset_states = {
+            row["device_id"]: (
+                "recovered"
+                if row["health_state"] == "normal"
+                and row["power_state"] == "on"
+                and row["compressor_state"] == "running"
+                else "abnormal"
+            )
+            for row in devices
+            if row["device_id"] in affected_assets
+        }
+
         active_holds = {row["batch_id"] for row in holds if row["status"] == "active"}
         contained = bool(case.affected_batches) and set(case.affected_batches) <= active_holds
         if not contained:
@@ -224,7 +288,7 @@ class IncidentService:
             )
 
         pending_approvals = [row for row in approvals if row["status"] == "pending"]
-        pending_actions = [
+        unresolved_actions = [
             action
             for action in case.actions
             if action.status
@@ -234,6 +298,8 @@ class IncidentService:
                 ActionStatus.APPROVED,
                 ActionStatus.EXECUTING,
                 ActionStatus.FAILED,
+                ActionStatus.REJECTED,
+                ActionStatus.TIMEOUT,
             }
         ]
         batch_terminal = bool(case.affected_batches) and all(
@@ -249,14 +315,20 @@ class IncidentService:
             for subject in required_subjects
         )
 
-        if batch_terminal and not pending_actions and not pending_approvals and verified:
+        if batch_terminal and not unresolved_actions and not pending_approvals and verified:
             case.incident_status = IncidentStatus.RESOLVED
             case.work_status = WorkStatus.COMPLETED
         elif contained:
             case.incident_status = IncidentStatus.CONTAINED
-            case.work_status = (
-                WorkStatus.WAITING_APPROVAL if pending_approvals else WorkStatus.RUNNING
-            )
+            action_statuses = {action.status for action in unresolved_actions}
+            if pending_approvals:
+                case.work_status = WorkStatus.WAITING_APPROVAL
+            elif ActionStatus.TIMEOUT in action_statuses:
+                case.work_status = WorkStatus.WAITING_EXTERNAL
+            elif action_statuses & {ActionStatus.FAILED, ActionStatus.REJECTED}:
+                case.work_status = WorkStatus.BLOCKED
+            else:
+                case.work_status = WorkStatus.RUNNING
         else:
             case.incident_status = IncidentStatus.OPEN
             case.work_status = WorkStatus.RUNNING

@@ -9,8 +9,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .adapters import LocalDemoAdapter
 from .domain import PolicyEngine
-from .mcp.p0 import DEFAULT_DB_PATH, DEFAULT_POLICY_PATH, DEFAULT_SEED_PATH, MCPService
+from .mcp.p0 import (
+    DEFAULT_DB_PATH,
+    DEFAULT_POLICY_PATH,
+    DEFAULT_SCENARIO_PATH,
+    DEFAULT_SEED_PATH,
+    MCPService,
+)
 from .mcp.server import TOOLS, tool_call
 from .scenarios import ScenarioEngine
 from .state import StateStore
@@ -31,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     scenario = subparsers.add_parser("scenario-reset", help="reset and apply minute-zero events")
     scenario.add_argument("scenario", type=_path)
     scenario.add_argument("--db", type=_path, default=DEFAULT_DB_PATH)
+
+    demo = subparsers.add_parser("demo-run", help="run one five-phase cold-chain scenario")
+    demo.add_argument("scenario", nargs="?", type=_path, default=DEFAULT_SCENARIO_PATH)
+    demo.add_argument("--db", type=_path, default=DEFAULT_DB_PATH)
+    demo.add_argument("--output", type=_path, help="optional JSON result path")
 
     subparsers.add_parser("mcp-tools", help="print the exact P0 MCP tool names")
 
@@ -70,6 +82,27 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mcp-tools":
         _print_json({"count": len(TOOLS), "tools": list(TOOLS)})
         return 0
+    if args.command == "demo-run":
+        result = LocalDemoAdapter(db_path=args.db, scenario_path=args.scenario).run()
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(
+                json.dumps(result, ensure_ascii=False, indent=2, default=str),
+                encoding="utf-8",
+            )
+        _print_json(
+            {
+                "scenario_id": result["scenario_id"],
+                "result": result["result"],
+                "trace_id": result["trace_id"],
+                "incident_status": result["incident"]["incident_status"],
+                "phase": result["incident"]["phase"],
+                "work_status": result["incident"]["work_status"],
+                "acceptance": result["acceptance"],
+                "output": str(args.output) if args.output else None,
+            }
+        )
+        return 0 if result["acceptance"]["passed"] else 1
     if args.command == "mcp-call":
         try:
             arguments = json.loads(args.arguments)

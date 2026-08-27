@@ -13,6 +13,11 @@
     "alert_after_minutes": 15,
     "device_recovery_samples": 3
   },
+  "exposure": {
+    "method": "trapezoidal_degree_minutes",
+    "transfer_max_degree_minutes": 60.0,
+    "note": "Synthetic competition threshold only; real deployment requires product-specific validation."
+  },
   "risk_levels": {
     "L0": "只读查询",
     "L1": "预授权、可逆或低风险动作",
@@ -31,24 +36,24 @@
       "approval_required_above_amount": 2000.0,
       "approvers": ["store_manager"]
     },
-    "apply_batch_disposition:quarantine": {
+    "apply_batch_disposition:quarantined": {
       "risk_level": "L1",
       "allowed_actors": ["Executor"],
       "approval_required": false
     },
-    "apply_batch_disposition:transfer": {
+    "apply_batch_disposition:transferred": {
       "risk_level": "L2",
       "allowed_actors": ["Executor"],
       "approval_required": true,
       "approvers": ["food_safety_owner"]
     },
-    "apply_batch_disposition:release": {
+    "apply_batch_disposition:released": {
       "risk_level": "L2",
       "allowed_actors": ["Executor"],
       "approval_required": true,
       "approvers": ["food_safety_owner"]
     },
-    "apply_batch_disposition:dispose": {
+    "apply_batch_disposition:disposed": {
       "risk_level": "L2",
       "allowed_actors": ["Executor"],
       "approval_required": true,

@@ -1,7 +1,8 @@
-"""改造前 5 个业务 Agent 的顺序编排基线。
+"""改造前 5 个业务 Agent 的顺序编排兼容入口。
 
-Framework Manager 不计入业务 Agent。当前实现仍使用 TaskContext 与八个
-运行步骤；M2 将迁移为五阶段业务模型和每个异常一个 IncidentCase。
+Framework Manager 不计入业务 Agent。本文件仍服务于缺货、价签等历史
+补充入口；P0 冷柜主线已经迁移到 ``LocalDemoAdapter``、五阶段业务模型
+和每个异常一个 ``IncidentCase``，不得再用本兼容入口作为冷柜验收证据。
 
 对应赛题 1.1/1.3:多 Agent 协同,完成 8 步闭环
   任务输入 → 任务拆解 → 上下文传递 → 工具调用 → 结果验证 →
@@ -20,12 +21,9 @@ Framework Manager 不计入业务 Agent。当前实现仍使用 TaskContext 与�
 """
 
 from __future__ import annotations
-from typing import Any
 
-from .. import trace
+from .. import mcp, skills, trace
 from ..context_bus import ContextBus, TaskContext
-from .. import skills
-from .. import mcp
 
 
 class Orchestrator:
@@ -49,7 +47,12 @@ class Orchestrator:
         ctx = self.bus.create(task_id, tid, trigger=trigger, scope=scope)
         print(f"\n{'='*64}\n🚀 任务 {task_id} 启动 | trace={tid} | 范围={scope}")
         try:
-            with trace.span("orchestrate", "agent", tid, input={"task_id": task_id, "scope": scope}) as sp:
+            with trace.span(
+                "orchestrate",
+                "agent",
+                tid,
+                input={"task_id": task_id, "scope": scope},
+            ) as sp:
                 # 1. 任务拆解(总控) → 派给巡检
                 ctx.transition("detecting", "Orchestrator", "派发巡检任务")
                 self.sentry.detect(ctx)
@@ -62,7 +65,11 @@ class Orchestrator:
 
                 # 2. 逐个异常走诊断 → 处置 → 验证(全部处理完后再统一复盘)
                 for anom in ctx.anomalies:
-                    ctx.transition("diagnosing", "Orchestrator", f"派发诊断:{anom['type']}@{anom['store_id']}")
+                    ctx.transition(
+                        "diagnosing",
+                        "Orchestrator",
+                        f"派发诊断:{anom['type']}@{anom['store_id']}",
+                    )
                     self.diagnoser.diagnose(anom, ctx)
 
                     ctx.transition("approving", "Orchestrator", "进入审批/处置")
@@ -119,7 +126,10 @@ class DiagnoserAgent:
     IDENTITY = "Diagnoser · 运营专家"
 
     def diagnose(self, anomaly: dict, ctx: TaskContext, retry: bool = False) -> None:
-        print(f"  🩺 [Diagnoser 诊断] {anomaly['type']}@{anomaly['store_id']}" + ("(二次)" if retry else ""))
+        print(
+            f"  🩺 [Diagnoser 诊断] {anomaly['type']}@{anomaly['store_id']}"
+            + ("(二次)" if retry else "")
+        )
         # 选择对标指标
         metric_map = {"冷柜超温": "temp", "缺货": "stockout_rate", "低库存": "stockout_rate",
                       "价签不一致": "price_mismatch_rate", "临期": "loss_rate"}
@@ -161,7 +171,11 @@ class ExecutorAgent:
         budget = 2500.0
         apr = mcp.create_approval(f"{anomaly['store_id']}冷柜维修", "workorder",
                                   {"budget": budget, "fault": "压缩机故障"}, ["店长"])
-        apr_id = apr["rows"]["approval_id"] if isinstance(apr["rows"], dict) else apr["rows"][0]["approval_id"]
+        apr_id = (
+            apr["rows"]["approval_id"]
+            if isinstance(apr["rows"], dict)
+            else apr["rows"][0]["approval_id"]
+        )
         wo = skills.work_order_dispatch(
             anomaly["store_id"], f"FROST-{anomaly['store_id']}",
             "压缩机/制冷故障", anomaly["severity"], budget,
@@ -173,14 +187,22 @@ class ExecutorAgent:
     def _handle_stockout(self, anomaly: dict, ctx: TaskContext) -> dict:
         order = skills.restock_order_gen(
             anomaly["store_id"], urgency="紧急",
-            sku_list=[anomaly["evidence"].get("sku_id")] if anomaly["evidence"].get("sku_id") else None,
+            sku_list=(
+                [anomaly["evidence"].get("sku_id")]
+                if anomaly["evidence"].get("sku_id")
+                else None
+            ),
             trace_id=ctx.trace_id,
         )
         executed = not order.get("need_approval", False)
         if order.get("need_approval"):
             apr = mcp.create_approval(f"{anomaly['store_id']}补货单", "restock",
                                       {"total": order.get("total_amount")}, ["采购"])
-            executed = apr["rows"].get("status") == "approved" if isinstance(apr["rows"], dict) else True
+            executed = (
+                apr["rows"].get("status") == "approved"
+                if isinstance(apr["rows"], dict)
+                else True
+            )
         return {"type": "restock", "anomaly_type": anomaly["type"],
                 "order": order, "executed": executed}
 
@@ -190,12 +212,21 @@ class ExecutorAgent:
                   "new_price": anomaly["evidence"]["system_price"]}]
         apr = mcp.create_approval(f"{anomaly['store_id']}价签纠正", "price_change",
                                   {"items": items}, ["店长"])
-        apr_id = apr["rows"]["approval_id"] if isinstance(apr["rows"], dict) else apr["rows"][0]["approval_id"]
+        apr_id = (
+            apr["rows"]["approval_id"]
+            if isinstance(apr["rows"], dict)
+            else apr["rows"][0]["approval_id"]
+        )
         res = mcp.apply_price_change(anomaly["store_id"], items,
                                      idempotency_key=f"{ctx.trace_id}:{anomaly['anomaly_id']}",
                                      approval_ticket=apr_id)
-        return {"type": "price_change", "anomaly_type": "价签不一致",
-                "approval_id": apr_id, "result": res["rows"], "executed": not res.get("degraded", False)}
+        return {
+            "type": "price_change",
+            "anomaly_type": "价签不一致",
+            "approval_id": apr_id,
+            "result": res["rows"],
+            "executed": not res.get("degraded", False),
+        }
 
     def _handle_expiry(self, anomaly: dict, ctx: TaskContext) -> dict:
         mcp.send_notice(f"store_{anomaly['store_id']}", "expiry_alert", {
@@ -240,7 +271,7 @@ class AuditorAgent:
         return ok
 
     def review(self, ctx: TaskContext) -> dict:
-        print(f"  📝 [Auditor 复盘] 沉淀知识 + Skill 建议")
+        print("  📝 [Auditor 复盘] 沉淀知识 + Skill 建议")
         report = skills.review_report(ctx.snapshot(), trace_id=ctx.trace_id)
         ctx.review = report
         return report

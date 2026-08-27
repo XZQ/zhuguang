@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "review-report output",
+  "type": "object",
+  "required": [
+    "report_id",
+    "incident_id",
+    "scenario_id",
+    "trace_id",
+    "root_cause",
+    "actions",
+    "batch_reviews",
+    "verification",
+    "lessons",
+    "knowledge"
+  ],
+  "properties": {
+    "report_id": { "type": "string" },
+    "incident_id": { "type": "string" },
+    "scenario_id": { "type": "string" },
+    "trace_id": { "type": "string" },
+    "root_cause": { "type": "object" },
+    "actions": { "type": "array", "items": { "type": "object" } },
+    "batch_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["batch_id", "final_disposition", "action_ids", "verification_ids"]
+      }
+    },
+    "verification": { "type": "object" },
+    "lessons": { "type": "array", "items": { "type": "string" } },
+    "knowledge": { "type": "object" },
+    "skill_update_suggestions": { "type": "array" }
+  }
+}

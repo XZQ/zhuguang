@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "outcome-verify output",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "result",
+    "checks",
+    "failed_conditions",
+    "evidence_refs",
+    "next_actions"
+  ],
+  "properties": {
+    "incident_id": { "type": "string" },
+    "result": { "enum": ["verified", "reopened", "manual_review"] },
+    "checks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["passed", "expected", "observed"],
+        "properties": {
+          "passed": { "type": "boolean" },
+          "expected": { "type": "object" },
+          "observed": { "type": "object" }
+        }
+      }
+    },
+    "failed_conditions": { "type": "array", "items": { "type": "string" } },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } },
+    "next_actions": { "type": "array", "items": { "type": "string" } },
+    "incident_status": { "enum": ["OPEN", "CONTAINED", "RESOLVED", "CLOSED"] }
+  }
+}

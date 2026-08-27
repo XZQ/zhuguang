@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "coldchain-risk-assess input",
+  "type": "object",
+  "required": ["incident_id", "device_series", "affected_batches", "policy"],
+  "properties": {
+    "incident_id": { "type": "string", "minLength": 1 },
+    "device_series": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["observed_at", "temp_c"],
+        "properties": {
+          "observed_at": { "type": "string", "format": "date-time" },
+          "temp_c": { "type": "number" }
+        }
+      }
+    },
+    "affected_batches": { "type": "array", "items": { "type": "object" } },
+    "policy": { "type": "object" },
+    "manual_measurements": { "type": "array", "items": { "type": "object" } }
+  }
+}

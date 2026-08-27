@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "work-order-dispatch output",
+  "type": "object",
+  "required": ["ok", "waiting"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "waiting": { "type": "boolean" },
+    "data": { "type": ["object", "null"] },
+    "error": { "type": ["object", "null"] },
+    "request_id": { "type": "string" },
+    "audit_ref": { "type": ["string", "null"] },
+    "compensation": { "type": "string" },
+    "approval": { "type": ["object", "null"] }
+  }
+}

@@ -13,10 +13,15 @@
 """
 
 from __future__ import annotations
+
 import uuid
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .. import mcp, trace
+from ..domain import Hypothesis
+
+if TYPE_CHECKING:
+    from ..mcp.p0 import MCPService
 
 
 def rootcause_drilldown(anomaly: dict, benchmark: dict | None = None,
@@ -33,7 +38,6 @@ def rootcause_drilldown(anomaly: dict, benchmark: dict | None = None,
     """
     tid = trace_id or trace.new_trace_id()
     atype = anomaly.get("type", "")
-    sid = anomaly.get("store_id", "")
     with trace.span("rootcause-drilldown", "skill", tid,
                     input={"anomaly_id": anomaly.get("anomaly_id"), "type": atype}) as sp:
         # 按异常类型分发到不同根因逻辑
@@ -62,8 +66,11 @@ def _drill_coldchain(anomaly: dict, bench: dict | None, tid: str) -> dict:
         hypotheses.append({
             "hypothesis": "压缩机/制冷组件故障",
             "confidence": 0.85,
-            "reasoning": f"同商圈对标店温度正常(p50={bench.get('p50')}℃),排除天气/环境因素,"
-                         f"目标店 max_temp={ev.get('max_temp')}℃ 显著偏高(zscore={bench.get('zscore')})",
+            "reasoning": (
+                f"同商圈对标店温度正常(p50={bench.get('p50')}℃),排除天气/环境因素,"
+                f"目标店 max_temp={ev.get('max_temp')}℃ 显著偏高"
+                f"(zscore={bench.get('zscore')})"
+            ),
         })
     else:
         hypotheses.append({
@@ -173,3 +180,117 @@ def _drill_generic(anomaly: dict, bench: dict | None, tid: str) -> dict:
         "check_plan": {"next_actions": ["人工介入"], "validation": ""},
         "rag_hits": [],
     }
+
+
+def diagnose_coldchain_hypotheses(
+    *,
+    service: MCPService,
+    incident_id: str,
+    store_id: str,
+    device_id: str,
+    trace_id: str,
+) -> dict[str, Any]:
+    """Build evidence-linked Top-K hypotheses from the stateful device context."""
+    with trace.span(
+        "rootcause-drilldown",
+        "skill",
+        trace_id,
+        input={"incident_id": incident_id, "device_id": device_id},
+    ) as sp:
+        with trace.span(
+            "query_device_context",
+            "mcp",
+            trace_id,
+            input={"device_id": device_id, "facets": ["health", "door", "power", "temperature"]},
+        ) as query_span:
+            response = service.query_device_context(
+                store_id=store_id,
+                device_id=device_id,
+                facets=["health", "door", "power", "temperature", "maintenance"],
+                actor="Diagnoser",
+            )
+            query_span.output = {
+                "ok": response["ok"],
+                "request_id": response["request_id"],
+                "partial": response["partial"],
+            }
+        if not response["ok"]:
+            result = {
+                "hypotheses": [
+                    Hypothesis(
+                        hypothesis_id=f"{incident_id}:insufficient-evidence",
+                        label="insufficient_evidence",
+                        confidence=0.2,
+                        missing_evidence=["device_context"],
+                        next_checks=["request_manual_measurement", "retry_device_query"],
+                        policy_notes=["root_cause_not_confirmed"],
+                    )
+                ],
+                "evidence": [],
+                "quality": "partial",
+                "rag": {"status": "disabled", "hits": []},
+            }
+            sp.output = {"quality": "partial", "top": "insufficient_evidence"}
+            return result
+
+        device = response["data"]["devices"][0]
+        evidence = response["data"].get("evidence", [])
+        evidence_ids = [item["evidence_id"] for item in evidence]
+        health = device.get("health", {})
+        power_on = device.get("power", {}).get("state") == "on"
+        door_closed = device.get("door", {}).get("state") == "closed"
+        compressor_stalled = health.get("compressor_state") in {"stalled", "fault", "off"}
+
+        compressor_confidence = 0.94 if power_on and door_closed and compressor_stalled else 0.55
+        hypotheses = [
+            Hypothesis(
+                hypothesis_id=f"{incident_id}:compressor-failure",
+                label="compressor_failure",
+                confidence=compressor_confidence,
+                supporting_evidence_ids=evidence_ids if compressor_confidence >= 0.8 else [],
+                contradicting_evidence_ids=[],
+                missing_evidence=["compressor_current"] if compressor_confidence < 0.8 else [],
+                next_checks=["inspect_compressor", "confirm_recovery_samples"],
+                policy_notes=["cross_store_benchmark_is_supporting_only"],
+            ),
+            Hypothesis(
+                hypothesis_id=f"{incident_id}:door-left-open",
+                label="door_left_open",
+                confidence=0.12 if door_closed else 0.72,
+                supporting_evidence_ids=[] if door_closed else evidence_ids,
+                contradicting_evidence_ids=evidence_ids if door_closed else [],
+                missing_evidence=["door_event_history"],
+                next_checks=["inspect_door_seal"],
+            ),
+            Hypothesis(
+                hypothesis_id=f"{incident_id}:power-failure",
+                label="power_failure",
+                confidence=0.08 if power_on else 0.8,
+                supporting_evidence_ids=[] if power_on else evidence_ids,
+                contradicting_evidence_ids=evidence_ids if power_on else [],
+                missing_evidence=["voltage_history"],
+                next_checks=["inspect_power_quality"],
+            ),
+            Hypothesis(
+                hypothesis_id=f"{incident_id}:sensor-fault",
+                label="sensor_fault",
+                confidence=0.22,
+                supporting_evidence_ids=[],
+                contradicting_evidence_ids=[],
+                missing_evidence=["backup_sensor", "manual_measurement"],
+                next_checks=["compare_backup_sensor", "request_manual_measurement"],
+            ),
+        ]
+        hypotheses.sort(key=lambda item: item.confidence, reverse=True)
+        result = {
+            "hypotheses": hypotheses[:3],
+            "evidence": evidence,
+            "quality": "good" if evidence else "partial",
+            "rag": {"status": "disabled", "hits": []},
+        }
+        sp.output = {
+            "quality": result["quality"],
+            "top": hypotheses[0].label,
+            "top_confidence": hypotheses[0].confidence,
+        }
+        return result

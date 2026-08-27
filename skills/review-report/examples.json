@@ -1,0 +1,49 @@
+{
+  "success": {
+    "input": {
+      "incident": { "incident_id": "INC-COLD-A" },
+      "verification": { "result": "verified" },
+      "scenario": { "scenario_id": "coldchain-compressor-failure" }
+    },
+    "output": {
+      "report_id": "review:INC-COLD-A",
+      "incident_id": "INC-COLD-A",
+      "scenario_id": "coldchain-compressor-failure",
+      "trace_id": "tr_demo",
+      "root_cause": { "label": "compressor_failure", "confidence": 0.94 },
+      "actions": [{ "action_id": "INC-COLD-A:repair", "status": "completed" }],
+      "batch_reviews": [
+        {
+          "batch_id": "BATCH-S03-DAIRY-001",
+          "final_disposition": "disposed",
+          "action_ids": ["INC-COLD-A:batch:BATCH-S03-DAIRY-001"],
+          "verification_ids": ["INC-COLD-A:verify:batches"]
+        }
+      ],
+      "verification": { "result": "verified" },
+      "lessons": ["device_recovery_does_not_release_goods"],
+      "knowledge": { "retrieval_status": "disabled", "candidate_status": "pending_human_review" },
+      "skill_update_suggestions": []
+    }
+  },
+  "failure": {
+    "input": {
+      "incident": { "incident_id": "INC-COLD-X" },
+      "verification": { "result": "manual_review" },
+      "scenario": { "scenario_id": "coldchain-partial" }
+    },
+    "output": {
+      "report_id": "review:INC-COLD-X",
+      "incident_id": "INC-COLD-X",
+      "scenario_id": "coldchain-partial",
+      "trace_id": "tr_partial",
+      "root_cause": { "label": "insufficient_evidence", "confidence": 0.2 },
+      "actions": [],
+      "batch_reviews": [],
+      "verification": { "result": "manual_review" },
+      "lessons": [],
+      "knowledge": { "retrieval_status": "disabled", "candidate_status": "pending_human_review" },
+      "skill_update_suggestions": []
+    }
+  }
+}
