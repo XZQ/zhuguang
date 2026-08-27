@@ -1,0 +1,40 @@
+{
+  "success": {
+    "input": {
+      "incident_id": "INC-COLD-A",
+      "expected_conditions": { "device": "recovered", "batches": "terminal" },
+      "action_ids": ["INC-COLD-A:repair"]
+    },
+    "output": {
+      "incident_id": "INC-COLD-A",
+      "result": "verified",
+      "checks": {
+        "device": { "passed": true, "expected": {}, "observed": {} },
+        "batches": { "passed": true, "expected": {}, "observed": {} }
+      },
+      "failed_conditions": [],
+      "evidence_refs": ["ev_device", "ev_batches"],
+      "next_actions": ["enter_learn"],
+      "incident_status": "RESOLVED"
+    }
+  },
+  "failure": {
+    "input": {
+      "incident_id": "INC-COLD-E",
+      "expected_conditions": { "device": "recovered", "batches": "terminal" },
+      "action_ids": ["INC-COLD-E:repair"]
+    },
+    "output": {
+      "incident_id": "INC-COLD-E",
+      "result": "manual_review",
+      "checks": {
+        "device": { "passed": true, "expected": {}, "observed": {} },
+        "batches": { "passed": false, "expected": {}, "observed": {} }
+      },
+      "failed_conditions": ["batches"],
+      "evidence_refs": ["ev_device", "ev_batches"],
+      "next_actions": ["keep_sales_hold", "request_batch_disposition_approval"],
+      "incident_status": "CONTAINED"
+    }
+  }
+}

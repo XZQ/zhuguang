@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "rootcause-drilldown output",
+  "type": "object",
+  "required": ["hypotheses", "evidence", "quality", "rag"],
+  "properties": {
+    "hypotheses": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "hypothesis_id",
+          "label",
+          "confidence",
+          "supporting_evidence_ids",
+          "contradicting_evidence_ids",
+          "missing_evidence",
+          "next_checks"
+        ],
+        "properties": {
+          "hypothesis_id": { "type": "string" },
+          "label": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "supporting_evidence_ids": { "type": "array", "items": { "type": "string" } },
+          "contradicting_evidence_ids": { "type": "array", "items": { "type": "string" } },
+          "missing_evidence": { "type": "array", "items": { "type": "string" } },
+          "next_checks": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "evidence": { "type": "array", "items": { "type": "object" } },
+    "quality": { "enum": ["good", "partial"] },
+    "rag": {
+      "type": "object",
+      "required": ["status", "hits"],
+      "properties": {
+        "status": { "enum": ["disabled", "enabled"] },
+        "hits": { "type": "array" }
+      }
+    }
+  }
+}

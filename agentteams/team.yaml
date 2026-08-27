@@ -1,26 +1,20 @@
-# AgentTeams Team — 店巡小队(1 Team Leader + 4 Worker)
-# Team Leader = 总控 Orchestrator;4 Worker = 巡检/诊断/处置/稽核
-# Manager 仅与 Team Leader 通信,不绕过 Leader 直接调度 Worker(严格 delegation 边界)
+# AgentTeams v1.2.3 Team：一个 Team Leader + 四个领域 Worker。
 apiVersion: agentteams.io/v1beta1
 kind: Team
 metadata:
   name: dianxun-patrol-team
 spec:
-  description: 店巡异常闭环小队 — 多源聚合→异常识别→跨店诊断→处置→验证→复盘
+  description: 冷柜失温事故五阶段闭环团队；负责证据、诊断、受控执行、独立验证和复盘。
   heartbeatEvery: 30m
+  peerMentions: true
   workerMembers:
-    - name: orchestrator       # Team Leader
+    - name: orchestrator
       role: team_leader
-    - name: sentry             # 巡检 Worker
+    - name: sentry
       role: worker
-    - name: diagnoser          # 诊断 Worker
+    - name: diagnoser
       role: worker
-    - name: executor           # 处置 Worker
+    - name: executor
       role: worker
-    - name: auditor            # 稽核 Worker
+    - name: auditor
       role: worker
-  # 人类协调员(店长/总部运营)可按需加入,Level 2 可与 Leader+Workers 对话
-  humanMembers:
-    - name: store-manager
-      role: coordinator
-  peerMentions: true           # 允许 Worker 间相互 @mention(协同必需)

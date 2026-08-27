@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dianxun-mcp-state
+  namespace: dianxun
+  labels:
+    app.kubernetes.io/name: dianxun-mcp
+    app.kubernetes.io/part-of: dianxun-agent
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

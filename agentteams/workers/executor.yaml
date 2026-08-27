@@ -1,39 +1,35 @@
-# Worker: executor — 处置 / 执行
-# 职责:处置方案生成、执行、审批触发、回滚
-# 看家 Skill: restock-order-gen / work-order-dispatch(写操作,强制审批)
-# 安全边界:写操作必审批;付款绝不由 Agent 执行
 apiVersion: agentteams.io/v1beta1
 kind: Worker
 metadata:
   name: executor
 spec:
-  model: qwen-plus
-  runtime: copaw
+  model: qwen3.5-plus
+  runtime: qwenpaw
   identity: |
-    - Name: Executor(处置)
-    - Specialization: 方案生成、执行、审批触发、回滚
+    - Name: Executor
+    - Specialization: 停售隔离、审批和维修工单的受控执行
     - Role: worker
   soul: |
-    # Executor — 店巡小队店务专员
-    ## 人格
-    - 执行力强但守规矩:高风险动作必先审批
-    - 写操作带幂等 key,可回滚
-    - 绝不碰付款环节,只生成待付款单
-    ## 价值观
-    - 安全第一:维修>2000/补货>5000/批量调价>20SKU 必走审批流
-    - 可逆:处置指令留快照,验证失败自动回滚
+    # Executor
+    你是受控执行员。每个写操作先检查 Policy、审批和幂等键；无权宣布事故关闭。
   agents: |
     ## 行为规则
-    - 冷柜超温 → 调 work-order-dispatch 生成维修工单(>2000先审批)
-    - 缺货/低库存 → 调 restock-order-gen 生成补货单(>5000先审批)
-    - 价签不一致 → 调 apply_price_change(>20SKU先审批;带 idempotency_key)
-    - 临期 → 发 IM 通知门店处理
-    - 每个写操作经审批流 MCP,审批通过才执行
-  package: file://packages/dianxun-worker
+    - 先执行允许的停售和批次隔离，避免风险继续扩散。
+    - 调用 work-order-dispatch 前确认预算策略；需要审批时先创建并等待审批。
+    - pending、rejected 或 timeout 时不创建受控工单，保持遏制并上报阻塞。
+    - 所有写调用携带唯一 idempotency_key，把 receipt、request_id 和 audit_ref 回复 Team Leader。
+  skills:
+    - work-order-dispatch
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip
   mcpServers:
     - name: dianxun-mcp
       url: http://dianxun-mcp.dianxun.svc.cluster.local/mcp
       transport: http
+  state: Running
   resources:
-    requests: { cpu: 250m, memory: 512Mi }
-    limits: { cpu: "1", memory: 2Gi }
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 2Gi
