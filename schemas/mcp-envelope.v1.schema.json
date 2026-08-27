@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/XZQ/zhuguang/schemas/mcp-envelope.v1.schema.json",
+  "title": "Dianxun MCP Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ok",
+    "data",
+    "error",
+    "request_id",
+    "source",
+    "source_ts",
+    "partial",
+    "audit_ref"
+  ],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "data": {},
+    "error": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["code", "message"],
+          "properties": {
+            "code": { "type": "string", "minLength": 1 },
+            "message": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "request_id": { "type": "string", "minLength": 1 },
+    "source": { "type": "string", "minLength": 1 },
+    "source_ts": { "type": "string" },
+    "partial": { "type": "boolean" },
+    "audit_ref": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "ok": { "const": true } }, "required": ["ok"] },
+      "then": { "properties": { "error": { "type": "null" } } }
+    },
+    {
+      "if": { "properties": { "ok": { "const": false } }, "required": ["ok"] },
+      "then": { "properties": { "error": { "type": "object" } } }
+    }
+  ]
+}

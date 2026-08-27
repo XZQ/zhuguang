@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "seed_id": "dianxun-42",
+  "anchor_time": "2026-08-28T09:00:00+08:00",
+  "stores": [
+    {
+      "store_id": "S03",
+      "tenant_id": "demo",
+      "name": "便利S03号店",
+      "timezone": "Asia/Shanghai"
+    },
+    {
+      "store_id": "S05",
+      "tenant_id": "demo",
+      "name": "便利S05号店",
+      "timezone": "Asia/Shanghai"
+    },
+    {
+      "store_id": "S07",
+      "tenant_id": "demo",
+      "name": "便利S07号店",
+      "timezone": "Asia/Shanghai"
+    },
+    {
+      "store_id": "S08",
+      "tenant_id": "demo",
+      "name": "便利S08号店",
+      "timezone": "Asia/Shanghai"
+    }
+  ],
+  "devices": [
+    {
+      "device_id": "FROST-S03",
+      "store_id": "S03",
+      "model": "FROST-X100",
+      "health_state": "normal",
+      "door_state": "closed",
+      "power_state": "on",
+      "compressor_state": "running",
+      "ambient_temp_c": 26.0
+    },
+    {
+      "device_id": "FROST-S07",
+      "store_id": "S07",
+      "model": "FROST-X100",
+      "health_state": "normal",
+      "door_state": "closed",
+      "power_state": "on",
+      "compressor_state": "running",
+      "ambient_temp_c": 26.0
+    }
+  ],
+  "device_readings": [
+    {
+      "reading_id": "seed-FROST-S03-01",
+      "device_id": "FROST-S03",
+      "observed_at": "2026-08-28T06:00:00+08:00",
+      "temp_c": 3.6,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S03-02",
+      "device_id": "FROST-S03",
+      "observed_at": "2026-08-28T06:30:00+08:00",
+      "temp_c": 3.3,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S03-03",
+      "device_id": "FROST-S03",
+      "observed_at": "2026-08-28T07:00:00+08:00",
+      "temp_c": 3.4,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S03-04",
+      "device_id": "FROST-S03",
+      "observed_at": "2026-08-28T07:30:00+08:00",
+      "temp_c": 3.4,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S07-01",
+      "device_id": "FROST-S07",
+      "observed_at": "2026-08-28T06:00:00+08:00",
+      "temp_c": 3.6,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S07-02",
+      "device_id": "FROST-S07",
+      "observed_at": "2026-08-28T06:30:00+08:00",
+      "temp_c": 3.6,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S07-03",
+      "device_id": "FROST-S07",
+      "observed_at": "2026-08-28T07:00:00+08:00",
+      "temp_c": 3.7,
+      "quality": "good",
+      "source": "seed"
+    },
+    {
+      "reading_id": "seed-FROST-S07-04",
+      "device_id": "FROST-S07",
+      "observed_at": "2026-08-28T07:30:00+08:00",
+      "temp_c": 3.3,
+      "quality": "good",
+      "source": "seed"
+    }
+  ],
+  "inventory_batches": [
+    {
+      "batch_id": "BATCH-S03-DAIRY-001",
+      "store_id": "S03",
+      "device_id": "FROST-S03",
+      "sku_id": "MILK-001",
+      "product_name": "巴氏鲜奶",
+      "quantity": 24,
+      "storage_min_c": 0.0,
+      "storage_max_c": 6.0,
+      "disposition": "unknown",
+      "safe_for_sale": true,
+      "policy_ref": "coldchain-demo:1.0.0"
+    },
+    {
+      "batch_id": "BATCH-S03-FRESH-001",
+      "store_id": "S03",
+      "device_id": "FROST-S03",
+      "sku_id": "SANDWICH-001",
+      "product_name": "鲜食三明治",
+      "quantity": 18,
+      "storage_min_c": 0.0,
+      "storage_max_c": 8.0,
+      "disposition": "unknown",
+      "safe_for_sale": true,
+      "policy_ref": "coldchain-demo:1.0.0"
+    },
+    {
+      "batch_id": "BATCH-S07-DAIRY-001",
+      "store_id": "S07",
+      "device_id": "FROST-S07",
+      "sku_id": "YOGURT-001",
+      "product_name": "低温酸奶",
+      "quantity": 30,
+      "storage_min_c": 0.0,
+      "storage_max_c": 6.0,
+      "disposition": "unknown",
+      "safe_for_sale": true,
+      "policy_ref": "coldchain-demo:1.0.0"
+    }
+  ]
+}

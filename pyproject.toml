@@ -8,11 +8,16 @@ version = "0.2.0.dev0"
 description = "Stateful multi-agent incident response demo for convenience-store operations"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
   { name = "XZQ" },
 ]
 dependencies = []
+
+[project.scripts]
+dianxun = "dianxun.cli:main"
+dianxun-mcp = "dianxun.mcp.server:main"
 
 [project.urls]
 Repository = "https://github.com/XZQ/zhuguang"
@@ -20,6 +25,13 @@ Competition = "https://www.goaihz.com/tracks"
 
 [tool.setuptools]
 package-dir = { "" = "src" }
+
+[tool.setuptools.data-files]
+"share/dianxun/config" = ["config/project-facts.json"]
+"share/dianxun/config/policies" = ["config/policies/coldchain-demo.v1.json"]
+"share/dianxun/demo/state" = ["demo/state/seed.json"]
+"share/dianxun/demo/state/scenarios" = ["demo/state/scenarios/*.json"]
+"share/dianxun/schemas" = ["schemas/*.json"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

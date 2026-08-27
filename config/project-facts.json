@@ -81,6 +81,8 @@
   },
   "schemas": {
     "incident": "schemas/incident-case.v1.schema.json",
+    "mcp_envelope": "schemas/mcp-envelope.v1.schema.json",
+    "scenario": "schemas/scenario.v1.schema.json",
     "policy": "config/policies/coldchain-demo.v1.json"
   }
 }
