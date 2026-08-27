@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
 from .enums import (
@@ -309,10 +310,17 @@ class IncidentService:
         latest_by_subject: dict[str, Verification] = {}
         for verification in case.verifications:
             latest_by_subject[verification.subject] = verification
-        required_subjects = {"device", "batches", "sales_hold"}
-        verified = required_subjects <= latest_by_subject.keys() and all(
-            latest_by_subject[subject].result is VerificationResult.PASSED
-            for subject in required_subjects
+        latest_updates = {
+            "device": [
+                *[row["updated_at"] for row in devices if row["device_id"] in affected_assets],
+                *[row["updated_at"] for row in workorders],
+            ],
+            "batches": [row["updated_at"] for row in batches],
+            "sales_hold": [row["released_at"] or row["applied_at"] for row in holds],
+        }
+        verified = all(
+            self._verification_is_fresh(latest_by_subject.get(subject), updates)
+            for subject, updates in latest_updates.items()
         )
 
         if batch_terminal and not unresolved_actions and not pending_approvals and verified:
@@ -334,6 +342,18 @@ class IncidentService:
             case.work_status = WorkStatus.RUNNING
         return self.save(case)
 
+    @staticmethod
+    def _verification_is_fresh(
+        verification: Verification | None,
+        state_updates: list[str],
+    ) -> bool:
+        if verification is None or verification.result is not VerificationResult.PASSED:
+            return False
+        if not state_updates:
+            return False
+        verified_at = _parse_timestamp(verification.verified_at)
+        return all(verified_at >= _parse_timestamp(updated_at) for updated_at in state_updates)
+
     def close_after_learning(self, incident_id: str) -> IncidentCase:
         case = self.get(incident_id)
         if case.phase is not Phase.LEARN or case.incident_status is not IncidentStatus.RESOLVED:
@@ -345,3 +365,8 @@ class IncidentService:
     @staticmethod
     def snapshot(case: IncidentCase) -> dict[str, Any]:
         return asdict(case)
+
+
+def _parse_timestamp(value: str) -> datetime:
+    parsed = datetime.fromisoformat(value)
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)

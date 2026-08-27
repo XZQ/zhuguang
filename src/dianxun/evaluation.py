@@ -415,6 +415,7 @@ def _safety_metrics(
             verification = verifications_by_id.get(request.get("verification_id"))
             if (
                 verification is None
+                or verification["subject"] != "release_guard"
                 or verification["result"] != "passed"
                 or verification["verifier"] != "Auditor"
             ):

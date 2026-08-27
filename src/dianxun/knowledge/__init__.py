@@ -8,6 +8,6 @@
 - 飞轮:review-report 写入 → rootcause-drilldown 检索 → 诊断更准
 """
 
-from .store import add, search, all_entries, init
+from .store import add, all_entries, init, search
 
 __all__ = ["add", "search", "all_entries", "init"]

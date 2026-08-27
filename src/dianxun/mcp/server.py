@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import hmac
 import json
+import logging
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
+from ..validation import validate_json
 from .p0 import MCPService, default_service
+
+LOGGER = logging.getLogger(__name__)
+MAX_REQUEST_BYTES = 1024 * 1024
 
 
 def _object_schema(
@@ -265,7 +271,7 @@ def tools_list() -> list[dict[str, Any]]:
 
 def tool_call(
     name: str,
-    arguments: dict[str, Any],
+    arguments: Any,
     *,
     actor: str | None = None,
     service: MCPService | None = None,
@@ -276,40 +282,69 @@ def tool_call(
             "content": [{"type": "text", "text": f"Unknown tool: {name}"}],
             "isError": True,
         }
+    if not isinstance(arguments, dict):
+        result = _adapter_error("INVALID_ARGUMENT", "tool arguments must be a JSON object")
+        return _tool_result(result)
+    validation_errors = validate_json(arguments, tool["inputSchema"], path="arguments")
+    if validation_errors:
+        result = _adapter_error(
+            "INVALID_ARGUMENT",
+            "; ".join(validation_errors[:5]),
+            request_id=arguments.get("request_id", "unassigned"),
+        )
+        return _tool_result(result)
     resolved_actor = actor or tool.get("actor")
     allowed = tool.get("allowedActors")
     if allowed and resolved_actor not in allowed:
-        result = {
-            "ok": False,
-            "data": None,
-            "error": {"code": "FORBIDDEN", "message": "Trusted human actor is required"},
-            "request_id": arguments.get("request_id", "unassigned"),
-            "source": "dianxun-mcp-adapter",
-            "source_ts": "",
-            "partial": False,
-            "audit_ref": None,
-        }
+        result = _adapter_error(
+            "FORBIDDEN",
+            "Trusted human actor is required",
+            request_id=arguments.get("request_id", "unassigned"),
+        )
     else:
         clean_arguments = dict(arguments)
-        clean_arguments.pop("actor", None)
         clean_arguments["actor"] = resolved_actor
         try:
             fn = getattr(service or default_service(), tool["method"])
             result = fn(**clean_arguments)
-        except TypeError as exc:
-            result = {
-                "ok": False,
-                "data": None,
-                "error": {"code": "INVALID_ARGUMENT", "message": str(exc)},
-                "request_id": arguments.get("request_id", "unassigned"),
-                "source": "dianxun-mcp-adapter",
-                "source_ts": "",
-                "partial": False,
-                "audit_ref": None,
-            }
+        except (KeyError, TypeError, ValueError) as exc:
+            result = _adapter_error(
+                "INVALID_ARGUMENT",
+                str(exc),
+                request_id=arguments.get("request_id", "unassigned"),
+            )
+        except Exception:  # noqa: BLE001 - adapter must return a stable boundary
+            LOGGER.exception("Unhandled MCP tool failure for %s", name)
+            result = _adapter_error(
+                "INTERNAL_ERROR",
+                "The tool failed unexpectedly; inspect server logs with the request_id",
+                request_id=arguments.get("request_id", "unassigned"),
+            )
+    return _tool_result(result)
+
+
+def _tool_result(result: dict[str, Any]) -> dict[str, Any]:
     return {
         "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, default=str)}],
         "isError": not result.get("ok", False),
+    }
+
+
+def _adapter_error(
+    code: str,
+    message: str,
+    *,
+    request_id: str = "unassigned",
+) -> dict[str, Any]:
+    return {
+        "ok": False,
+        "data": None,
+        "error": {"code": code, "message": message},
+        "request_id": request_id,
+        "source": "dianxun-mcp-adapter",
+        "source_ts": "",
+        "partial": False,
+        "audit_ref": None,
     }
 
 
@@ -330,17 +365,24 @@ class MCPHandler(BaseHTTPRequestHandler):
         auth = self.headers.get("Authorization", "")
         supplied = auth.removeprefix("Bearer ") if auth.startswith("Bearer ") else ""
         if mapping_raw:
+            if not supplied:
+                return False, None
             try:
                 mapping = json.loads(mapping_raw)
             except json.JSONDecodeError:
                 return False, None
+            if not isinstance(mapping, dict):
+                return False, None
             actor = mapping.get(supplied)
-            return actor is not None, actor
+            return isinstance(actor, str) and bool(actor), actor if isinstance(actor, str) else None
         if single_token:
-            return supplied == single_token, None
+            return bool(supplied) and hmac.compare_digest(supplied, single_token), None
         return True, None
 
     def do_POST(self) -> None:  # noqa: N802
+        if self.path != "/mcp":
+            self._send(404, {"error": "Not found"})
+            return
         authenticated, actor = self._authenticate()
         if not authenticated:
             self._send(
@@ -350,11 +392,22 @@ class MCPHandler(BaseHTTPRequestHandler):
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            request = json.loads(self.rfile.read(length) or b"{}")
+            if length <= 0 or length > MAX_REQUEST_BYTES:
+                raise ValueError("invalid content length")
+            request = json.loads(
+                self.rfile.read(length),
+                parse_constant=_reject_nonfinite,
+            )
         except (ValueError, json.JSONDecodeError):
             self._send(
                 400,
                 {"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}},
+            )
+            return
+        if not isinstance(request, dict):
+            self._send(
+                400,
+                {"jsonrpc": "2.0", "error": {"code": -32600, "message": "Invalid Request"}},
             )
             return
         method = request.get("method")
@@ -369,6 +422,16 @@ class MCPHandler(BaseHTTPRequestHandler):
             result = {"tools": tools_list()}
         elif method == "tools/call":
             params = request.get("params", {})
+            if not isinstance(params, dict):
+                self._send(
+                    200,
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {"code": -32602, "message": "Invalid params"},
+                    },
+                )
+                return
             result = tool_call(
                 params.get("name", ""),
                 params.get("arguments", {}),
@@ -387,6 +450,9 @@ class MCPHandler(BaseHTTPRequestHandler):
         self._send(200, {"jsonrpc": "2.0", "id": request_id, "result": result})
 
     def do_GET(self) -> None:  # noqa: N802
+        if self.path != "/health":
+            self._send(404, {"error": "Not found"})
+            return
         self._send(
             200,
             {"service": "dianxun-mcp", "version": "0.2.0", "tools": len(TOOLS)},
@@ -394,6 +460,10 @@ class MCPHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args: Any) -> None:
         return
+
+
+def _reject_nonfinite(value: str) -> None:
+    raise ValueError(f"Non-finite JSON number is not allowed: {value}")
 
 
 def main() -> None:

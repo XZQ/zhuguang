@@ -8,13 +8,14 @@
 """
 
 from __future__ import annotations
+
 import time
-from typing import Any, Literal
+from typing import Literal
 
 from ._csv_store import ToolResult
 
 _WORKORDERS: dict[str, dict] = {}
-_IDEMPOTENT: dict[str, str] = {}   # idempotency_key -> workorder_id
+_IDEMPOTENT: dict[str, str] = {}  # idempotency_key -> workorder_id
 _SEQ = 0
 
 WoStatus = Literal["created", "assigned", "in_progress", "done", "closed"]
@@ -26,9 +27,14 @@ def _next_id() -> str:
     return f"wo_{int(time.time())}_{_SEQ}"
 
 
-def create_workorder(store_id: str, equipment_id: str, fault: str,
-                     budget: float, idempotency_key: str,
-                     assignee: str = "服务商A") -> ToolResult:
+def create_workorder(
+    store_id: str,
+    equipment_id: str,
+    fault: str,
+    budget: float,
+    idempotency_key: str,
+    assignee: str = "服务商A",
+) -> ToolResult:
     """创建维修工单。金额 > 2000 元需调用方先过审批(传 approval_id)。"""
     if idempotency_key in _IDEMPOTENT:
         wid = _IDEMPOTENT[idempotency_key]
@@ -36,9 +42,14 @@ def create_workorder(store_id: str, equipment_id: str, fault: str,
     wid = _next_id()
     sla_h = 4 if budget > 2000 else 8
     rec = {
-        "workorder_id": wid, "store_id": store_id, "equipment_id": equipment_id,
-        "fault": fault, "budget": budget, "assignee": assignee,
-        "sla_deadline": f"+{sla_h}h", "status": "assigned" if assignee else "created",
+        "workorder_id": wid,
+        "store_id": store_id,
+        "equipment_id": equipment_id,
+        "fault": fault,
+        "budget": budget,
+        "assignee": assignee,
+        "sla_deadline": f"+{sla_h}h",
+        "status": "assigned" if assignee else "created",
         "created_at": time.time(),
     }
     _WORKORDERS[wid] = rec

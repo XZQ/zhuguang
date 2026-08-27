@@ -7,6 +7,7 @@
 """
 
 from __future__ import annotations
+
 import sys
 
 # ANSI 颜色(广泛兼容 macOS/Linux 终端)
@@ -53,6 +54,7 @@ def _w(s: str) -> str:
 
 def _strip_ansi(s: str) -> str:
     import re
+
     return re.sub(r"\033\[[0-9;]*m", "", s)
 
 
@@ -64,7 +66,7 @@ def banner(title: str) -> None:
 
 
 def task_start(task_id: str, trace_id: str, scope: dict) -> None:
-    print(_w(f"\n{BOLD}{'='*60}{RESET}"))
+    print(_w(f"\n{BOLD}{'=' * 60}{RESET}"))
     print(_w(f"{CYAN}🚀 任务启动{RESET} {BOLD}{task_id}{RESET}  {GRAY}trace={trace_id}{RESET}"))
     print(_w(f"{GRAY}   范围: {scope}{RESET}"))
 
@@ -100,9 +102,9 @@ def error(msg: str) -> None:
 
 
 def divider() -> None:
-    print(_w(f"{GRAY}{'·'*60}{RESET}"))
+    print(_w(f"{GRAY}{'·' * 60}{RESET}"))
 
 
 def section(title: str) -> None:
     print(_w(f"\n{BOLD}{title}{RESET}"))
-    print(_w(f"{GRAY}{'─'*48}{RESET}"))
+    print(_w(f"{GRAY}{'─' * 48}{RESET}"))

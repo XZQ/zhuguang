@@ -7,6 +7,7 @@
 """
 
 from __future__ import annotations
+
 import csv
 from pathlib import Path
 from typing import Any
@@ -31,5 +32,9 @@ class ToolResult(dict):
     """统一返回结构:带 degraded 标记,方便 Agent 决策兜底。"""
 
     def __init__(self, data: Any = None, degraded: bool = False, error: str | None = None):
-        super().__init__(rows=data if isinstance(data, list) else [data] if data is not None else [],
-                         degraded=degraded, error=error, count=len(data) if isinstance(data, list) else (1 if data else 0))
+        super().__init__(
+            rows=data if isinstance(data, list) else [data] if data is not None else [],
+            degraded=degraded,
+            error=error,
+            count=len(data) if isinstance(data, list) else (1 if data else 0),
+        )

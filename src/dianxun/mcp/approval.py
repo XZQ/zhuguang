@@ -8,8 +8,9 @@
 """
 
 from __future__ import annotations
+
 import time
-from typing import Any, Literal
+from typing import Literal
 
 from ._csv_store import ToolResult
 
@@ -25,9 +26,14 @@ def _next_id() -> str:
     return f"apr_{int(time.time())}_{_SEQ}"
 
 
-def create_approval(subject: str, type: str, payload: dict,
-                    approvers: list[str], timeout_min: int = 60,
-                    auto_decide: str | None = "approved") -> ToolResult:
+def create_approval(
+    subject: str,
+    type: str,
+    payload: dict,
+    approvers: list[str],
+    timeout_min: int = 60,
+    auto_decide: str | None = "approved",
+) -> ToolResult:
     """创建审批单。
 
     安全边界:审批人名单外部配置,Agent 只能创建不能改。
@@ -37,9 +43,15 @@ def create_approval(subject: str, type: str, payload: dict,
     aid = _next_id()
     status: ApprovalStatus = auto_decide if auto_decide else "pending"  # type: ignore
     rec = {
-        "approval_id": aid, "subject": subject, "type": type, "payload": payload,
-        "approvers": approvers, "timeout_min": timeout_min,
-        "status": status, "created_at": time.time(), "decided_at": time.time() if auto_decide else None,
+        "approval_id": aid,
+        "subject": subject,
+        "type": type,
+        "payload": payload,
+        "approvers": approvers,
+        "timeout_min": timeout_min,
+        "status": status,
+        "created_at": time.time(),
+        "decided_at": time.time() if auto_decide else None,
     }
     _APPROVALS[aid] = rec
     print(f"  🔖 [审批 {status}] {type}: {subject}")

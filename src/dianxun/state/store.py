@@ -597,17 +597,21 @@ class StateStore:
         self,
         conn: sqlite3.Connection,
         *,
-        tool_name: str,
         idempotency_key: str,
     ) -> dict[str, Any] | None:
         row = conn.execute(
-            """SELECT response_json, audit_id FROM idempotency
-               WHERE idempotency_key = ? AND tool_name = ?""",
-            (idempotency_key, tool_name),
+            """SELECT i.tool_name, i.response_json, i.audit_id, a.actor, a.request_json
+               FROM idempotency AS i
+               LEFT JOIN audit_log AS a ON a.audit_id = i.audit_id
+               WHERE i.idempotency_key = ?""",
+            (idempotency_key,),
         ).fetchone()
         if row is None:
             return None
         return {
+            "tool_name": row["tool_name"],
+            "actor": row["actor"],
+            "request": json.loads(row["request_json"]) if row["request_json"] else None,
             "data": json.loads(row["response_json"]),
             "audit_id": row["audit_id"],
             "replayed": True,
