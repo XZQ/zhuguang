@@ -121,3 +121,9 @@ uv run --group dev python -m unittest -v tests.test_stateful_core
 ```
 
 `mcp-tools` 的输出必须与 `config/project-facts.json` 中 12 个名称完全一致。新增、删除或重命名函数时，必须同步 Server registry、Schema、测试、README、本文和 Worker Skill。
+
+## 7. 生产凭证与替换边界
+
+- 当前 Stateful Mock 只验证契约和状态语义；生产 Adapter 必须按企业系统分别实现 OAuth/mTLS、服务身份、最小权限、超时、重试、熔断和对账。
+- POS/WMS/IoT/审批/维修商凭证以及模型 Key 都只能由运行时 Secret、环境变量或外部密钥系统注入，不得出现在 MCP 参数、YAML、ZIP、日志、Trace、测试 fixture 或提交记录中。
+- 模型提供商不是 MCP 契约的一部分。替换 `qwen3.5-plus` 或接入网关时，12 个函数的 Schema、权限、幂等和审计语义保持稳定；仍需重跑 Agent 结构化输出与工具调用回归。

@@ -65,6 +65,24 @@
     "default_model": "qwen3.5-plus",
     "manager_runtime": "qwenpaw",
     "worker_runtime": "qwenpaw",
+    "model_usage": {
+      "scope": "agentteams_target_manager_and_workers_only",
+      "local_evaluation": "not_used",
+      "credentials": "runtime_secret_or_environment_not_committed",
+      "billing": "provider_dependent_not_measured",
+      "replacement": "agentteams_qwenpaw_compatible_model",
+      "migration_validation": [
+        "structured_output",
+        "tool_calling",
+        "latency",
+        "cost",
+        "safety_regression"
+      ]
+    },
+    "official_cloud_skills": {
+      "current": "custom_reusable_p0_skills_only",
+      "requirement_status": "wording_conflict_pending_organizer_confirmation"
+    },
     "crd_api_version": "agentteams.io/v1beta1",
     "package_manifest_version": "1.0",
     "apply_entrypoint": "install/agentteams-apply.sh -f",
@@ -112,7 +130,7 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 28,
+      "full_unittest_count": 42,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json"
     },
@@ -120,6 +138,8 @@
       "documents": "implemented",
       "presentation_source": "implemented",
       "pdf": "implemented",
+      "competition_compliance_matrix": "implemented",
+      "real_store_gap_analysis": "implemented",
       "video_script": "implemented",
       "recorded_video": "pending_external_agentteams_runtime"
     },

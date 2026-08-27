@@ -150,3 +150,9 @@ uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 ```
 
 构建脚本会验证根目录规范与 Worker 包副本一致。任何 Skill 新增、删除、改名或升版，都必须同步本文件、`config/project-facts.json`、Worker manifest、YAML、测试和 README。
+
+## 5. 官方用云 Skill 口径
+
+- 当前 6 个 P0 全部是本项目自定义的可复用 Skill，没有把阿里云官方用云 Skill 写成已实现。
+- 赛道官网 2.1 允许官方 Skill 或自定义可复用 Skill；参赛手册 FAQ Q6 的措辞为“并使用阿里云官方用云 Skills”。两处口径存在差异，当前状态是“待组委会确认”，不是“已满足”。
+- 若组委会确认其为复赛硬门槛，只接入对当前闭环必要的官方 Skill，并补齐真实输入输出、鉴权、失败处理、Trace 和复现证据；仅在 PPT 中列名称不计完成。
