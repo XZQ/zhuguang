@@ -1,6 +1,10 @@
-"""Skill 能力抽象层:7 个核心 Skill。
+"""改造前基线的 7 个 Skill 实现。
 
-每个 Skill 是赛题「必选项」,作为可复用的任务能力抽象层(非一次性 Agent 行为)。
+复赛唯一事实清单为 9 个目标 Skill，其中 P0 核心 6 个；本模块将在 M2
+补齐 coldchain-risk-assess 与 outcome-verify，并把补充场景能力分层。
+在改造完成前，这 7 个导出只代表既有代码，不代表 P0 已验收。
+
+每个 Skill 是可复用的任务能力抽象层（非一次性 Agent 行为）。
 实现为纯函数,输入输出严格对齐 03-Skill九要素卡.md 与 skills/*.md。
 所有 Skill:
 - 含失败处理/降级(partial/degraded 标记)

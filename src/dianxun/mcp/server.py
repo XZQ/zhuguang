@@ -1,4 +1,7 @@
-"""MCP Server 入口:把 7 个工具暴露为标准 MCP 协议(Streamable HTTP / JSON-RPC 2.0)。
+"""改造前 MCP Server：暴露 16 个静态 CSV / 内存函数。
+
+该入口保留旧 Demo 兼容性，不代表复赛 P0 的 12 个有状态函数已经完成。
+M1 会替换注册表并保持 Streamable HTTP / JSON-RPC 2.0 协议入口。
 
 满足赛题 2.2:外部工具和系统接入协议。
 设计:

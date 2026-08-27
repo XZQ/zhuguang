@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "policy_id": "coldchain-demo",
+  "policy_version": "1.0.0",
+  "effective_at": "2026-08-28T00:00:00+08:00",
+  "source_ref": "project://config/policies/coldchain-demo.v1.json",
+  "scope": "competition_demo_only",
+  "immutable": true,
+  "disclaimer": "本策略仅用于比赛合成数据与流程验证，不构成食品安全、HACCP或监管合规意见。真实部署必须由企业食品安全负责人按商品标签、设备说明书和所在地法规批准。",
+  "temperature": {
+    "refrigerated_min_celsius": 0.0,
+    "refrigerated_max_celsius": 8.0,
+    "alert_after_minutes": 15,
+    "device_recovery_samples": 3
+  },
+  "risk_levels": {
+    "L0": "只读查询",
+    "L1": "预授权、可逆或低风险动作",
+    "L2": "必须人工审批的受控动作",
+    "L3": "禁止Agent执行"
+  },
+  "actions": {
+    "apply_sales_hold": {
+      "risk_level": "L1",
+      "allowed_actors": ["Executor"],
+      "approval_required": false
+    },
+    "create_workorder": {
+      "risk_level": "L1",
+      "allowed_actors": ["Executor"],
+      "approval_required_above_amount": 2000.0,
+      "approvers": ["store_manager"]
+    },
+    "apply_batch_disposition:quarantine": {
+      "risk_level": "L1",
+      "allowed_actors": ["Executor"],
+      "approval_required": false
+    },
+    "apply_batch_disposition:transfer": {
+      "risk_level": "L2",
+      "allowed_actors": ["Executor"],
+      "approval_required": true,
+      "approvers": ["food_safety_owner"]
+    },
+    "apply_batch_disposition:release": {
+      "risk_level": "L2",
+      "allowed_actors": ["Executor"],
+      "approval_required": true,
+      "approvers": ["food_safety_owner"]
+    },
+    "apply_batch_disposition:dispose": {
+      "risk_level": "L2",
+      "allowed_actors": ["Executor"],
+      "approval_required": true,
+      "approvers": ["food_safety_owner"]
+    },
+    "release_sales_hold": {
+      "risk_level": "L2",
+      "allowed_actors": ["Executor"],
+      "approval_required": true,
+      "approvers": ["food_safety_owner"],
+      "requires_verification": true
+    },
+    "payment": {
+      "risk_level": "L3",
+      "allowed_actors": [],
+      "approval_required": false
+    }
+  },
+  "release_guard": {
+    "device_recovered_is_not_batch_release": true,
+    "required_batch_states": ["transferred", "released", "disposed"],
+    "required_verification_subjects": ["device", "batches", "sales_hold"],
+    "verification_actor": "Auditor"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/XZQ/zhuguang/schemas/incident-case.v1.schema.json",
+  "title": "IncidentCase v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "incident_id",
+    "trace_id",
+    "tenant_id",
+    "store_id",
+    "incident_type",
+    "severity",
+    "phase",
+    "incident_status",
+    "work_status",
+    "trigger",
+    "detected_at",
+    "anchor_time",
+    "affected_assets",
+    "affected_batches",
+    "evidence_refs",
+    "hypotheses",
+    "decisions",
+    "actions",
+    "verifications",
+    "asset_states",
+    "batch_dispositions",
+    "sales_hold_refs",
+    "approval_refs",
+    "workorder_refs",
+    "owner",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "incident_id": { "type": "string", "minLength": 1 },
+    "trace_id": { "type": "string", "minLength": 1 },
+    "tenant_id": { "type": "string", "minLength": 1 },
+    "store_id": { "type": "string", "minLength": 1 },
+    "incident_type": { "enum": ["coldchain_temperature_loss", "stockout", "price_tag_mismatch"] },
+    "severity": { "enum": ["low", "medium", "high", "critical"] },
+    "phase": { "enum": ["DETECT_CONTAIN", "DIAGNOSE_DECIDE", "EXECUTE", "VERIFY", "LEARN"] },
+    "incident_status": { "enum": ["OPEN", "CONTAINED", "RESOLVED", "CLOSED"] },
+    "work_status": { "enum": ["READY", "RUNNING", "WAITING_APPROVAL", "WAITING_HUMAN", "WAITING_EXTERNAL", "BLOCKED", "COMPLETED", "FAILED"] },
+    "trigger": { "enum": ["event", "scheduled", "manual", "scenario"] },
+    "detected_at": { "type": "string", "format": "date-time" },
+    "anchor_time": { "type": "string", "format": "date-time" },
+    "affected_assets": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "affected_batches": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "evidence_refs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "hypotheses": { "type": "array", "items": { "$ref": "#/$defs/hypothesis" } },
+    "decisions": { "type": "array", "items": { "$ref": "#/$defs/decision" } },
+    "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } },
+    "verifications": { "type": "array", "items": { "$ref": "#/$defs/verification" } },
+    "asset_states": { "type": "object", "additionalProperties": { "type": "string" } },
+    "batch_dispositions": { "type": "object", "additionalProperties": { "enum": ["unknown", "quarantined", "transferred", "released", "disposed"] } },
+    "sales_hold_refs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "approval_refs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "workorder_refs": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "owner": { "type": "string", "minLength": 1 },
+    "next_wakeup_at": { "type": ["string", "null"], "format": "date-time" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "hypothesis": {
+      "type": "object",
+      "required": ["hypothesis_id", "label", "confidence", "supporting_evidence_ids", "contradicting_evidence_ids", "missing_evidence", "next_checks"],
+      "properties": {
+        "hypothesis_id": { "type": "string" },
+        "label": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "supporting_evidence_ids": { "type": "array", "items": { "type": "string" } },
+        "contradicting_evidence_ids": { "type": "array", "items": { "type": "string" } },
+        "missing_evidence": { "type": "array", "items": { "type": "string" } },
+        "next_checks": { "type": "array", "items": { "type": "string" } },
+        "policy_notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": ["decision_id", "policy_id", "selected_hypothesis_ids", "proposed_actions", "risk_level", "approval_required", "approvers", "decision_reason", "evidence_ids", "created_by"],
+      "properties": {
+        "decision_id": { "type": "string" },
+        "policy_id": { "type": "string" },
+        "selected_hypothesis_ids": { "type": "array", "items": { "type": "string" } },
+        "proposed_actions": { "type": "array", "items": { "type": "string" } },
+        "risk_level": { "enum": ["L0", "L1", "L2", "L3"] },
+        "approval_required": { "type": "boolean" },
+        "approvers": { "type": "array", "items": { "type": "string" } },
+        "decision_reason": { "type": "string" },
+        "evidence_ids": { "type": "array", "items": { "type": "string" } },
+        "created_by": { "type": "string" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["action_id", "action_type", "tool_name", "target", "idempotency_key", "status", "request"],
+      "properties": {
+        "action_id": { "type": "string" },
+        "action_type": { "type": "string" },
+        "tool_name": { "type": "string" },
+        "target": { "type": "string" },
+        "idempotency_key": { "type": "string" },
+        "approval_id": { "type": ["string", "null"] },
+        "status": { "enum": ["proposed", "pending", "approved", "executing", "completed", "failed", "rejected", "timeout", "compensated"] },
+        "request": { "type": "object" },
+        "response": { "type": ["object", "null"] },
+        "rollback_or_compensation": { "type": ["object", "null"] },
+        "started_at": { "type": ["string", "null"], "format": "date-time" },
+        "completed_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["verification_id", "subject", "method", "expected_condition", "observed_value", "evidence_ids", "result", "verifier", "verified_at"],
+      "properties": {
+        "verification_id": { "type": "string" },
+        "subject": { "type": "string" },
+        "method": { "type": "string" },
+        "expected_condition": { "type": "object" },
+        "observed_value": {},
+        "evidence_ids": { "type": "array", "items": { "type": "string" } },
+        "result": { "enum": ["passed", "failed", "manual_review"] },
+        "verifier": { "type": "string" },
+        "verified_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

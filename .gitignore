@@ -10,6 +10,15 @@ data/trace.db
 data/knowledge.db
 data/trace.db-shm
 data/trace.db-wal
+demo/state/runtime.db
+demo/state/runtime.db-shm
+demo/state/runtime.db-wal
+
+# Python quality/build caches
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
 
 # 生成的复盘报告(Demo 产物)
 demo/report.html

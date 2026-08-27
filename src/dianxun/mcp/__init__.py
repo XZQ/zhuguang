@@ -1,6 +1,10 @@
-"""MCP 工具连接层:7 个工具,读 csv 模拟真实外部系统。
+"""改造前基线的 7 类 MCP 连接器与 16 个函数。
 
-契约对齐 05-MCP工具契约.md:
+这些函数读取静态 CSV 或内存状态，仅用于保留旧 Demo。复赛 P0 的唯一
+事实清单是 5 个查询函数和 7 个受控动作函数；M1 会通过有状态 SQLite
+核心提供它们。在迁移完成前，不把本模块的函数数当作 P0 统计。
+
+旧连接器分类：
   mcp-pos       POS 销售/收银        data/pos_sales.csv
   mcp-wms       库存/临期            data/inventory.csv
   mcp-iot       冷柜温度             data/iot_coldchain.csv
