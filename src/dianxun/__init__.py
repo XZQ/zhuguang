@@ -5,8 +5,9 @@
 6 个核心 Skill 与 12 个有状态 MCP 函数；具体事实以
 ``config/project-facts.json`` 为准。
 
-0.2.0 开发线正在从静态 CSV 基线迁移到 IncidentService + SQLite 的
-唯一业务核心。只有通过测试并由 Demo 真实调用的能力才可声明已实现。
+0.2.0 开发线已完成 IncidentService、SQLite 状态库和 12 个 P0 MCP
+函数；旧顺序编排器仍待 M2 迁移。只有通过测试并由对应 Demo 真实调用
+的能力才可声明已实现。
 """
 
 __version__ = "0.2.0.dev0"

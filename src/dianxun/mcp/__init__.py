@@ -1,8 +1,8 @@
 """改造前基线的 7 类 MCP 连接器与 16 个函数。
 
 这些函数读取静态 CSV 或内存状态，仅用于保留旧 Demo。复赛 P0 的唯一
-事实清单是 5 个查询函数和 7 个受控动作函数；M1 会通过有状态 SQLite
-核心提供它们。在迁移完成前，不把本模块的函数数当作 P0 统计。
+事实清单是 5 个查询函数和 7 个受控动作函数；M1 已由 ``MCPService``
+通过有状态 SQLite 核心提供它们。旧函数只为迁移兼容，不计入 P0 统计。
 
 旧连接器分类：
   mcp-pos       POS 销售/收银        data/pos_sales.csv
@@ -23,13 +23,14 @@
 子模块(.pos/.wms/...)导出函数;server.py 暴露为 Streamable HTTP MCP Server。
 """
 
-from .pos import query_sales, query_realtime_sales
-from .wms import query_stock, query_expiry
-from .iot import query_device_series, list_devices
-from .price import query_price, apply_price_change, revert_price_change
-from .im import send_notice, send_approval_request
-from .approval import create_approval, check_status, cancel_approval
-from .workorder import create_workorder, track_workorder, confirm_done
+from .approval import cancel_approval, check_status, create_approval
+from .im import send_approval_request, send_notice
+from .iot import list_devices, query_device_series
+from .p0 import MCPService, default_service
+from .pos import query_realtime_sales, query_sales
+from .price import apply_price_change, query_price, revert_price_change
+from .wms import query_expiry, query_stock
+from .workorder import confirm_done, create_workorder, track_workorder
 
 __all__ = [
     # pos
@@ -46,4 +47,6 @@ __all__ = [
     "create_approval", "check_status", "cancel_approval",
     # workorder
     "create_workorder", "track_workorder", "confirm_done",
+    # stateful P0 entrypoints
+    "MCPService", "default_service",
 ]

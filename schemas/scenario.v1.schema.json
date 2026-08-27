@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/XZQ/zhuguang/schemas/scenario.v1.schema.json",
+  "title": "Dianxun deterministic scenario v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "name",
+    "seed_path",
+    "ground_truth",
+    "allowed_hypotheses",
+    "prohibited_actions",
+    "required_actions",
+    "expected_final_state",
+    "expected_evidence",
+    "maximum_safe_latency_minutes",
+    "events"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "scenario_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+    "name": { "type": "string", "minLength": 1 },
+    "seed_path": { "type": "string", "minLength": 1 },
+    "ground_truth": { "type": "object" },
+    "allowed_hypotheses": { "type": "array", "items": { "type": "string" } },
+    "prohibited_actions": { "type": "array", "items": { "type": "string" } },
+    "required_actions": { "type": "array", "items": { "type": "string" } },
+    "expected_final_state": { "type": "object" },
+    "expected_evidence": { "type": "array", "items": { "type": "string" } },
+    "maximum_safe_latency_minutes": { "type": "integer", "minimum": 0 },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["event_id", "at_minute", "event_type", "payload"],
+        "properties": {
+          "event_id": { "type": "string", "minLength": 1 },
+          "at_minute": { "type": "integer", "minimum": 0 },
+          "event_type": {
+            "enum": [
+              "set_device_state",
+              "append_device_reading",
+              "append_temperature_series",
+              "set_batch_safety",
+              "set_workorder_status",
+              "decide_approval",
+              "record_manual_evidence",
+              "inject_tool_failure"
+            ]
+          },
+          "payload": { "type": "object" }
+        }
+      }
+    }
+  }
+}

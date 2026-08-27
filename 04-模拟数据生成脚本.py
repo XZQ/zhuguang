@@ -1,138 +1,76 @@
-# 模拟数据生成脚本
-# 用途:生成连锁便利店多店模拟数据,用于方案演示 / 复赛 Demo / Skill 效果验证。
-# 运行:python3 04-模拟数据生成脚本.py -> 输出到 data/ 目录(CSV,utf-8)
+#!/usr/bin/env python3
+"""Generate a deterministic state seed and optionally initialize runtime.db.
 
-import csv
-import random
-import os
-from datetime import datetime, timedelta
+Examples:
+    python 04-模拟数据生成脚本.py
+    python 04-模拟数据生成脚本.py --anchor-time 2026-08-28T09:00:00+08:00 --seed 42
+    python 04-模拟数据生成脚本.py --check
+    python 04-模拟数据生成脚本.py --db demo/state/runtime.db
+"""
 
-random.seed(42)
+from __future__ import annotations
 
-OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-os.makedirs(OUT_DIR, exist_ok=True)
+import argparse
+import json
+import sys
+from pathlib import Path
 
-# ============ 配置 ============
-NUM_STORES = 12
-NUM_SKUS = 40
-SIM_DAYS = 14  # 模拟近 14 天
-TEMP_INTERVAL_MIN = 30  # 冷柜每 30 分钟一条
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "src"))
 
-# 门店:3 个商圈 × 2 店型
-BZ = ["CBD", "社区", "校园"]
-STORES = []
-for i in range(NUM_STORES):
-    STORES.append({
-        "store_id": f"S{i+1:02d}",
-        "name": f"便利S{i+1:02d}号店",
-        "bz": BZ[i % 3],
-        "type": "旗舰" if i % 3 == 0 else "标准",
-        "area": random.randint(60, 150),
-    })
+from dianxun.state import StateStore  # noqa: E402
+from dianxun.state.seed import build_seed  # noqa: E402
 
-# SKU:品类
-CATS = ["饮料", "乳品", "零食", "日化", "鲜食"]
-SKUS = []
-for i in range(NUM_SKUS):
-    SKUS.append({
-        "sku_id": f"K{i+1:04d}",
-        "name": f"SKU{i+1}",
-        "cat": CATS[i % 5],
-        "price": round(random.uniform(3, 35), 2),
-    })
 
-# 异常注入清单(为了让演示有戏):(store_id, 异常类型, 开始日)
-INJECT = {
-    "coldchain": [("S03", 10), ("S07", 12)],   # S03 店 10 天前开始冷柜超温, S07 店 12 天前
-    "stockout": [("S05", 13)],                  # S05 店某 SKU 缺货
-    "price_tag": [("S08", 13)],                 # S08 店价签错误
-}
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="生成可重复的店巡有状态 Demo Seed")
+    parser.add_argument(
+        "--anchor-time",
+        default="2026-08-28T09:00:00+08:00",
+        help="虚拟时钟锚点，必须是 ISO-8601 时间",
+    )
+    parser.add_argument("--seed", type=int, default=42, help="确定性随机种子")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=ROOT / "demo" / "state" / "seed.json",
+        help="Seed JSON 输出路径",
+    )
+    parser.add_argument("--db", type=Path, help="可选：用生成的 Seed 重置指定 runtime.db")
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="只校验现有输出与本次生成结果一致，不写文件",
+    )
+    return parser.parse_args()
 
-def store_rows():
-    rows = []
-    for s in STORES:
-        rows.append([s["store_id"], s["name"], s["bz"], s["type"], s["area"]])
-    return rows
 
-def sales_rows():
-    rows = []
-    start = datetime.now() - timedelta(days=SIM_DAYS)
-    for d in range(SIM_DAYS):
-        day = start + timedelta(days=d)
-        for s in STORES:
-            base = 100 if s["bz"] == "CBD" else (80 if s["bz"] == "社区" else 60)
-            for h in range(7, 24):
-                # 高峰:7-9 点 / 12-13 点 / 18-20 点
-                peak = 1.0 + (0.8 if h in (7, 8, 12, 13) else (1.2 if 18 <= h <= 20 else 0))
-                n_sales = random.randint(2, max(3, int(base * peak * 0.05)))
-                for _ in range(n_sales):
-                    sku = random.choice(SKUS)
-                    ts = day + timedelta(hours=h, minutes=random.randint(0, 59))
-                    # 冷柜异常店:低温商品(乳品/鲜食)销量下降
-                    if s["store_id"] in [i for i, _ in INJECT["coldchain"]] and (day - start).days >= dict(INJECT["coldchain"]).get(s["store_id"], 99) and sku["cat"] in ("乳品", "鲜食"):
-                        if random.random() < 0.6:
-                            continue
-                    rows.append([ts.strftime("%Y-%m-%d %H:%M"), s["store_id"], sku["sku_id"], sku["cat"], random.randint(1, 3), round(sku["price"] * random.randint(1, 2), 2)])
-    return rows
+def main() -> int:
+    args = parse_args()
+    try:
+        seed = build_seed(anchor_time=args.anchor_time, random_seed=args.seed)
+    except ValueError as exc:
+        print(f"无效参数：{exc}", file=sys.stderr)
+        return 2
+    rendered = json.dumps(seed, ensure_ascii=False, indent=2) + "\n"
+    output = args.output.resolve()
+    if args.check:
+        if not output.exists():
+            print(f"缺少 Seed：{output}", file=sys.stderr)
+            return 1
+        if output.read_text(encoding="utf-8") != rendered:
+            print(f"Seed 与参数不一致：{output}", file=sys.stderr)
+            return 1
+        print(f"Seed 可重复性校验通过：{output}")
+    else:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(rendered, encoding="utf-8", newline="\n")
+        print(f"Seed 已生成：{output}")
+    if args.db:
+        digest = StateStore(args.db.resolve()).initialize(seed, reset=True)
+        print(f"SQLite 已重置：{args.db.resolve()}\nseed_digest={digest}")
+    return 0
 
-def inventory_rows():
-    rows = []
-    for s in STORES:
-        for sku in SKUS:
-            days_to_expire = random.randint(2, 25) if sku["cat"] in ("乳品", "鲜食") else random.randint(30, 120)
-            stock = random.randint(5, 50)
-            # S05 店 K0015 缺货注入
-            if s["store_id"] == "S05" and sku["sku_id"] == "K0015":
-                stock = 0
-                days_to_expire = 1
-            safety = random.randint(10, 20)
-            rows.append([s["store_id"], sku["sku_id"], sku["cat"], stock, safety, days_to_expire])
-    return rows
-
-def iot_rows():
-    rows = []
-    start = datetime.now() - timedelta(days=SIM_DAYS)
-    interval = timedelta(minutes=TEMP_INTERVAL_MIN)
-    t = start
-    end = start + timedelta(days=SIM_DAYS)
-    cold_affected = {sid: day for sid, day in INJECT["coldchain"]}
-    while t < end:
-        for s in STORES:
-            day_index = (t - start).days
-            temp = 3.5 + random.uniform(-0.3, 0.3)
-            if s["store_id"] in cold_affected and day_index >= cold_affected[s["store_id"]]:
-                temp = 7.5 + random.uniform(0.2, 1.2)  # 超温(标准应 ≤5℃)
-            rows.append([t.strftime("%Y-%m-%d %H:%M"), s["store_id"], f"FROST-{s['store_id']}", round(temp, 1)])
-        t += interval
-    return rows
-
-def price_rows():
-    rows = []
-    for s in STORES:
-        for sku in SKUS:
-            sys_price = sku["price"]
-            tag_price = sys_price
-            pos_price = sys_price
-            if s["store_id"] == "S08" and sku["sku_id"] == "K0020":
-                tag_price = round(sys_price * 0.8, 2)  # 价签标错
-            rows.append([s["store_id"], sku["sku_id"], sys_price, tag_price, pos_price])
-    return rows
-
-def write_csv(fname, header, rows):
-    path = os.path.join(OUT_DIR, fname)
-    with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(header)
-        w.writerows(rows)
-    print(f"✔ {fname}: {len(rows)} 行")
-
-def main():
-    write_csv("stores.csv", ["store_id", "name", "bz", "type", "area"], store_rows())
-    write_csv("pos_sales.csv", ["ts", "store_id", "sku_id", "cat", "qty", "amount"], sales_rows())
-    write_csv("inventory.csv", ["store_id", "sku_id", "cat", "stock", "safety_stock", "days_to_expire"], inventory_rows())
-    write_csv("iot_coldchain.csv", ["ts", "store_id", "device_id", "temp_c"], iot_rows())
-    write_csv("price.csv", ["store_id", "sku_id", "system_price", "tag_price", "pos_price"], price_rows())
-    print(f"\n输出目录: {OUT_DIR}")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

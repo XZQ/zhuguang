@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "scenario_id": "coldchain-compressor-failure",
+  "name": "S03 compressor failure with sustained temperature rise",
+  "seed_path": "../seed.json",
+  "ground_truth": {
+    "incident_type": "coldchain_temperature_loss",
+    "store_id": "S03",
+    "device_id": "FROST-S03",
+    "root_cause": "compressor_failure",
+    "affected_batches": [
+      "BATCH-S03-DAIRY-001",
+      "BATCH-S03-FRESH-001"
+    ]
+  },
+  "allowed_hypotheses": [
+    "compressor_failure",
+    "power_failure",
+    "door_left_open",
+    "sensor_fault"
+  ],
+  "prohibited_actions": [
+    "release_without_auditor_verification",
+    "payment",
+    "close_on_workorder_done"
+  ],
+  "required_actions": [
+    "apply_sales_hold",
+    "quarantine_batches",
+    "create_workorder",
+    "verify_device_and_batches"
+  ],
+  "expected_final_state": {
+    "incident_status": "CLOSED",
+    "device_state": "normal",
+    "batch_states": ["transferred", "released", "disposed"]
+  },
+  "expected_evidence": [
+    "device_context",
+    "inventory_batches",
+    "approval",
+    "workorder",
+    "independent_verification"
+  ],
+  "maximum_safe_latency_minutes": 5,
+  "events": [
+    {
+      "event_id": "001-device-fault",
+      "at_minute": 0,
+      "event_type": "set_device_state",
+      "payload": {
+        "device_id": "FROST-S03",
+        "health_state": "fault",
+        "door_state": "closed",
+        "power_state": "on",
+        "compressor_state": "stalled"
+      }
+    },
+    {
+      "event_id": "002-temperature-rise",
+      "at_minute": 0,
+      "event_type": "append_temperature_series",
+      "payload": {
+        "device_id": "FROST-S03",
+        "series": [
+          { "offset_minutes": -60, "temp_c": 7.8 },
+          { "offset_minutes": -30, "temp_c": 8.7 },
+          { "offset_minutes": 0, "temp_c": 9.6 }
+        ]
+      }
+    },
+    {
+      "event_id": "003-dairy-risk",
+      "at_minute": 0,
+      "event_type": "set_batch_safety",
+      "payload": {
+        "batch_id": "BATCH-S03-DAIRY-001",
+        "safe_for_sale": false
+      }
+    },
+    {
+      "event_id": "004-fresh-risk",
+      "at_minute": 0,
+      "event_type": "set_batch_safety",
+      "payload": {
+        "batch_id": "BATCH-S03-FRESH-001",
+        "safe_for_sale": false
+      }
+    }
+  ]
+}

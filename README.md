@@ -2,7 +2,7 @@
 
 面向连锁便利店的多 Agent 异常闭环系统。复赛版本采用“一主两辅”：以冷柜失温作为首要完整验证场景，缺货与价签异常保留为补充展示和独立回归入口。
 
-> 当前状态：M0 事实口径已冻结，M1～M5 正在按 [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) 实施。仓库中既有 Python Demo 属于改造前基线，不能作为 P0 冷柜安全闭环或真实 AgentTeams 协同的完成证据。
+> 当前状态：M0、M1 已完成，M2～M5 正在按 [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) 实施。有状态 SQLite 核心和 12 个 P0 MCP 函数已通过本地测试；五阶段 Agent 闭环与真实 AgentTeams 协同仍未完成，不能提前作为完成证据。
 
 ## 唯一事实口径
 
@@ -63,6 +63,41 @@ ppt/                       演示稿源文件与导出 PDF
 
 上述结构是复赛目标结构；未出现的目录会随对应里程碑加入。不会用规划目录冒充已交付能力。
 
+## 有状态核心与 MCP（M1）
+
+Python 3.11+ 和 [uv](https://docs.astral.sh/uv/) 环境下：
+
+```powershell
+# 安装本项目（当前核心无第三方运行依赖）
+uv sync
+
+# 用固定 seed 重置 runtime.db
+uv run dianxun state-init
+
+# 注入压缩机故障场景；虚拟时钟固定，不依赖系统当前日期
+uv run dianxun scenario-reset demo/state/scenarios/coldchain-compressor-failure.json
+
+# 核对 12 个 P0 MCP 函数
+uv run dianxun mcp-tools
+
+# 直接查询场景注入后的同一 SQLite 业务状态
+uv run dianxun mcp-call query_device_context `
+  --arguments '{"device_id":"FROST-S03","facets":["temperature","health"]}'
+
+# 启动 Streamable HTTP / JSON-RPC Adapter（默认 127.0.0.1:8080）
+uv run dianxun-mcp
+```
+
+运行时数据库位于 `demo/state/runtime.db`，不会提交。重建 Seed 和执行 M1 回归：
+
+```powershell
+python 04-模拟数据生成脚本.py --check
+$env:PYTHONPATH = "src"
+python -W error::ResourceWarning -m unittest -v tests.test_stateful_core
+```
+
+M1 已通过 8 项回归验证：相同 seed 的业务快照哈希一致；全新数据库可自动建表；停售、批次处置、审批和工单写入后可通过查询函数看到；审批默认 `pending`；高预算维修未批准时不会执行；相同幂等键不会产生重复副作用。
+
 ## 改造前历史入口（非验收入口）
 
 原仓库曾通过下面命令运行静态 CSV 三场景 Demo：
@@ -72,7 +107,7 @@ $env:PYTHONPATH = "src"
 python demo/run_demo.py
 ```
 
-截至 2026-08-28，已提交 CSV 的时间锚点过期，原入口可能因“无异常”分支的旧状态机缺陷退出非零；审批和验证逻辑也不满足 P0 门禁。因此它只保留作迁移参考，不是当前支持路径。M1 会提供有状态场景初始化与 MCP 命令；M2 会提供场景 A、D、E 的五阶段入口；最终可执行命令以本 README 和自动化测试为准。
+截至 2026-08-28，已提交 CSV 的时间锚点过期，原入口可能因“无异常”分支的旧状态机缺陷退出非零；审批和验证逻辑也不满足 P0 门禁。因此它只保留作迁移参考，不是当前支持路径。M1 的支持路径是上一节的 SQLite 与 MCP 命令；M2 会提供场景 A、D、E 的五阶段入口。
 
 ## 文档索引
 
