@@ -70,6 +70,8 @@
     "apply_entrypoint": "install/agentteams-apply.sh -f",
     "verification": {
       "official_release_and_tag_docs": "verified",
+      "worker_package_and_yaml_contracts": "verified",
+      "local_mcporter_mcp_smoke": "verified",
       "local_runtime": "unavailable",
       "cloud_studio_runtime": "pending"
     }
@@ -87,6 +89,14 @@
       "E": "demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json"
     },
     "p0_skill_contract_root": "skills",
+    "m3_repository_artifacts": {
+      "status": "implemented_static_external_runtime_pending",
+      "worker_package": "dist/dianxun-worker.zip",
+      "worker_package_sha256": "d0689b24bd4610a0a29db16972e67133ae808663c4eeb4dcfe4f5040e7488747",
+      "worker_package_files": 33,
+      "artifact_contract_tests": 5,
+      "mcp_deployment": "agentteams/mcp/deployment.yaml"
+    },
     "agentteams_runtime_evidence": "pending_external_validation"
   },
   "schemas": {

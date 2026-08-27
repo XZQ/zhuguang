@@ -1,90 +1,108 @@
-# AgentTeams 部署配置
+# AgentTeams v1.2.3 部署说明
 
-本目录是店巡 Agent 的 AgentTeams 声明式部署配置(Kubernetes CRD 风格 YAML)。
+本目录提供店巡 Agent 的 AgentTeams 声明式资源和有状态 MCP Kubernetes 资源。版本固定为 AgentTeams `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），Manager 与 Worker runtime 均为 `qwenpaw`。
 
-## 架构(三层)
+## 交付物与边界
 
+```text
+agentteams/
+  namespace.yaml
+  manager.yaml
+  team.yaml
+  workers/*.yaml
+  mcp/{pvc,deployment,service}.yaml
+packages/dianxun-worker/
+  manifest.json
+  config/{SOUL,AGENTS}.md
+  skills/<6 个 P0 Skill>/...
+packages/dianxun-mcp/Dockerfile
+dist/dianxun-worker.zip
 ```
-Admin(人类)
-  └─ Manager(dianxun-manager)              ← 协调入口,编排 Team
-       └─ Team(dianxun-patrol-team)
-            ├─ orchestrator [Team Leader]  ← 总控:任务拆解/调度/状态追踪
-            ├─ sentry      [Worker]        ← 巡检:异常识别
-            ├─ diagnoser   [Worker]        ← 诊断:跨店对标/根因
-            ├─ executor    [Worker]        ← 处置:工单/补货/改价
-            └─ auditor     [Worker]        ← 稽核:验证/复盘
+
+Worker YAML 的 `spec.package` 指向公共仓库中真实的 HTTP ZIP，而不是普通目录。ZIP 的 SHA-256 位于 `dist/dianxun-worker.zip.sha256`。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须将该镜像推送到可访问的镜像仓库并替换镜像地址。
+
+当前仓库只提交脱敏、可复现的配置。只有真实平台产生的 Team Room、委派消息、MCP 调用和资源状态才是动态证据；本地契约测试不能替代它们。
+
+## 1. 本地构建与静态验证
+
+在仓库根目录执行：
+
+```powershell
+uv sync --group dev
+uv run python scripts/build_worker_package.py
+uv run python -m unittest -v tests.test_agentteams_artifacts
 ```
 
-## 文件
+Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-| 文件 | 说明 |
-|---|---|
-| `namespace.yaml` | dianxun 命名空间 |
-| `manager.yaml` | Manager(协调入口) |
-| `team.yaml` | 店巡小队(1 Leader + 4 Worker) |
-| `workers/orchestrator.yaml` | Team Leader · 总控 |
-| `workers/sentry.yaml` | Worker · 巡检 |
-| `workers/diagnoser.yaml` | Worker · 诊断 |
-| `workers/executor.yaml` | Worker · 处置 |
-| `workers/auditor.yaml` | Worker · 稽核 |
+## 2. 构建和部署 MCP
 
-## 部署步骤
+Docker build context 必须是仓库根目录：
 
-### 前置条件
-- Docker Desktop(macOS/Windows)或 Docker Engine(Linux),最低 2C4G
-- AgentTeams v1.2.0+,已通过 `install/agentteams-install.sh` 完成安装
-- MCP Server 已部署(见 `../packages/dianxun-worker/`)
-
-### 1. 部署 MCP Server
 ```bash
-# 构建 MCP Server 镜像(见 packages/dianxun-worker/Dockerfile)
-cd packages/dianxun-worker
-docker build -t dianxun-mcp:0.1.0 .
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Service
-metadata: { name: dianxun-mcp, namespace: dianxun }
-spec:
-  selector: { app: dianxun-mcp }
-  ports: [{ port: 80, targetPort: 8080 }]
-EOF
+docker build -f packages/dianxun-mcp/Dockerfile -t dianxun-mcp:0.2.0 .
 ```
 
-### 2. 部署 AgentTeams 资源
+本地 kind/minikube 可直接加载镜像；远程集群应推送到私有或公共 Registry，然后修改 Deployment：
+
 ```bash
-# 创建命名空间
-kubectl apply -f namespace.yaml
+kubectl set image -f agentteams/mcp/deployment.yaml \
+  mcp=REGISTRY/dianxun-mcp:0.2.0 --local -o yaml > /tmp/dianxun-mcp-deployment.yaml
 
-# 部署 Manager + Team + Workers(声明式,Controller 自动调和)
-agt apply -f manager.yaml
-agt apply -f workers/         # 5 个 Worker
-agt apply -f team.yaml        # Team 引用(须在 Worker 之后)
-
-# 或一次性
-agt apply -f . --recursive
+kubectl apply -f agentteams/namespace.yaml
+kubectl apply -f agentteams/mcp/pvc.yaml
+kubectl apply -f /tmp/dianxun-mcp-deployment.yaml
+kubectl apply -f agentteams/mcp/service.yaml
+kubectl -n dianxun rollout status deployment/dianxun-mcp
+kubectl -n dianxun get pod,service,pvc
 ```
 
-### 3. 验证
+在本地镜像已加载且名称不变时，可直接 apply 原始 `deployment.yaml`。MCP 以单副本运行并使用 PVC 保存 SQLite 状态；空卷首次启动时从固定 Seed 初始化。Service 的集群内地址为：
+
+```text
+http://dianxun-mcp.dianxun.svc.cluster.local/mcp
+```
+
+## 3. 应用 AgentTeams 资源
+
+先安装并运行官方 AgentTeams `v1.2.3`。官方稳定入口是 `install/agentteams-apply.sh -f <yaml>`；当前 `agt apply` 不支持 `--recursive`、`--dry-run`、`--prune` 或 `--watch`。
+
 ```bash
-agt get workers               # 应见 5 个 Worker Running
-agt get teams                 # 应见 dianxun-patrol-team
-docker ps | grep agentteams   # 应见 5 个 worker 容器 + manager
+export AGENTTEAMS_HOME=/path/to/AgentTeams-v1.2.3
+
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/manager.yaml
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/workers/orchestrator.yaml
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/workers/sentry.yaml
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/workers/diagnoser.yaml
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/workers/executor.yaml
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/workers/auditor.yaml
+bash "$AGENTTEAMS_HOME/install/agentteams-apply.sh" -f agentteams/team.yaml
 ```
 
-### 4. 触发任务
-在 Element Web(http://127.0.0.1:18088)进入店巡 Team Room,向 orchestrator 发送:
-> 巡检 S03/S05/S08 三店
+Team 必须最后创建，因为它引用 5 个已存在的 Worker CR。Windows 可在 WSL 执行上面的官方 Bash 入口，或使用官方 `install/agentteams-import.ps1 -File <yaml>` 转发 YAML。
 
-Manager 收到后下发给 Team Leader,触发完整闭环。
+## 4. 动态烟测与证据
 
-## 关键设计决策
+```bash
+docker exec agentteams-manager agt get managers dianxun-manager -o json
+docker exec agentteams-manager agt get workers -o json
+docker exec agentteams-manager agt get teams dianxun-patrol-team -o json
+kubectl -n dianxun get deployment,pod,service,pvc
+```
 
-1. **runtime: copaw(QwenPaw/Python)**:与本项目 Python Skill 栈一致,无需跨语言
-2. **package 共享**:5 个 Worker 引用同一 `packages/dianxun-worker`,内含全部 7 个 Skill,按 `agents` 规则决定各自调用哪些
-3. **MCP 经 Higress 网关**:Worker 不持有真实凭证,只拿 consumer token,凭证由网关管理(企业级安全)
-4. **delegation-first**:Manager 只与 Team Leader 通信,不绕过 Leader 直接调度 Worker
+在 Element Web 的 Team Room 向 Manager 提交固定场景 A，并核对：
 
-## 替代方案说明
+1. Manager 只委派 Orchestrator；
+2. Orchestrator 分别委派 Sentry、Diagnoser、Executor、Auditor；
+3. Worker 回执含 `incident_id`、phase、evidence refs、request ID；
+4. 至少一条 Worker 通过 `dianxun-mcp` 产生真实工具返回；
+5. Auditor 重新查询设备与商品状态，而非复述 Executor；
+6. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致。
 
-若不使用 AgentTeams 容器化部署,本项目的 `src/dianxun/agents/orchestrator.py` 提供了纯 Python 编排实现,
-`demo/run_demo.py` 可直接跑通三场景闭环(无需 Docker)。生产部署时 AgentTeams 提供更强的可观测、可审计与人工介入能力。
+保存证据前必须脱敏。若当前机器没有 Docker、Kubernetes 或 AgentTeams，不得把 ZIP 校验、YAML 解析或本地 MCP 调用写成“真实 AgentTeams 已跑通”。
+
+## 安全说明
+
+- YAML 和 ZIP 不含 API Key、审批身份或固定 Bearer Token。
+- 当前 ClusterIP 是比赛环境的内部直连方式；生产环境应由 AgentTeams/Higress 网关完成身份与授权，并限制后端 Service 的网络入口。
+- 冷链阈值和 Seed 仅用于比赛 Demo，不替代 HACCP、设备说明书、食品安全人员判断或当地监管要求。

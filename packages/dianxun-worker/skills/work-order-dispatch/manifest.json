@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "work-order-dispatch",
+  "version": "1.0.0",
+  "priority": "P0",
+  "agent": "Executor",
+  "entrypoint": "dianxun.skills.dispatch_stateful_workorder",
+  "permissions": ["query_approval", "create_workorder"],
+  "writes_business_state": true,
+  "error_codes": ["APPROVAL_REQUIRED", "APPROVAL_INVALID", "TOOL_FAILURE", "INVALID_STATE"],
+  "quality_metrics": ["unauthorized_action_count", "duplicate_side_effect_count", "tool_success_rate"]
+}

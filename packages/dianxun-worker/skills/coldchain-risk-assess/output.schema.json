@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "coldchain-risk-assess output",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "affected_batches",
+    "exposure_assessment",
+    "containment_actions",
+    "required_approvals",
+    "evidence_refs"
+  ],
+  "properties": {
+    "incident_id": { "type": "string" },
+    "affected_batches": { "type": "array", "items": { "type": "string" } },
+    "exposure_assessment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["batch_id", "degree_minutes", "recommendation", "requires_approval"],
+        "properties": {
+          "batch_id": { "type": "string" },
+          "degree_minutes": { "type": "number", "minimum": 0 },
+          "recommendation": {
+            "enum": ["quarantined", "transferred", "released", "disposed"]
+          },
+          "requires_approval": { "type": "boolean" }
+        }
+      }
+    },
+    "containment_actions": { "type": "array", "items": { "type": "string" } },
+    "required_approvals": { "type": "array", "items": { "type": "object" } },
+    "evidence_refs": { "type": "array", "items": { "type": "string" } }
+  }
+}

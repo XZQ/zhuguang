@@ -18,7 +18,9 @@ demo/state/runtime.db-wal
 .pytest_cache/
 .ruff_cache/
 build/
-dist/
+dist/*
+!dist/dianxun-worker.zip
+!dist/dianxun-worker.zip.sha256
 
 # 生成的复盘报告(Demo 产物)
 demo/report.html

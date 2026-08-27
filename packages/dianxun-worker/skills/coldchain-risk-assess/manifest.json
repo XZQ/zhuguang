@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "coldchain-risk-assess",
+  "version": "1.0.0",
+  "priority": "P0",
+  "agent": "Diagnoser",
+  "entrypoint": "dianxun.skills.coldchain_risk_assess",
+  "permissions": ["incident_read", "policy_read"],
+  "writes_business_state": false,
+  "error_codes": ["SERIES_MISSING", "POLICY_MISSING", "INVALID_BATCH"],
+  "quality_metrics": ["batch_recommendation_accuracy", "unsafe_release_count"]
+}

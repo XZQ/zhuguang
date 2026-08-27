@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "source": {
+    "openclaw_version": "not-applicable",
+    "hostname": "template",
+    "os": "N/A",
+    "created_at": "2026-08-28T00:00:00Z"
+  },
+  "worker": {
+    "suggested_name": "dianxun-worker",
+    "model": "qwen3.5-plus",
+    "runtime": "qwenpaw",
+    "apt_packages": [],
+    "pip_packages": [],
+    "npm_packages": []
+  }
+}

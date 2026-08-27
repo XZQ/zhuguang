@@ -1,0 +1,51 @@
+{
+  "success": {
+    "input": {
+      "incident_id": "INC-COLD-A",
+      "device_series": [
+        { "observed_at": "2026-08-28T08:00:00+08:00", "temp_c": 8.5 },
+        { "observed_at": "2026-08-28T08:30:00+08:00", "temp_c": 9.0 }
+      ],
+      "affected_batches": [{ "batch_id": "B1", "storage_max_c": 8.0 }],
+      "policy": { "policy_id": "coldchain-demo" }
+    },
+    "output": {
+      "incident_id": "INC-COLD-A",
+      "affected_batches": ["B1"],
+      "exposure_assessment": [
+        {
+          "batch_id": "B1",
+          "degree_minutes": 22.5,
+          "recommendation": "transferred",
+          "requires_approval": true
+        }
+      ],
+      "containment_actions": ["apply_sales_hold"],
+      "required_approvals": [{ "batch_id": "B1", "disposition": "transferred" }],
+      "evidence_refs": []
+    }
+  },
+  "failure": {
+    "input": {
+      "incident_id": "INC-COLD-X",
+      "device_series": [],
+      "affected_batches": [{ "batch_id": "B1" }],
+      "policy": {}
+    },
+    "output": {
+      "incident_id": "INC-COLD-X",
+      "affected_batches": ["B1"],
+      "exposure_assessment": [
+        {
+          "batch_id": "B1",
+          "degree_minutes": 0,
+          "recommendation": "quarantined",
+          "requires_approval": false
+        }
+      ],
+      "containment_actions": ["apply_sales_hold"],
+      "required_approvals": [],
+      "evidence_refs": []
+    }
+  }
+}

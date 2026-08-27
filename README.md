@@ -2,7 +2,7 @@
 
 面向连锁便利店的多 Agent 异常闭环系统。复赛版本采用“一主两辅”：以冷柜失温作为首要完整验证场景，缺货与价签异常保留为补充展示和独立回归入口。
 
-> 当前状态：M0～M2 已完成，M3～M5 正在按 [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) 实施。五阶段冷柜本地闭环和 A/D/E 三条路径已通过；外部系统仍是有状态 Mock，真实 AgentTeams 协同仍待目标环境验证。
+> 当前状态：M0～M2 已完成；M3 的 Worker ZIP、v1.2.3 YAML、MCP Deployment 和本地 `mcporter` 兼容烟测已完成，真实 Team Room/Worker 委派仍待具备 Docker、Kubernetes 与 AgentTeams 的目标环境验证；M4～M5 正在实施。
 
 ## 唯一事实口径
 
@@ -11,7 +11,7 @@
 - 场景：冷柜失温为首要完整验证；缺货、价签为补充展示。
 - Skill：目标 9 个，其中 P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。
 - MCP：P0 固定 12 个函数（5 个查询、7 个受控动作）。
-- 业务核心：`IncidentService` 是状态迁移和业务状态的唯一事实入口；本地 Demo 与 AgentTeams 都是 Adapter。
+- 业务核心：`IncidentService` 是状态迁移和业务状态的唯一事实入口；本地 Demo 直接复用该核心，AgentTeams Worker 通过同一 MCP/Skill 契约接入。
 - 证据等级：只有“代码存在、测试通过、Demo 真实调用”才标记为“已实现”；有状态外部系统替身标记为“模拟实现”；仅设计的能力标记为“规划”。
 
 机器可读清单见 [`config/project-facts.json`](config/project-facts.json)，当前实现状态见 [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md)。
@@ -56,6 +56,9 @@ src/dianxun/               业务核心、Skill、MCP 与本地 Adapter
 demo/                      确定性场景与本地运行入口
 agentteams/                AgentTeams 资源与 MCP Deployment
 packages/dianxun-worker/   官方格式 Worker 包源目录
+packages/dianxun-mcp/      MCP 独立镜像 Dockerfile
+scripts/                   确定性构建与验证辅助脚本
+dist/                      提交的 Worker ZIP 与 SHA-256
 tests/                     单元、集成、契约与评测测试
 evidence/                  可复现、脱敏的静态证据和说明
 ppt/                       演示稿源文件与导出 PDF
@@ -125,6 +128,20 @@ uv run --with jsonschema python -m unittest -v tests.test_skill_contracts
 ```
 
 当前共 15 项有状态核心/工作流回归和 1 项全量 Skill 契约门禁。场景 A 的 `CLOSED` 必须经过 Auditor 对设备、批次、停售、审批、工单和审计数据的重新查询；场景 E 证明“设备恢复”不会自动放行商品。
+
+## AgentTeams 工程交付（M3 静态部分）
+
+Worker 包已按官方 `v1.2.3` 结构重建，根目录包含 `manifest.json 1.0`、`config/` 和 6 个 P0 `skills/`；Manager/Worker 使用 `qwenpaw + qwen3.5-plus`，Worker YAML 的 `spec.package` 指向仓库中真实 ZIP。MCP 提供 PVC、单副本 Deployment 和 Service，镜像 build context 固定为仓库根目录。
+
+```powershell
+uv sync --group dev
+uv run python scripts/build_worker_package.py
+uv run python -m unittest -v tests.test_agentteams_artifacts
+```
+
+当前 Worker ZIP SHA-256 为 `d0689b24bd4610a0a29db16972e67133ae808663c4eeb4dcfe4f5040e7488747`，5 项 AgentTeams artifact 契约测试通过。本机还使用 AgentTeams 同款 `mcporter` 对本地 MCP 完成 12 工具发现和 `query_device_context` 真实调用。部署和动态烟测步骤见 [`agentteams/README.md`](agentteams/README.md)。
+
+这只证明包、资源、MCP 传输和客户端兼容性；本机没有 Docker、Kubernetes 与 `agt`，因此 M3 的 Team Room、Worker 委派、平台运行状态和对应 Trace 仍标记为“外部待验证”。
 
 ## 改造前历史入口（非验收入口）
 
