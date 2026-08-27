@@ -34,6 +34,7 @@ TOOLS: dict[str, dict[str, Any]] = {
             {
                 "device_id": _STRING,
                 "store_id": _STRING,
+                "incident_id": _STRING,
                 "facets": {"type": "array", "items": _STRING, "uniqueItems": True},
                 "window_minutes": {"type": "integer", "minimum": 1},
                 "request_id": _STRING,
@@ -49,6 +50,7 @@ TOOLS: dict[str, dict[str, Any]] = {
                 "device_id": _STRING,
                 "store_id": _STRING,
                 "batch_ids": _STRING_ARRAY,
+                "incident_id": _STRING,
                 "request_id": _STRING,
             }
         ),
@@ -142,9 +144,7 @@ TOOLS: dict[str, dict[str, Any]] = {
                 "incident_id": _STRING,
                 "action_id": _STRING,
                 "batch_ids": _STRING_ARRAY,
-                "disposition": {
-                    "enum": ["quarantined", "transferred", "released", "disposed"]
-                },
+                "disposition": {"enum": ["quarantined", "transferred", "released", "disposed"]},
                 "approval_id": _STRING,
                 "idempotency_key": _STRING,
                 "request_id": _STRING,
@@ -308,9 +308,7 @@ def tool_call(
                 "audit_ref": None,
             }
     return {
-        "content": [
-            {"type": "text", "text": json.dumps(result, ensure_ascii=False, default=str)}
-        ],
+        "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, default=str)}],
         "isError": not result.get("ok", False),
     }
 

@@ -5,14 +5,14 @@ description: Independently requery device, goods, hold, approval, and work-order
 
 # outcome-verify
 
-- Version: `1.0.0`
+- Version: `1.1.0`
 - Priority: P0
 - Agent: Auditor
 - Entrypoint: `dianxun.skills.outcome_verify`
 
 ## Purpose
 
-Independently requery device, batch, sales-hold, workorder, approval, and audit state. It records Auditor verifications and returns `verified`, `reopened`, or `manual_review`; Executor receipts are never sufficient evidence.
+Independently requery device, batch, sales-hold, workorder, approval, and audit state. It records Auditor verifications and returns `verified`, `release_ready`, `reopened`, or `manual_review`; Executor receipts are never sufficient evidence.
 
 ## Contract
 
@@ -29,8 +29,11 @@ Independently requery device, batch, sales-hold, workorder, approval, and audit 
 1. Independently call all applicable queries: device context, inventory batches, sales holds, work order, and approval.
 2. Compare fresh tool state with the incident acceptance criteria; do not use Executor's success flag as evidence.
 3. Verify device recovery, goods disposition, active holds, approval, and work-order state as separate gates.
-4. Return `verified` only when every required gate passes. Otherwise return `reopened` or `manual_review`, keep unsafe holds active, and cite the blocking evidence.
+4. Return `release_ready` only when device, batch, approval, and audit gates pass but approved released batches remain held; this is a recommendation, not a write authorization.
+5. After Executor obtains release approval and calls `release_sales_hold`, requery every final gate and return `verified` only on the second pass.
+6. A partial/error tool response always blocks closure and is surfaced in `partial_tools`.
 
 ## Change log
 
+- 1.1.0: two-pass controlled release and explicit partial-tool closure guard.
 - 1.0.0: independent requery and separate device/goods/sales-hold verification.

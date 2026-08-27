@@ -76,6 +76,7 @@ class MCPService:
         *,
         device_id: str | None = None,
         store_id: str | None = None,
+        incident_id: str | None = None,
         facets: list[str] | None = None,
         window_minutes: int = 180,
         request_id: str | None = None,
@@ -127,6 +128,7 @@ class MCPService:
                 quality="good" if series or "temperature" not in selected else "partial",
                 freshness=self._freshness(observed_at, collected_at),
                 request_id=rid,
+                incident_id=incident_id,
             )
             evidence.append(self._evidence_dict(ev))
             output.append(item)
@@ -138,6 +140,7 @@ class MCPService:
         device_id: str | None = None,
         store_id: str | None = None,
         batch_ids: list[str] | None = None,
+        incident_id: str | None = None,
         request_id: str | None = None,
         actor: str = "Diagnoser",
     ) -> dict[str, Any]:
@@ -160,6 +163,7 @@ class MCPService:
             quality="good",
             freshness="current",
             request_id=rid,
+            incident_id=incident_id,
         )
         return self._ok(rid, {"batches": batches, "evidence": [self._evidence_dict(ev)]})
 
@@ -181,7 +185,7 @@ class MCPService:
             batch_ids=batch_ids,
             status=status,
         )
-        return self._query_rows(rid, "sales_holds", holds)
+        return self._query_rows(rid, "sales_holds", holds, incident_id=incident_id)
 
     def query_workorder(
         self,
@@ -201,7 +205,7 @@ class MCPService:
             action_id=action_id,
             incident_id=incident_id,
         )
-        return self._query_rows(rid, "workorders", rows)
+        return self._query_rows(rid, "workorders", rows, incident_id=incident_id)
 
     def query_approval(
         self,
@@ -221,7 +225,7 @@ class MCPService:
             action_id=action_id,
             incident_id=incident_id,
         )
-        return self._query_rows(rid, "approvals", rows)
+        return self._query_rows(rid, "approvals", rows, incident_id=incident_id)
 
     # ----- seven actions ------------------------------------------------
 
@@ -583,9 +587,9 @@ class MCPService:
             if timeout_minutes <= 0:
                 raise ValueError("timeout_minutes must be positive")
             approval_id = self.store.next_id(conn, "approval")
-            deadline = (
-                self._parse_time(now) + timedelta(minutes=timeout_minutes)
-            ).isoformat(timespec="seconds")
+            deadline = (self._parse_time(now) + timedelta(minutes=timeout_minutes)).isoformat(
+                timespec="seconds"
+            )
             approvers = list(decision.approvers) or ["store_manager"]
             conn.execute(
                 """INSERT INTO approvals(
@@ -728,9 +732,12 @@ class MCPService:
         rid = request_id or self._request_id()
         if actor not in {"Human", "ScenarioEngine"}:
             return self._error(rid, "FORBIDDEN", "Only Human or ScenarioEngine may record evidence")
-        digest = sha256 or hashlib.sha256(
-            _canonical({"note": note, "metadata": metadata, "uri": uri}).encode("utf-8")
-        ).hexdigest()
+        digest = (
+            sha256
+            or hashlib.sha256(
+                _canonical({"note": note, "metadata": metadata, "uri": uri}).encode("utf-8")
+            ).hexdigest()
+        )
         request = {
             "incident_id": incident_id,
             "action_id": action_id,
@@ -963,7 +970,14 @@ class MCPService:
             ),
         )
 
-    def _query_rows(self, rid: str, entity: str, rows: list[dict[str, Any]]) -> dict[str, Any]:
+    def _query_rows(
+        self,
+        rid: str,
+        entity: str,
+        rows: list[dict[str, Any]],
+        *,
+        incident_id: str | None = None,
+    ) -> dict[str, Any]:
         now = self.store.now()
         ev = Evidence.create(
             evidence_type=entity,
@@ -974,6 +988,7 @@ class MCPService:
             quality="good",
             freshness="current",
             request_id=rid,
+            incident_id=incident_id,
         )
         return self._ok(rid, {entity: rows, "evidence": [self._evidence_dict(ev)]})
 
@@ -1048,6 +1063,7 @@ class MCPService:
     def _evidence_dict(evidence: Evidence) -> dict[str, Any]:
         return {
             "evidence_id": evidence.evidence_id,
+            "incident_id": evidence.incident_id,
             "type": evidence.type,
             "source": evidence.source,
             "observed_at": evidence.observed_at,

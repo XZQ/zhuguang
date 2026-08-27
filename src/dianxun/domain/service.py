@@ -28,7 +28,7 @@ _PHASE_GRAPH: dict[Phase, set[Phase]] = {
     Phase.DETECT_CONTAIN: {Phase.DIAGNOSE_DECIDE},
     Phase.DIAGNOSE_DECIDE: {Phase.EXECUTE},
     Phase.EXECUTE: {Phase.VERIFY},
-    Phase.VERIFY: {Phase.DIAGNOSE_DECIDE, Phase.LEARN},
+    Phase.VERIFY: {Phase.DIAGNOSE_DECIDE, Phase.EXECUTE, Phase.LEARN},
     Phase.LEARN: set(),
 }
 

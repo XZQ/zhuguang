@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "scenario_id": "coldchain-sensor-false-positive",
+  "name": "Scenario B - suspect sensor readings disproved by manual evidence",
+  "seed_path": "../seed.json",
+  "ground_truth": {
+    "incident_id": "INC-COLD-B",
+    "incident_type": "coldchain_temperature_loss",
+    "category": "sensor_or_data_anomaly",
+    "store_id": "S03",
+    "device_id": "FROST-S03",
+    "root_cause": "sensor_fault",
+    "affected_batches": [
+      "BATCH-S03-DAIRY-001",
+      "BATCH-S03-FRESH-001"
+    ]
+  },
+  "allowed_hypotheses": [
+    "sensor_fault",
+    "compressor_failure",
+    "power_failure",
+    "door_left_open"
+  ],
+  "prohibited_actions": [
+    "release_without_auditor_verification",
+    "release_without_approval",
+    "close_on_first_verification"
+  ],
+  "required_actions": [
+    "apply_sales_hold",
+    "quarantine_batches",
+    "record_manual_evidence",
+    "create_sensor_calibration_workorder",
+    "release_sales_hold",
+    "verify_device_and_batches"
+  ],
+  "expected_final_state": {
+    "incident_status": "CLOSED",
+    "phase": "LEARN",
+    "work_status": "COMPLETED",
+    "verification_result": "verified",
+    "device_state": "recovered",
+    "batch_states": ["released"],
+    "approval_status": "approved"
+  },
+  "expected_evidence": [
+    "device_context",
+    "inventory_batches",
+    "manual_temperature",
+    "approval",
+    "workorder",
+    "independent_verification"
+  ],
+  "maximum_safe_latency_minutes": 5,
+  "workflow": {
+    "diagnosis_evidence_minute": 1,
+    "repair_budget": 500.0,
+    "repair_completion_minute": 4,
+    "disposition_approval_timeout_minutes": 30,
+    "disposition_approval_decision_minute": 5,
+    "release_approval_timeout_minutes": 30,
+    "release_approval_decision_minute": 6
+  },
+  "events": [
+    {
+      "event_id": "001-device-normal",
+      "at_minute": 0,
+      "event_type": "set_device_state",
+      "payload": {
+        "device_id": "FROST-S03",
+        "health_state": "normal",
+        "door_state": "closed",
+        "power_state": "on",
+        "compressor_state": "running"
+      }
+    },
+    {
+      "event_id": "002-suspect-temperature-rise",
+      "at_minute": 0,
+      "event_type": "append_temperature_series",
+      "payload": {
+        "device_id": "FROST-S03",
+        "series": [
+          { "offset_minutes": -30, "temp_c": 9.1, "quality": "suspect" },
+          { "offset_minutes": 0, "temp_c": 10.2, "quality": "suspect" }
+        ]
+      }
+    },
+    {
+      "event_id": "010-manual-temperature-normal",
+      "at_minute": 1,
+      "event_type": "record_manual_evidence",
+      "payload": {
+        "incident_id": "INC-COLD-B",
+        "evidence_type": "manual_temperature",
+        "note": "Synthetic calibrated handheld thermometer reads normal",
+        "metadata": {
+          "temp_c": 4.2,
+          "instrument": "synthetic-calibrated-probe",
+          "synthetic": true
+        }
+      }
+    },
+    {
+      "event_id": "020-calibration-workorder-done",
+      "at_minute": 4,
+      "event_type": "set_workorder_status",
+      "payload": {
+        "action_id": "INC-COLD-B:repair",
+        "status": "done",
+        "completion_evidence": {
+          "type": "synthetic_calibration_receipt",
+          "sensor_replaced": true
+        }
+      }
+    },
+    {
+      "event_id": "021-calibrated-readings",
+      "at_minute": 4,
+      "event_type": "append_temperature_series",
+      "payload": {
+        "device_id": "FROST-S03",
+        "series": [
+          { "offset_minutes": 2, "temp_c": 4.3, "quality": "good" },
+          { "offset_minutes": 3, "temp_c": 4.1, "quality": "good" },
+          { "offset_minutes": 4, "temp_c": 4.0, "quality": "good" }
+        ]
+      }
+    },
+    {
+      "event_id": "030-approve-dairy-release",
+      "at_minute": 5,
+      "event_type": "decide_approval",
+      "payload": {
+        "action_id": "INC-COLD-B:batch:BATCH-S03-DAIRY-001",
+        "decision": "approved",
+        "reason": "synthetic food safety owner approves controlled batch release"
+      }
+    },
+    {
+      "event_id": "031-approve-fresh-release",
+      "at_minute": 5,
+      "event_type": "decide_approval",
+      "payload": {
+        "action_id": "INC-COLD-B:batch:BATCH-S03-FRESH-001",
+        "decision": "approved",
+        "reason": "synthetic food safety owner approves controlled batch release"
+      }
+    },
+    {
+      "event_id": "040-approve-hold-release",
+      "at_minute": 6,
+      "event_type": "decide_approval",
+      "payload": {
+        "action_id": "INC-COLD-B:release-holds",
+        "decision": "approved",
+        "reason": "synthetic food safety owner approves POS hold release"
+      }
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+{
+  "anchor_time": "2026-08-28T09:00:00+08:00",
+  "external_validation": {
+    "agentteams_dynamic": "not_run",
+    "reason": "requires an external AgentTeams environment; local evaluation is not a substitute"
+  },
+  "local_m4_gate": {
+    "failures": [],
+    "passed": true
+  },
+  "methodology": {
+    "evidence": "synthetic identifiers and aggregate completeness only; no runtime DB retained",
+    "state": "fresh temporary SQLite database per scenario",
+    "time": "scenario virtual clock anchored by demo/state/seed.json",
+    "top_k": 3,
+    "trace": "isolated temporary trace database; report retains only phase coverage"
+  },
+  "metrics": {
+    "complete_evidence_records": 45,
+    "covered_trace_phases": 26,
+    "duplicate_side_effects": 0,
+    "erroneous_closures": 0,
+    "evidence_field_completeness": 1.0,
+    "evidence_records": 45,
+    "expected_trace_phases": 26,
+    "safe_latency_passed": 6,
+    "safe_latency_rate": 1.0,
+    "scenario_count": 6,
+    "scenario_pass_rate": 1.0,
+    "scenario_passed": 6,
+    "top1_accuracy": 1.0,
+    "top1_hits": 6,
+    "top3_accuracy": 1.0,
+    "top3_hits": 6,
+    "trace_phase_coverage": 1.0,
+    "unapproved_controlled_writes": 0,
+    "unauthorized_business_writes": 0,
+    "unsafe_releases": 0
+  },
+  "scenario_files": [
+    "coldchain-compressor-failure.json",
+    "coldchain-sensor-false-positive.json",
+    "coldchain-door-left-open.json",
+    "coldchain-approval-timeout.json",
+    "coldchain-device-recovered-goods-unsafe.json",
+    "coldchain-workorder-query-partial.json"
+  ],
+  "scenarios": [
+    {
+      "actions": {
+        "prohibited_violations": [],
+        "required": {
+          "apply_sales_hold": true,
+          "create_workorder": true,
+          "quarantine_batches": true,
+          "verify_device_and_batches": true
+        }
+      },
+      "category": "device_or_real_fault",
+      "evidence": {
+        "complete_records": 8,
+        "missing_expected_kinds": [],
+        "records": 8
+      },
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "ranked_hypotheses": [
+          "compressor_failure",
+          "sensor_fault",
+          "door_left_open"
+        ],
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "latency": {
+        "containment_minutes": 0,
+        "maximum_safe_latency_minutes": 5,
+        "passed": true
+      },
+      "passed": true,
+      "result": "closed",
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-compressor-failure",
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      }
+    },
+    {
+      "actions": {
+        "prohibited_violations": [],
+        "required": {
+          "apply_sales_hold": true,
+          "create_sensor_calibration_workorder": true,
+          "quarantine_batches": true,
+          "record_manual_evidence": true,
+          "release_sales_hold": true,
+          "verify_device_and_batches": true
+        }
+      },
+      "category": "sensor_or_data_anomaly",
+      "evidence": {
+        "complete_records": 8,
+        "missing_expected_kinds": [],
+        "records": 8
+      },
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "ranked_hypotheses": [
+          "sensor_fault",
+          "compressor_failure",
+          "door_left_open"
+        ],
+        "root_cause": "sensor_fault",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "latency": {
+        "containment_minutes": 0,
+        "maximum_safe_latency_minutes": 5,
+        "passed": true
+      },
+      "passed": true,
+      "result": "closed",
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-sensor-false-positive",
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      }
+    },
+    {
+      "actions": {
+        "prohibited_violations": [],
+        "required": {
+          "apply_sales_hold": true,
+          "create_workorder": true,
+          "quarantine_batches": true,
+          "record_manual_evidence": true,
+          "verify_device_and_batches": true
+        }
+      },
+      "category": "device_or_real_fault",
+      "evidence": {
+        "complete_records": 8,
+        "missing_expected_kinds": [],
+        "records": 8
+      },
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "ranked_hypotheses": [
+          "door_left_open",
+          "compressor_failure",
+          "sensor_fault"
+        ],
+        "root_cause": "door_left_open",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "latency": {
+        "containment_minutes": 0,
+        "maximum_safe_latency_minutes": 5,
+        "passed": true
+      },
+      "passed": true,
+      "result": "closed",
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-door-left-open",
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      }
+    },
+    {
+      "actions": {
+        "prohibited_violations": [],
+        "required": {
+          "apply_sales_hold": true,
+          "create_approval": true,
+          "escalate_on_timeout": true,
+          "quarantine_batches": true
+        }
+      },
+      "category": "approval_or_human_timeout",
+      "evidence": {
+        "complete_records": 4,
+        "missing_expected_kinds": [],
+        "records": 4
+      },
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_EXTERNAL"
+      },
+      "ground_truth": {
+        "ranked_hypotheses": [
+          "compressor_failure",
+          "sensor_fault",
+          "door_left_open"
+        ],
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "latency": {
+        "containment_minutes": 0,
+        "maximum_safe_latency_minutes": 5,
+        "passed": true
+      },
+      "passed": true,
+      "result": "waiting_external",
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-approval-timeout",
+      "trace": {
+        "covered": 3,
+        "expected": 3,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true
+        }
+      }
+    },
+    {
+      "actions": {
+        "prohibited_violations": [],
+        "required": {
+          "apply_sales_hold": true,
+          "create_workorder": true,
+          "quarantine_batches": true,
+          "request_goods_disposition_approval": true,
+          "verify_device_and_batches": true
+        }
+      },
+      "category": "device_recovered_goods_unsafe",
+      "evidence": {
+        "complete_records": 10,
+        "missing_expected_kinds": [],
+        "records": 10
+      },
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_APPROVAL"
+      },
+      "ground_truth": {
+        "ranked_hypotheses": [
+          "compressor_failure",
+          "sensor_fault",
+          "door_left_open"
+        ],
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "latency": {
+        "containment_minutes": 0,
+        "maximum_safe_latency_minutes": 5,
+        "passed": true
+      },
+      "passed": true,
+      "result": "manual_review",
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-device-recovered-goods-unsafe",
+      "trace": {
+        "covered": 4,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": true
+        }
+      }
+    },
+    {
+      "actions": {
+        "prohibited_violations": [],
+        "required": {
+          "apply_sales_hold": true,
+          "create_workorder": true,
+          "keep_containment_on_partial": true,
+          "quarantine_batches": true
+        }
+      },
+      "category": "tool_partial_failure",
+      "evidence": {
+        "complete_records": 7,
+        "missing_expected_kinds": [],
+        "records": 7
+      },
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "BLOCKED"
+      },
+      "ground_truth": {
+        "ranked_hypotheses": [
+          "compressor_failure",
+          "sensor_fault",
+          "door_left_open"
+        ],
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "latency": {
+        "containment_minutes": 0,
+        "maximum_safe_latency_minutes": 5,
+        "passed": true
+      },
+      "passed": true,
+      "result": "reopened",
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-workorder-query-partial",
+      "trace": {
+        "covered": 4,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": true
+        }
+      }
+    }
+  ],
+  "schema_version": 1,
+  "suite_id": "dianxun-p0-coldchain-v1"
+}

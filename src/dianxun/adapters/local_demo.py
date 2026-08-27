@@ -44,8 +44,15 @@ class LocalDemoAdapter:
         scenario_path: str | Path,
         policy_path: str | Path = DEFAULT_POLICY_PATH,
         seed_path: str | Path = DEFAULT_SEED_PATH,
+        trace_db_path: str | Path | None = None,
     ) -> None:
-        self.store = StateStore(db_path)
+        state_path = Path(db_path)
+        self.store = StateStore(state_path)
+        self.trace_db_path = (
+            Path(trace_db_path)
+            if trace_db_path is not None
+            else state_path.with_suffix(".trace.db")
+        )
         self.policy = PolicyEngine(policy_path)
         self.mcp = MCPService(
             self.store,
@@ -56,12 +63,17 @@ class LocalDemoAdapter:
         self.incidents = IncidentService(self.store)
 
     def run(self) -> dict[str, Any]:
+        with trace.use_database(self.trace_db_path):
+            return self._run()
+
+    def _run(self) -> dict[str, Any]:
         self.scenario.reset()
         definition = self.scenario.scenario
         ground_truth = definition["ground_truth"]
         workflow = definition.get("workflow", {})
         incident_id = ground_truth.get("incident_id") or _incident_id(definition["scenario_id"])
         trace_id = f"tr_{definition['scenario_id'].replace('-', '_')}"
+        trace.clear_trace(trace_id)
         store_id = ground_truth["store_id"]
         device_id = ground_truth["device_id"]
         policy = self.policy.policy
@@ -75,6 +87,7 @@ class LocalDemoAdapter:
         ) as root:
             detection = self._detect(
                 trace_id=trace_id,
+                incident_id=incident_id,
                 store_id=store_id,
                 device_id=device_id,
             )
@@ -119,6 +132,10 @@ class LocalDemoAdapter:
                 actor="Orchestrator",
                 reason="risk contained; delegate evidence-linked diagnosis",
             )
+            diagnosis_minute = workflow.get("diagnosis_evidence_minute")
+            if diagnosis_minute is not None:
+                self._advance_to(int(diagnosis_minute))
+                self._append_manual_evidence_refs(incident_id)
             diagnosis = self._diagnose(
                 incident_id=incident_id,
                 trace_id=trace_id,
@@ -133,13 +150,24 @@ class LocalDemoAdapter:
                 actor="Orchestrator",
                 reason="policy-bound execution plan accepted",
             )
-            repair = self._execute_repair(
-                incident_id=incident_id,
-                trace_id=trace_id,
-                store_id=store_id,
-                device_id=device_id,
-                workflow=workflow,
-            )
+            with trace.span(
+                "executor",
+                "agent",
+                trace_id,
+                input={
+                    "incident_id": incident_id,
+                    "top_hypothesis": diagnosis["hypotheses"][0]["label"],
+                },
+            ) as executor_span:
+                repair = self._execute_repair(
+                    incident_id=incident_id,
+                    trace_id=trace_id,
+                    store_id=store_id,
+                    device_id=device_id,
+                    fault=diagnosis["hypotheses"][0]["label"],
+                    workflow=workflow,
+                )
+                executor_span.output = {"result": repair["result"]}
             phase_outputs["EXECUTE"] = {"repair": repair}
             if repair["result"] != "executed":
                 final_case = self.incidents.recompute(incident_id)
@@ -152,11 +180,13 @@ class LocalDemoAdapter:
                 final_case = self.incidents.set_work_status(
                     incident_id,
                     wait_status,
-                    owner="Orchestrator",
+                    owner=("regional_manager" if repair["result"] == "timeout" else "Orchestrator"),
                     next_wakeup_at=wakeup,
                     reason=(
-                        "repair approval did not authorize execution; "
-                        "containment remains active"
+                        "repair approval did not authorize execution; containment remains active; "
+                        "timeout escalation assigned to regional manager"
+                        if repair["result"] == "timeout"
+                        else "repair execution failed; containment remains active"
                     ),
                 )
                 result = self._result(
@@ -186,23 +216,59 @@ class LocalDemoAdapter:
                 actor="Orchestrator",
                 reason="execution receipts available; delegate independent requery",
             )
-            with trace.span(
-                "auditor",
-                "agent",
-                trace_id,
-                input={"incident_id": incident_id},
-            ) as agent_span:
-                verification = outcome_verify(
-                    incidents=self.incidents,
-                    service=self.mcp,
-                    incident_id=incident_id,
-                    policy=policy,
-                    trace_id=trace_id,
+            verification = self._verify(incident_id, trace_id, policy)
+            attempts = [_verification_summary(verification)]
+
+            if verification["result"] == "release_ready":
+                self.incidents.transition_phase(
+                    incident_id,
+                    Phase.EXECUTE,
+                    actor="Orchestrator",
+                    reason="Auditor release guard passed; delegate approved hold release",
                 )
-                agent_span.output = {
-                    "result": verification["result"],
-                    "failed_conditions": verification["failed_conditions"],
-                }
+                with trace.span(
+                    "executor-release",
+                    "agent",
+                    trace_id,
+                    input={"incident_id": incident_id},
+                ) as release_span:
+                    release = self._execute_sales_hold_release(
+                        incident_id=incident_id,
+                        trace_id=trace_id,
+                        workflow=workflow,
+                    )
+                    release_span.output = {"result": release["result"]}
+                phase_outputs["EXECUTE"]["sales_hold_release"] = release
+                if release["result"] != "executed":
+                    final_case = self.incidents.recompute(incident_id)
+                    pending = self.store.list_approvals(incident_id=incident_id)
+                    pending = [item for item in pending if item["status"] == "pending"]
+                    final_case = self.incidents.set_work_status(
+                        incident_id,
+                        WorkStatus.WAITING_APPROVAL if pending else WorkStatus.BLOCKED,
+                        owner="Orchestrator",
+                        next_wakeup_at=release.get("deadline"),
+                        reason="controlled hold release not authorized; containment remains active",
+                    )
+                    verification["attempts"] = attempts
+                    phase_outputs["VERIFY"] = verification
+                    result = self._result(
+                        phase_outputs=phase_outputs,
+                        verification=verification,
+                        review=None,
+                        case=final_case,
+                    )
+                    root.output = {"result": result["result"], "acceptance": result["acceptance"]}
+                    return result
+                self.incidents.transition_phase(
+                    incident_id,
+                    Phase.VERIFY,
+                    actor="Orchestrator",
+                    reason="sales holds released; Auditor must independently requery final state",
+                )
+                verification = self._verify(incident_id, trace_id, policy)
+                attempts.append(_verification_summary(verification))
+                verification["attempts"] = attempts
             phase_outputs["VERIFY"] = verification
 
             if verification["result"] == "verified":
@@ -259,7 +325,14 @@ class LocalDemoAdapter:
             root.output = {"result": result["result"], "acceptance": result["acceptance"]}
             return result
 
-    def _detect(self, *, trace_id: str, store_id: str, device_id: str) -> dict[str, Any]:
+    def _detect(
+        self,
+        *,
+        trace_id: str,
+        incident_id: str,
+        store_id: str,
+        device_id: str,
+    ) -> dict[str, Any]:
         with trace.span(
             "sentry",
             "agent",
@@ -268,6 +341,7 @@ class LocalDemoAdapter:
         ) as sp:
             result = detect_coldchain_event(
                 service=self.mcp,
+                incident_id=incident_id,
                 store_id=store_id,
                 device_id=device_id,
                 trace_id=trace_id,
@@ -339,11 +413,13 @@ class LocalDemoAdapter:
             device = self.mcp.query_device_context(
                 store_id=store_id,
                 device_id=device_id,
+                incident_id=incident_id,
                 actor="Diagnoser",
             )["data"]["devices"][0]
             batches_response = self.mcp.query_inventory_batches(
                 store_id=store_id,
                 device_id=device_id,
+                incident_id=incident_id,
                 actor="Diagnoser",
             )
             batches = batches_response["data"]["batches"]
@@ -372,14 +448,18 @@ class LocalDemoAdapter:
                     risk_level="L2",
                     approval_required=True,
                     approvers=["store_manager", "food_safety_owner"],
-                    decision_reason="compressor evidence plus batch-specific exposure assessment",
+                    decision_reason=(
+                        f"top hypothesis {top.label} plus batch-specific exposure assessment"
+                    ),
                     evidence_ids=list(case.evidence_refs),
                     created_by="Diagnoser",
                 ),
             )
             result = {
                 "hypotheses": [asdict(item) for item in diagnosis["hypotheses"]],
+                "evidence": diagnosis["evidence"],
                 "quality": diagnosis["quality"],
+                "data_quality": diagnosis.get("data_quality", {}),
                 "rag": diagnosis["rag"],
                 "risk_assessment": assessment,
             }
@@ -397,24 +477,36 @@ class LocalDemoAdapter:
         trace_id: str,
         store_id: str,
         device_id: str,
+        fault: str,
         workflow: dict[str, Any],
     ) -> dict[str, Any]:
         action_id = f"{incident_id}:repair"
         budget = float(workflow.get("repair_budget", 2500.0))
         timeout = int(workflow.get("repair_approval_timeout_minutes", 2))
-        approval_response = self.mcp.create_approval(
-            incident_id=incident_id,
-            action_id=action_id,
-            subject=f"repair {device_id}",
-            requested_action_type="create_workorder",
-            amount=budget,
-            timeout_minutes=timeout,
-            idempotency_key=f"{action_id}:approval:v1",
+        policy_decision = self.policy.evaluate(
             actor="Executor",
+            action_type="create_workorder",
+            amount=budget,
         )
-        if not approval_response["ok"]:
-            return {"result": "failed", "error": approval_response["error"]}
-        approval = approval_response["data"]
+        approval_id: str | None = None
+        approval_row: dict[str, Any] | None = None
+        approval_response: dict[str, Any] | None = None
+        action_status = ActionStatus.EXECUTING
+        if policy_decision.approval_required:
+            approval_response = self.mcp.create_approval(
+                incident_id=incident_id,
+                action_id=action_id,
+                subject=f"repair {device_id}",
+                requested_action_type="create_workorder",
+                amount=budget,
+                timeout_minutes=timeout,
+                idempotency_key=f"{action_id}:approval:v1",
+                actor="Executor",
+            )
+            if not approval_response["ok"]:
+                return {"result": "failed", "error": approval_response["error"]}
+            approval_id = approval_response["data"]["approval_id"]
+            action_status = ActionStatus.PENDING
         self.incidents.append_action(
             incident_id,
             Action(
@@ -423,48 +515,63 @@ class LocalDemoAdapter:
                 tool_name="create_workorder",
                 target=device_id,
                 idempotency_key=f"{action_id}:execute:v1",
-                approval_id=approval["approval_id"],
-                status=ActionStatus.PENDING,
-                request={"store_id": store_id, "device_id": device_id, "budget": budget},
+                approval_id=approval_id,
+                status=action_status,
+                request={
+                    "store_id": store_id,
+                    "device_id": device_id,
+                    "fault": fault,
+                    "budget": budget,
+                },
                 response=approval_response,
                 rollback_or_compensation={"type": "cancel_or_reassign_workorder"},
                 started_at=self.store.now(),
             ),
         )
-        decision_minute = int(workflow.get("repair_approval_decision_minute", timeout))
-        self._advance_to(decision_minute)
-        self._append_manual_evidence_refs(incident_id)
-        queried = self.mcp.query_approval(
-            approval_id=approval["approval_id"],
-            incident_id=incident_id,
-            action_id=action_id,
-            actor="Orchestrator",
-        )
-        row = queried["data"]["approvals"][0]
-        status = row["status"]
-        if status != "approved":
-            mapped = {
-                "pending": ActionStatus.PENDING,
-                "rejected": ActionStatus.REJECTED,
-                "timeout": ActionStatus.TIMEOUT,
-            }[status]
-            self.incidents.update_action(incident_id, action_id, status=mapped, response=queried)
-            return {"result": status, "approval": row, "deadline": row["deadline"]}
-        self.incidents.update_action(
-            incident_id,
-            action_id,
-            status=ActionStatus.APPROVED,
-            response=queried,
-        )
+        if approval_id is not None:
+            decision_minute = int(workflow.get("repair_approval_decision_minute", timeout))
+            self._advance_to(decision_minute)
+            self._append_manual_evidence_refs(incident_id)
+            queried = self.mcp.query_approval(
+                approval_id=approval_id,
+                incident_id=incident_id,
+                action_id=action_id,
+                actor="Orchestrator",
+            )
+            approval_row = queried["data"]["approvals"][0]
+            status = approval_row["status"]
+            if status != "approved":
+                mapped = {
+                    "pending": ActionStatus.PENDING,
+                    "rejected": ActionStatus.REJECTED,
+                    "timeout": ActionStatus.TIMEOUT,
+                }[status]
+                self.incidents.update_action(
+                    incident_id,
+                    action_id,
+                    status=mapped,
+                    response=queried,
+                )
+                return {
+                    "result": status,
+                    "approval": approval_row,
+                    "deadline": approval_row["deadline"],
+                }
+            self.incidents.update_action(
+                incident_id,
+                action_id,
+                status=ActionStatus.APPROVED,
+                response=queried,
+            )
         dispatched = dispatch_stateful_workorder(
             service=self.mcp,
             incident_id=incident_id,
             action_id=action_id,
             store_id=store_id,
             device_id=device_id,
-            fault="compressor_failure",
+            fault=fault,
             budget=budget,
-            approval_id=approval["approval_id"],
+            approval_id=approval_id,
             idempotency_key=f"{action_id}:execute:v1",
             trace_id=trace_id,
         )
@@ -476,7 +583,7 @@ class LocalDemoAdapter:
         )
         return {
             "result": "executed" if dispatched["ok"] else "failed",
-            "approval": row,
+            "approval": approval_row,
             "workorder": dispatched,
         }
 
@@ -595,6 +702,139 @@ class LocalDemoAdapter:
             results.append({**item, "result": "executed" if response["ok"] else "failed"})
         return results
 
+    def _execute_sales_hold_release(
+        self,
+        *,
+        incident_id: str,
+        trace_id: str,
+        workflow: dict[str, Any],
+    ) -> dict[str, Any]:
+        case = self.incidents.recompute(incident_id)
+        released_batches = {
+            batch_id
+            for batch_id, disposition in case.batch_dispositions.items()
+            if disposition.value == "released"
+        }
+        holds = [
+            item
+            for item in self.store.list_sales_holds(incident_id=incident_id, status="active")
+            if item["batch_id"] in released_batches
+        ]
+        if not holds:
+            return {"result": "failed", "error": "no active holds for released batches"}
+
+        action_id = f"{incident_id}:release-holds"
+        timeout = int(workflow.get("release_approval_timeout_minutes", 30))
+        approval_response = self.mcp.create_approval(
+            incident_id=incident_id,
+            action_id=action_id,
+            subject=f"release sales holds for {incident_id}",
+            requested_action_type="release_sales_hold",
+            timeout_minutes=timeout,
+            idempotency_key=f"{action_id}:approval:v1",
+            actor="Executor",
+        )
+        if not approval_response["ok"]:
+            return {"result": "failed", "error": approval_response["error"]}
+        approval = approval_response["data"]
+        self.incidents.append_action(
+            incident_id,
+            Action(
+                action_id=action_id,
+                action_type="release_sales_hold",
+                tool_name="release_sales_hold",
+                target=incident_id,
+                idempotency_key=f"{action_id}:execute:v1",
+                approval_id=approval["approval_id"],
+                status=ActionStatus.PENDING,
+                request={"hold_ids": [item["hold_id"] for item in holds]},
+                response=approval_response,
+                rollback_or_compensation={"type": "reapply_sales_hold"},
+                started_at=self.store.now(),
+            ),
+        )
+        decision_minute = workflow.get("release_approval_decision_minute")
+        if decision_minute is not None:
+            self._advance_to(int(decision_minute))
+        queried = self.mcp.query_approval(
+            approval_id=approval["approval_id"],
+            incident_id=incident_id,
+            action_id=action_id,
+            actor="Orchestrator",
+        )
+        row = queried["data"]["approvals"][0]
+        if row["status"] != "approved":
+            mapped = {
+                "pending": ActionStatus.PENDING,
+                "rejected": ActionStatus.REJECTED,
+                "timeout": ActionStatus.TIMEOUT,
+            }[row["status"]]
+            self.incidents.update_action(incident_id, action_id, status=mapped, response=queried)
+            return {"result": row["status"], "approval": row, "deadline": row["deadline"]}
+
+        self.incidents.update_action(
+            incident_id,
+            action_id,
+            status=ActionStatus.APPROVED,
+            response=queried,
+        )
+        with trace.span(
+            "release_sales_hold",
+            "mcp",
+            trace_id,
+            input={"incident_id": incident_id, "hold_count": len(holds)},
+        ) as tool_span:
+            response = self.mcp.release_sales_hold(
+                incident_id=incident_id,
+                action_id=action_id,
+                hold_ids=[item["hold_id"] for item in holds],
+                approval_id=approval["approval_id"],
+                verification_id=f"{incident_id}:verify:release_guard",
+                idempotency_key=f"{action_id}:execute:v1",
+                actor="Executor",
+            )
+            tool_span.output = {
+                "ok": response["ok"],
+                "request_id": response["request_id"],
+                "audit_ref": response["audit_ref"],
+            }
+        self.incidents.update_action(
+            incident_id,
+            action_id,
+            status=ActionStatus.COMPLETED if response["ok"] else ActionStatus.FAILED,
+            response=response,
+        )
+        return {
+            "result": "executed" if response["ok"] else "failed",
+            "approval": row,
+            "release": response,
+        }
+
+    def _verify(
+        self,
+        incident_id: str,
+        trace_id: str,
+        policy: dict[str, Any],
+    ) -> dict[str, Any]:
+        with trace.span(
+            "auditor",
+            "agent",
+            trace_id,
+            input={"incident_id": incident_id},
+        ) as agent_span:
+            verification = outcome_verify(
+                incidents=self.incidents,
+                service=self.mcp,
+                incident_id=incident_id,
+                policy=policy,
+                trace_id=trace_id,
+            )
+            agent_span.output = {
+                "result": verification["result"],
+                "failed_conditions": verification["failed_conditions"],
+            }
+            return verification
+
     def _append_evidence(self, incident_id: str, items: list[dict[str, Any]]) -> None:
         for item in items:
             self.incidents.append_evidence(incident_id, Evidence(**item))
@@ -649,6 +889,14 @@ class LocalDemoAdapter:
 
 def _incident_id(scenario_id: str) -> str:
     return "INC-" + scenario_id.upper().replace("-", "_")
+
+
+def _verification_summary(verification: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "result": verification["result"],
+        "failed_conditions": list(verification["failed_conditions"]),
+        "partial_tools": list(verification.get("partial_tools", [])),
+    }
 
 
 def _acceptance(

@@ -29,18 +29,28 @@ def coldchain_risk_assess(
         input={"incident_id": incident_id, "batch_count": len(affected_batches)},
     ) as sp:
         ordered = sorted(device_series, key=lambda item: item["observed_at"])
+        trusted = [item for item in ordered if str(item.get("quality", "good")).lower() == "good"]
+        excluded = [item for item in ordered if item not in trusted]
+        manual = manual_measurements or []
         exposure_policy = policy.get("exposure", {})
         transfer_limit = float(exposure_policy.get("transfer_max_degree_minutes", 60.0))
         assessments: list[dict[str, Any]] = []
         for batch in affected_batches:
             maximum = float(batch["storage_max_c"])
-            degree_minutes, over_minutes = _degree_minutes(ordered, maximum)
-            if not ordered:
+            degree_minutes, over_minutes = _degree_minutes(trusted, maximum)
+            manual_temperatures = _manual_temperatures(manual)
+            manual_normal = bool(manual_temperatures) and all(
+                temperature <= maximum for temperature in manual_temperatures
+            )
+            if not trusted:
                 recommendation = "quarantined"
-                reason = "temperature_series_missing"
-            elif degree_minutes <= 0 and bool(batch.get("safe_for_sale")):
+                reason = "trusted_temperature_series_missing"
+            elif excluded and not manual_normal:
+                recommendation = "quarantined"
+                reason = "suspect_readings_require_independent_corroboration"
+            elif degree_minutes <= 0 and manual_normal:
                 recommendation = "released"
-                reason = "no_exposure_detected"
+                reason = "no_trusted_exposure_and_manual_measurement_normal"
             elif degree_minutes <= transfer_limit:
                 recommendation = "transferred"
                 reason = "limited_exposure_requires_controlled_transfer"
@@ -57,6 +67,7 @@ def coldchain_risk_assess(
                     "reason": reason,
                     "policy_ref": batch.get("policy_ref"),
                     "requires_approval": recommendation in {"transferred", "released", "disposed"},
+                    "evidence_quality": "corroborated" if excluded and manual_normal else "trusted",
                 }
             )
         result = {
@@ -69,7 +80,15 @@ def coldchain_risk_assess(
                 for item in assessments
                 if item["requires_approval"]
             ],
-            "manual_measurements": manual_measurements or [],
+            "manual_measurements": manual,
+            "data_quality": {
+                "total_readings": len(ordered),
+                "trusted_readings": len(trusted),
+                "excluded_readings": len(excluded),
+                "excluded_qualities": sorted(
+                    {str(item.get("quality", "unknown")) for item in excluded}
+                ),
+            },
             "evidence_refs": [],
             "policy": {
                 "policy_id": policy["policy_id"],
@@ -79,9 +98,7 @@ def coldchain_risk_assess(
             },
         }
         sp.output = {
-            "recommendations": {
-                item["batch_id"]: item["recommendation"] for item in assessments
-            }
+            "recommendations": {item["batch_id"]: item["recommendation"] for item in assessments}
         }
         return result
 
@@ -99,3 +116,12 @@ def _degree_minutes(series: list[dict[str, Any]], maximum: float) -> tuple[float
         if left_over > 0 or right_over > 0:
             over_minutes += minutes
     return degree_minutes, over_minutes
+
+
+def _manual_temperatures(items: list[dict[str, Any]]) -> list[float]:
+    temperatures: list[float] = []
+    for item in items:
+        metadata = item.get("metadata") or {}
+        if metadata.get("temp_c") is not None:
+            temperatures.append(float(metadata["temp_c"]))
+    return temperatures

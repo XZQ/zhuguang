@@ -30,6 +30,14 @@
     },
     "containment_actions": { "type": "array", "items": { "type": "string" } },
     "required_approvals": { "type": "array", "items": { "type": "object" } },
+    "data_quality": {
+      "type": "object",
+      "properties": {
+        "total_readings": { "type": "integer", "minimum": 0 },
+        "trusted_readings": { "type": "integer", "minimum": 0 },
+        "excluded_readings": { "type": "integer", "minimum": 0 }
+      }
+    },
     "evidence_refs": { "type": "array", "items": { "type": "string" } }
   }
 }

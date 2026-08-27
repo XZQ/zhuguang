@@ -11,6 +11,12 @@ from typing import Any
 
 from .adapters import LocalDemoAdapter
 from .domain import PolicyEngine
+from .evaluation import (
+    DEFAULT_EVIDENCE_DIR,
+    DEFAULT_SCENARIO_DIR,
+    evaluate_suite,
+    write_evaluation_artifacts,
+)
 from .mcp.p0 import (
     DEFAULT_DB_PATH,
     DEFAULT_POLICY_PATH,
@@ -43,6 +49,10 @@ def build_parser() -> argparse.ArgumentParser:
     demo.add_argument("scenario", nargs="?", type=_path, default=DEFAULT_SCENARIO_PATH)
     demo.add_argument("--db", type=_path, default=DEFAULT_DB_PATH)
     demo.add_argument("--output", type=_path, help="optional JSON result path")
+
+    evaluate = subparsers.add_parser("evaluate", help="run the deterministic six-scenario gate")
+    evaluate.add_argument("--scenario-dir", type=_path, default=DEFAULT_SCENARIO_DIR)
+    evaluate.add_argument("--output-dir", type=_path, default=DEFAULT_EVIDENCE_DIR)
 
     subparsers.add_parser("mcp-tools", help="print the exact P0 MCP tool names")
 
@@ -82,6 +92,19 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "mcp-tools":
         _print_json({"count": len(TOOLS), "tools": list(TOOLS)})
         return 0
+    if args.command == "evaluate":
+        evaluation = evaluate_suite(args.scenario_dir)
+        json_path, report_path = write_evaluation_artifacts(evaluation, args.output_dir)
+        _print_json(
+            {
+                "suite_id": evaluation["suite_id"],
+                "gate": evaluation["local_m4_gate"],
+                "metrics": evaluation["metrics"],
+                "results": str(json_path),
+                "report": str(report_path),
+            }
+        )
+        return 0 if evaluation["local_m4_gate"]["passed"] else 1
     if args.command == "demo-run":
         result = LocalDemoAdapter(db_path=args.db, scenario_path=args.scenario).run()
         if args.output:

@@ -12,21 +12,26 @@
 """
 
 from __future__ import annotations
+
 import json
 import sqlite3
 import time
 import uuid
+from collections.abc import Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field, asdict
+from contextvars import ContextVar
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
-_DB_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "trace.db"
+_DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "trace.db"
+_DB_PATH: ContextVar[Path] = ContextVar("dianxun_trace_db", default=_DEFAULT_DB_PATH)
 
 
 def _connect() -> sqlite3.Connection:
-    _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(_DB_PATH))
+    db_path = _DB_PATH.get()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
     conn.execute(
         """CREATE TABLE IF NOT EXISTS spans(
             span_id TEXT PRIMARY KEY,
@@ -45,6 +50,26 @@ def _connect() -> sqlite3.Connection:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_trace ON spans(trace_id)")
     conn.commit()
     return conn
+
+
+@contextmanager
+def use_database(path: str | Path) -> Iterator[None]:
+    """Scope trace persistence to one runtime/evaluation database."""
+    token = _DB_PATH.set(Path(path).resolve())
+    try:
+        yield
+    finally:
+        _DB_PATH.reset(token)
+
+
+def clear_trace(trace_id: str) -> None:
+    """Remove a previous run of the same deterministic scenario trace."""
+    conn = _connect()
+    try:
+        conn.execute("DELETE FROM spans WHERE trace_id = ?", (trace_id,))
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def new_trace_id() -> str:
@@ -82,10 +107,17 @@ def _persist(span: Span) -> None:
         conn.execute(
             "INSERT OR REPLACE INTO spans VALUES(?,?,?,?,?,?,?,?,?,?,?)",
             (
-                span.span_id, span.trace_id, span.parent_id, span.name, span.kind,
+                span.span_id,
+                span.trace_id,
+                span.parent_id,
+                span.name,
+                span.kind,
                 json.dumps(span.input, ensure_ascii=False, default=str)[:2000],
                 json.dumps(span.output, ensure_ascii=False, default=str)[:2000],
-                span.status, span.error, span.start_ms, span.end_ms,
+                span.status,
+                span.error,
+                span.start_ms,
+                span.end_ms,
             ),
         )
         conn.commit()
@@ -94,8 +126,9 @@ def _persist(span: Span) -> None:
 
 
 @contextmanager
-def span(name: str, kind: str, trace_id: str, parent_id: str | None = None,
-         input: Any = None) -> Iterator[Span]:
+def span(
+    name: str, kind: str, trace_id: str, parent_id: str | None = None, input: Any = None
+) -> Iterator[Span]:
     """便捷上下文管理器:自动记录起止时间与异常。
 
     用法:
@@ -122,9 +155,20 @@ def query_trace(trace_id: str) -> list[dict]:
         ).fetchall()
     finally:
         conn.close()
-    cols = ["span_id", "trace_id", "parent_id", "name", "kind", "input_json",
-            "output_json", "status", "error", "start_ms", "end_ms"]
-    return [dict(zip(cols, r)) for r in rows]
+    cols = [
+        "span_id",
+        "trace_id",
+        "parent_id",
+        "name",
+        "kind",
+        "input_json",
+        "output_json",
+        "status",
+        "error",
+        "start_ms",
+        "end_ms",
+    ]
+    return [dict(zip(cols, r, strict=True)) for r in rows]
 
 
 def trace_summary(trace_id: str) -> str:
