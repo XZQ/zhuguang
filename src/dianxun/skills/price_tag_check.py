@@ -1,6 +1,6 @@
 """S5. price-tag-check 价签与促销合规校验。
 
-九要素(详见 skills/price-tag-check.md):
+九要素（详见 skills/planned/price-tag-check.md）：
   用途    比对系统价/货架价签价/收银价三方一致性,校验促销规则,输出价签异常报告
   输入    store_id, sku_list?, check_time
   输出    PriceCheckReport{mismatches[{sku, system, tag, pos, severity}], compliance_summary}

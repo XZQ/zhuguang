@@ -1,6 +1,6 @@
 """S6. work-order-dispatch 工单派发与跟踪。
 
-九要素(详见 skills/work-order-dispatch.md):
+九要素（详见 skills/work-order-dispatch/SKILL.md）：
   用途    设备/设施类处置生成工单,派发维修服务商,跟踪状态与完成验证
   输入    store_id, equipment_id, fault_summary, severity, budget_estimate
   输出    WorkOrder{id, assignee, sla_deadline, status, evidence_photos}

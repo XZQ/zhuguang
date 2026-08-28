@@ -12,11 +12,13 @@
 | `work-order-dispatch` | P0 | Executor | 已实现，版本 1.0.0 | [`skills/work-order-dispatch/`](../../skills/work-order-dispatch/) |
 | `outcome-verify` | P0 | Auditor | 已实现，版本 1.1.0 | [`skills/outcome-verify/`](../../skills/outcome-verify/) |
 | `review-report` | P0 | Auditor | 已实现，版本 1.0.0 | [`skills/review-report/`](../../skills/review-report/) |
-| `cross-store-benchmark` | P1 | Diagnoser | 代码保留；未进入 P0 Worker/评测 | [`skills/cross-store-benchmark.md`](../../skills/cross-store-benchmark.md) |
-| `restock-order-gen` | P2 | Executor | 缺货补充入口使用；非冷柜 P0 | [`skills/restock-order-gen.md`](../../skills/restock-order-gen.md) |
-| `price-tag-check` | P2 | Sentry / Executor | 价签补充入口使用；非冷柜 P0 | [`skills/price-tag-check.md`](../../skills/price-tag-check.md) |
+| `cross-store-benchmark` | P1 | Diagnoser | 代码保留；未进入 P0 Worker/评测 | [`skills/planned/cross-store-benchmark.md`](../../skills/planned/cross-store-benchmark.md) |
+| `restock-order-gen` | P2 | Executor | 缺货补充入口使用；非冷柜 P0 | [`skills/planned/restock-order-gen.md`](../../skills/planned/restock-order-gen.md) |
+| `price-tag-check` | P2 | Sentry / Executor | 价签补充入口使用；非冷柜 P0 | [`skills/planned/price-tag-check.md`](../../skills/planned/price-tag-check.md) |
 
 “P0 已实现”表示 Python 实现、Skill 工程文件、Schema/样例和自动化门禁同时存在；不表示真实 AgentTeams Worker 已在目标集群动态运行。
+
+目录口径：`skills/<p0-name>/` 是唯一 P0 契约源；`skills/planned/` 保存未进入 P0 Worker 的 P1/P2 说明；`skills/legacy/` 只保留旧链接兼容索引；`packages/dianxun-worker/skills/` 是打包镜像，不能作为第二套规范维护。
 
 ## 2. P0 Skill 九要素
 

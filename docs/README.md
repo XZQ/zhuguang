@@ -15,6 +15,7 @@
 - 运行、构建与仓库入口：[`../README.md`](../README.md)
 - AgentTeams 部署与动态验收：[`../agentteams/README.md`](../agentteams/README.md)
 - P0 Skill 规范：[`../skills/README.md`](../skills/README.md)
+- Worker/MCP 交付包边界：[`../packages/README.md`](../packages/README.md)
 - M4 评测报告：[`../evidence/m4/report.md`](../evidence/m4/report.md)
 - 演示稿源文件与 PDF：[`../ppt/`](../ppt/)
 
