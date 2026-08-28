@@ -1,4 +1,4 @@
-# dianxun-worker 包源
+# 逐光｜dianxun-worker 包源
 
 本目录描述 AgentTeams `v1.2.3` QwenPaw Worker 的导入布局，不是第二套业务实现。
 

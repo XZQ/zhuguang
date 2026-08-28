@@ -3,6 +3,9 @@
   "project_version": "0.2.0-dev",
   "updated_at": "2026-08-28",
   "owner": "XZQ",
+  "project_name": "逐光",
+  "display_name": "逐光｜店巡 Agent",
+  "engineering_name": "dianxun",
   "positioning": "连锁便利店多Agent异常闭环系统",
   "display_strategy": {
     "primary": "coldchain_temperature_loss",

@@ -73,7 +73,7 @@ def _doc(tasks: list[dict], kb: list[dict]) -> str:
         f"""<!DOCTYPE html>
 <html lang="zh-CN"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>店巡 Agent · 闭环复盘报告</title>
+<title>逐光 · 店巡 Agent · 闭环复盘报告</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>{_CSS}</style></head><body>
@@ -85,7 +85,7 @@ def _doc(tasks: list[dict], kb: list[dict]) -> str:
         + "\n".join(_task_section(i, t) for i, t in enumerate(tasks, 1))
         + f"""
 {_knowledge(kb)}
-<footer><p>店巡 Agent · GOAI Agent Infra 赛道</p><p class="muted">经验飞轮驱动「越巡越准」· Powered by Data-Dense Dashboard Design System</p></footer>
+<footer><p>逐光 · 店巡 Agent · GOAI Agent Infra 赛道</p><p class="muted">经验飞轮驱动「越巡越准」· Powered by Data-Dense Dashboard Design System</p></footer>
 </div></body></html>"""
     )
 
@@ -94,7 +94,7 @@ def _header(gen, n_tasks, n_spans, n_kb, tasks) -> str:
     return f"""
 <header class="hero">
   <div class="hero-mark">{_icon("activity", 22)}<span>DIANXUN</span></div>
-  <h1>店巡 Agent · 端到端闭环复盘报告</h1>
+  <h1>逐光 · 店巡 Agent · 端到端闭环复盘报告</h1>
   <p class="sub">连锁便利店多店异常闭环巡检系统 · AgentTeams 协同基座</p>
   <div class="hero-meta">
     <span>{_icon("clock", 13)} {gen}</span>

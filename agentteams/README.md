@@ -1,6 +1,6 @@
-# AgentTeams v1.2.3 部署说明
+# 逐光｜AgentTeams v1.2.3 部署说明
 
-本目录提供店巡 Agent 的 AgentTeams 声明式资源和有状态 MCP Kubernetes 资源。版本固定为 AgentTeams `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），Manager 与 Worker runtime 均为 `qwenpaw`。
+本目录提供逐光（店巡 Agent）的 AgentTeams 声明式资源和有状态 MCP Kubernetes 资源。版本固定为 AgentTeams `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），Manager 与 Worker runtime 均为 `qwenpaw`。
 
 ## 交付物与边界
 

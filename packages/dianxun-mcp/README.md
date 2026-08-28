@@ -1,4 +1,4 @@
-# dianxun-mcp 镜像
+# 逐光｜dianxun-mcp 镜像
 
 本目录只提供 MCP 服务的 Dockerfile；镜像中的 Python 包、配置、Seed 和 Schema 均从仓库根目录复制，因此构建上下文必须是仓库根目录。
 

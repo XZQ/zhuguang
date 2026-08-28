@@ -1,4 +1,4 @@
-# MCP 工具连接层接口契约
+# 逐光｜MCP 工具连接层接口契约
 
 > P0 唯一口径：12 个有状态 MCP 函数，包括 5 个查询与 7 个受控动作。当前实现位于 `src/dianxun/mcp/p0.py`，协议 Adapter 位于 `src/dianxun/mcp/server.py`。
 

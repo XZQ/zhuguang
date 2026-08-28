@@ -1,4 +1,4 @@
-# Worker 包 Skill 清单
+# 逐光｜Worker 包 Skill 清单
 
 本目录镜像仓库根目录 [`skills/`](../../../skills/) 中的 6 个 P0 Skill，供 AgentTeams `v1.2.3` QwenPaw Worker 加载。
 

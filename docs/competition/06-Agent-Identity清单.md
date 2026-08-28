@@ -1,4 +1,4 @@
-# Agent Identity 清单
+# 逐光｜Agent Identity 清单
 
 > 唯一统计口径：1 个 AgentTeams Framework Manager + 5 个业务 Agent。Orchestrator 是 5 个业务 Agent 之一，同时担任 Team Leader；不是额外的第 6 个业务 Agent。
 
