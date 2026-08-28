@@ -1,4 +1,4 @@
-# Skill 九要素卡
+# 逐光｜Skill 九要素卡
 
 > 唯一统计口径：9 个目标 Skill，其中 P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。只有 6 个 P0 Skill 进入 `dianxun-worker.zip` 和六场景门禁。
 

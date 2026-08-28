@@ -131,7 +131,7 @@ def render_markdown(evaluation: dict[str, Any]) -> str:
     metrics = evaluation["metrics"]
     gate = evaluation["local_m4_gate"]
     lines = [
-        "# M4 六场景确定性评测报告",
+        "# 逐光｜M4 六场景确定性评测报告",
         "",
         f"> 本地 M4 门禁：{'通过' if gate['passed'] else '未通过'}",
         "> 证据边界：仅证明本地有状态 Mock 与确定性评测；不证明外部 AgentTeams 动态运行。",

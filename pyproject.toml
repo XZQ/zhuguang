@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dianxun"
 version = "0.2.0.dev0"
-description = "Stateful multi-agent incident response demo for convenience-store operations"
+description = "ZhuGuang (Dianxun): stateful multi-agent incident closure for convenience-store operations"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

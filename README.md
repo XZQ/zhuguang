@@ -1,8 +1,33 @@
-# 店巡 Agent（逐光）
+# 逐光｜店巡 Agent
 
-面向连锁便利店的多 Agent 异常闭环基础设施。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
+> 让连锁门店异常从“告警已读”走到“证据完备、责任清晰、安全关闭”。
 
-当前仓库已完成有状态业务核心、冷柜五阶段闭环、6 个确定性评测场景、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态、Worker → MCP 身份绑定和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
+**逐光**是面向连锁便利店的多 Agent 异常闭环基础设施，也是 [GOAI Agent Infra 赛道](https://www.goaihz.com/tracks?track=infra)参赛项目。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
+
+作品名统一为**逐光**；**店巡 Agent**用于说明产品能力，`dianxun` 保持为工程包、命令与资源前缀，仓库地址保持 `zhuguang`。
+
+## 比赛命题与核心回答
+
+| 评审关注点 | 逐光的回答 |
+|---|---|
+| 解决什么真实问题 | 冷柜失温跨越设备、商品、审批、维修和复核，真正的交付单位不是“发出告警”，而是“安全关闭事件” |
+| 为什么需要多 Agent | 总控、巡检、诊断、处置、稽核职责分离；执行者不能自行宣布成功，Auditor 必须独立重查事实 |
+| 如何约束风险 | 所有受控写经过业务角色、Policy/审批、幂等和审计；设备恢复不等于商品安全，工单完成不等于事件关闭 |
+| 如何证明不是概念稿 | 6 个确定性冷柜场景、42 项测试、6 个 P0 Skill、12 个有状态 MCP 和可复现 Evidence 均在仓库内 |
+| 如何扩展 | 冷柜承担主叙事；缺货、价签保留独立入口，验证同一闭环基础设施可复用，而不稀释答辩重点 |
+
+当前仓库已完成有状态业务核心、冷柜五阶段闭环、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态、Worker → MCP 身份绑定和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
+
+## 评委快速验收
+
+要求 Python 3.11+ 和 [uv](https://docs.astral.sh/uv/)。从仓库根目录执行：
+
+```powershell
+uv sync --group dev
+uv run dianxun evaluate
+```
+
+评测会在临时 SQLite/Trace 数据库中运行 6 个正常与失败分支，确定性重写 `evidence/m4/results.json` 和 `evidence/m4/report.md`；只有全部本地 P0 门禁通过才退出 `0`。
 
 ## 当前可验证结论
 
@@ -56,21 +81,27 @@
 
 主阶段之外，事件还独立记录 `incident_status`、`work_status`、审批、工单、商品批次和停售状态，以表达等待、失败和并发，而不是把所有信息压进一条线性状态机。
 
-## 快速开始
+## 系统架构
 
-要求 Python 3.11+ 和 [uv](https://docs.astral.sh/uv/)。
-
-```powershell
-uv sync --group dev
-uv run dianxun evaluate
+```mermaid
+flowchart LR
+    Input[异常或人工任务] --> O[Orchestrator<br/>拆解与汇总]
+    O --> S[Sentry<br/>发现与遏制]
+    O --> D[Diagnoser<br/>诊断与决策]
+    O --> E[Executor<br/>受控执行]
+    O --> A[Auditor<br/>独立验证与复盘]
+    S --> Core[(IncidentService<br/>唯一业务事实入口)]
+    D --> Core
+    E --> Core
+    A --> Core
+    Core <--> MCP[12 个 MCP<br/>设备·库存·停售·审批·工单]
+    Guard[业务角色·Policy/审批<br/>幂等·审计] -.约束.-> E
+    A -.不通过则阻断关闭或回开.-> Core
 ```
 
-`dianxun evaluate` 会在临时 SQLite/Trace 数据库中逐个运行 6 个场景，并确定性重写：
+AgentTeams 负责目标平台中的任务拆解与 Worker 委派；`IncidentService`、StateStore、Policy 和 MCP 负责业务事实与安全约束。两层不能互相冒充，平台动态协同仍以真实运行证据为准。
 
-- `evidence/m4/results.json`
-- `evidence/m4/report.md`
-
-命令只有在全部本地 P0 门禁通过时才退出 `0`。
+## 更多运行入口
 
 ### 运行单个冷柜场景
 
