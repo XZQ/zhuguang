@@ -73,6 +73,17 @@ kubectl -n dianxun get pod,service,pvc
 http://dianxun-mcp.dianxun.svc.cluster.local/mcp
 ```
 
+### MCP 身份接线门禁
+
+HTTP Adapter 支持：
+
+- `MCP_TOKEN`：共享 Bearer 请求认证，不区分 Worker 角色；
+- `MCP_ACTOR_TOKENS_JSON`：Bearer Token → Actor 映射，可将服务身份绑定到业务角色。
+
+未配置时 Adapter 为本地兼容保留匿名模式。当前 `deployment.yaml` 没有注入两者，Worker CR 的 `mcpServers` 也只支持 `name/url/transport`；AgentTeams `v1.2.3` 运行时使用的 Worker `gatewayKey` 是动态值，不能在仓库静态 YAML 中预填。因此原始 Deployment 只适合受控比赛网络中的接线骨架，不是生产鉴权模板，也不能据此宣称 Worker 身份已经验证。
+
+目标环境必须在 Worker 创建后，通过可信网关或运行时 Secret 将动态 Bearer 身份映射到正确 Actor，并限制 MCP Service 的网络入口。动态验收至少包括：无 Token/错误 Token 返回 401；错误角色执行受控动作得到 `FORBIDDEN`；正确调用的 Audit Log 记录实际 Actor；密钥可轮换/撤销。任何日志、命令、视频和提交都不得出现 Token 或 `gatewayKey` 原文。
+
 ## 4. 应用 AgentTeams 资源
 
 先安装并运行官方 AgentTeams `v1.2.3`。官方稳定入口是 `install/agentteams-apply.sh -f <yaml>`；当前 `agt apply` 不支持 `--recursive`、`--dry-run`、`--prune` 或 `--watch`。
@@ -109,6 +120,7 @@ kubectl -n dianxun get deployment,pod,service,pvc
 5. Auditor 重新查询设备与商品状态，而非复述 Executor；
 6. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致。
 7. 记录实际 model/runtime、脱敏的凭证来源类型和可获得的 Token/费用数据；不得显示 Key。
+8. 验证 Worker Bearer → Actor 映射，并保留匿名/错误 Token 拒绝、越权 `FORBIDDEN` 和正确 Actor 审计的脱敏证据。
 
 建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/demo/Demo视频脚本与证据清单.md`](../docs/demo/Demo视频脚本与证据清单.md)。
 
@@ -117,5 +129,6 @@ kubectl -n dianxun get deployment,pod,service,pvc
 ## 安全说明
 
 - YAML 和 ZIP 不含 API Key、审批身份或固定 Bearer Token。
-- 当前 ClusterIP 是比赛环境的内部直连方式；生产环境应由 AgentTeams/Higress 网关完成身份与授权，并限制后端 Service 的网络入口。
+- 当前 ClusterIP 是比赛环境的内部直连接线骨架，静态 Deployment 未注入动态 Worker 身份映射；生产环境必须由可信网关/Adapter 完成认证和 Actor 授权，并限制后端 Service 的网络入口。
+- 请求带 Bearer Header 只证明客户端发送了字段，不证明服务端已验证；取得 401、`FORBIDDEN` 和正确 Actor 审计证据前，状态保持“外部待验证”。
 - 冷链阈值和 Seed 仅用于比赛 Demo，不替代 HACCP、设备说明书、食品安全人员判断或当地监管要求。

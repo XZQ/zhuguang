@@ -2,7 +2,7 @@
 
 面向连锁便利店的多 Agent 异常闭环基础设施。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
 
-当前仓库已完成有状态业务核心、冷柜五阶段闭环、6 个确定性评测场景、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
+当前仓库已完成有状态业务核心、冷柜五阶段闭环、6 个确定性评测场景、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态、Worker → MCP 身份绑定和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
 
 ## 当前可验证结论
 
@@ -15,6 +15,7 @@
 | 未授权写、未审批受控写、错误放行、错误关闭、重复副作用 | 均为 0 | 同上 |
 | 自动化测试 | 42 项通过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
 | AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
+| AgentTeams → MCP 身份绑定 | 外部待验证 | 本地 Adapter 仅验证可选 Bearer；静态部署未映射动态 Worker 身份 |
 
 上述指标来自固定 seed 和有状态 Mock，只证明仓库内确定性行为，不代表真实门店收益、监管合规或生产可用性。
 
@@ -28,6 +29,7 @@
 - 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
 - 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
 - Skill：当前 6 个 P0 均为自定义可复用 Skill；官网与参赛手册 FAQ 对“阿里云官方用云 Skills”的措辞存在差异，状态为“待组委会确认”。
+- 鉴权：本地 HTTP Adapter 支持 `MCP_TOKEN` 或 `MCP_ACTOR_TOKENS_JSON`；前者只认证共享请求，后者才绑定 Actor。当前 AgentTeams 静态直连部署未完成动态 Worker 身份映射。
 
 机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md)。
 
@@ -104,6 +106,8 @@ uv run dianxun-mcp
 ```
 
 默认 Streamable HTTP / JSON-RPC Adapter 监听 `127.0.0.1:8080`。运行时数据库为 `demo/state/runtime.db`，已被 Git 忽略。
+
+默认未配置 Token 的模式只用于回环地址上的本地 Demo。`MCP_TOKEN` 是共享请求认证，不能区分角色；需要验证调用者角色时必须由运行环境设置 `MCP_ACTOR_TOKENS_JSON`，或在可信网关完成等价映射。不要把工具默认 Actor 当作网络身份。
 
 Linux/macOS 只需去掉 PowerShell 的反引号续行；其余命令相同。
 
@@ -189,6 +193,7 @@ docs/
 - POS、库存、IoT、审批和维修商均为有状态 Mock；没有真实企业接口、真实人员 SLA 或真实食品处置授权。
 - RAG、自动回滚、Nacos、Higress、RocketMQ、PolarDB 和 LoongSuite 属于规划或生产替换方向，当前不声明已实现。
 - AgentTeams YAML、Worker ZIP 和本地 MCP 兼容烟测不等于真实多 Agent 动态协同。
+- 当前静态 AgentTeams → MCP 直连没有注入动态 Worker 身份映射；取得匿名/错误 Token 拒绝、越权 `FORBIDDEN` 和正确 Actor 审计证据前，不声明部署鉴权闭环。
 - 当前 P0 仅使用自定义 Skill；“官方用云 Skills”是否为硬门槛仍需组委会书面确认。
 - 不提交 API Key、真实审批身份、顾客数据、照片原件、运行时数据库或含敏感内容的 Trace。
 

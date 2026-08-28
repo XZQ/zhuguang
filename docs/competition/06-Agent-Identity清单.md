@@ -128,6 +128,8 @@ Manager 的 `state: Running` 是声明式期望状态；只有目标平台实际
 | 迁移事件阶段 | 否 | 经 IncidentService | 否 | 否 | 否 | 提供依据 | 否 |
 | 付款 | 否 | 否 | 否 | 否 | 否 | 否 | 不在本系统 |
 
+此矩阵描述的是业务授权，不是部署身份已经可信。当前 HTTP Adapter 只有在 `MCP_ACTOR_TOKENS_JSON` 将 Bearer Token 映射为 Actor 时，才能把网络调用者绑定到这里的角色；共享 `MCP_TOKEN` 只能认证请求，不能证明角色。AgentTeams 动态 `gatewayKey` 的映射与负向鉴权烟测仍为外部待验证。
+
 ## 7. 协作不变量
 
 1. 先遏制，后追求完整诊断。

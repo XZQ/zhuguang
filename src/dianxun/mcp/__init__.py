@@ -14,7 +14,7 @@
   mcp-workorder 维修服务商工单        内存(模拟)
 
 通用约定(契约总则):
-- 鉴权:OAuth2 client-credentials,demo 期 token 校验跳过(文档说明)
+- 鉴权:旧连接器不校验 token；P0 HTTP Adapter 提供可选 Bearer/Actor 映射
 - 幂等:写操作带 idempotency_key 去重
 - 审计:每次调用经 trace.span 记录
 - 降级:数据源不可用返回 degraded=True

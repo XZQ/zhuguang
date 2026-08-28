@@ -90,6 +90,8 @@
       "official_release_and_tag_docs": "verified",
       "worker_package_and_yaml_contracts": "verified",
       "local_mcporter_mcp_smoke": "verified",
+      "local_mcp_optional_bearer": "verified",
+      "agentteams_mcp_identity_binding": "pending_external_validation",
       "local_runtime": "unavailable",
       "cloud_studio_runtime": "pending"
     }
@@ -117,7 +119,12 @@
       "worker_package_sha256": "0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea",
       "worker_package_files": 33,
       "artifact_contract_tests": 5,
-      "mcp_deployment": "agentteams/mcp/deployment.yaml"
+      "mcp_deployment": "agentteams/mcp/deployment.yaml",
+      "mcp_authentication": {
+        "local_adapter": "optional_bearer_or_actor_token_mapping",
+        "static_agentteams_deployment": "dynamic_gateway_key_mapping_not_wired",
+        "status": "pending_external_validation"
+      }
     },
     "m4_evaluation": {
       "suite_id": "dianxun-p0-coldchain-v1",

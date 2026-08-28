@@ -77,10 +77,11 @@
 
 - 查询：设备上下文、库存批次、停售、工单、审批。
 - 动作：停售、解除停售、批次处置、创建工单、创建审批、人工决定审批、记录人工证据。
-- 四道闸：调用者权限、Policy/审批、幂等键、审计记录。
+- 四道闸：业务角色权限、Policy/审批、幂等键、审计记录。
 - 解除停售必须同时绑定已批准审批和 Auditor 验证。
 - `decide_approval` 与 `record_manual_evidence` 只允许 Human/ScenarioEngine。
 - payment 为 L3，任何 Agent 都不可执行。
+- 四道闸已由本地业务核心验证；目标 AgentTeams 中 Worker Bearer 身份到 MCP Actor 的可信映射仍需动态接线和负向烟测，不能由静态 YAML 推断完成。
 
 ## P9 评测证据：本地门禁全部通过
 
@@ -95,7 +96,7 @@
 
 - 已交付：代码、六场景、评测报告、6 个 P0 Skill 契约、12 MCP、Worker ZIP、AgentTeams/Kubernetes YAML、HTML 演示稿和 PDF。
 - 可复现命令：`uv run dianxun evaluate`。
-- 外部待验证：Team Room、Worker 委派、Kubernetes Running、同一任务的平台 MCP/Trace。
+- 外部待验证：Team Room、Worker 委派、Kubernetes Running、Worker → MCP 身份绑定、同一任务的平台 MCP/Trace。
 - 外部待确认：是否必须真实使用阿里云官方用云 Skill；若是，必须增加必要的真实调用、失败处理和证据，不能装饰性堆叠。
 - 结束句：不是让 Agent 更会“说已完成”，而是让事件只有在证据闭环后才能关闭。
 - 仓库：[github.com/XZQ/zhuguang](https://github.com/XZQ/zhuguang)
@@ -107,4 +108,5 @@
 - [ ] 不把 RAG、自动回滚或云组件写成已实现。
 - [ ] 所有评测数字能在 `evidence/m4/results.json` 追溯。
 - [ ] “AgentTeams 外部待验证”在架构页和收尾页均可见。
+- [ ] 不把本地可选 Bearer 或业务角色门禁写成 AgentTeams 部署侧身份鉴权已闭环。
 - [ ] 录屏使用 [`../demo/Demo视频脚本与证据清单.md`](../demo/Demo视频脚本与证据清单.md)，不得用静态截图冒充平台动态证据。

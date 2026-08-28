@@ -78,6 +78,19 @@
 
 因此“设备恢复”“工单 done”或“Executor 返回成功”均不足以放行商品。
 
+### HTTP 身份边界
+
+协议 Adapter 提供两种可选 Bearer 模式：
+
+- `MCP_ACTOR_TOKENS_JSON`：将每个 Token 映射到可信 Actor，并以该 Actor 覆盖工具默认角色；这是当前唯一能验证“调用身份 → 业务角色”绑定的本地机制。
+- `MCP_TOKEN`：只验证共享 Token，不能区分 Sentry、Diagnoser、Executor、Auditor 或 Human，不应作为细粒度授权证明。
+
+两者均未配置时，Adapter 为本机确定性 Demo 保留匿名兼容模式，工具使用契约中的默认 Actor。该模式只能在回环地址或受控测试环境使用；任何能访问 `/mcp` 的客户端都不应因此被视为可信 Worker。
+
+当前 `agentteams/mcp/deployment.yaml` 没有注入上述凭证映射。AgentTeams `v1.2.3` Worker 运行时发送的 `gatewayKey` 是动态值，而 Worker CR 的 `mcpServers` 静态字段只声明 `name/url/transport`；仓库静态 YAML 无法提前证明这些动态 Key 已由 MCP 验证并映射到正确 Actor。因此当前状态是：**本地 Adapter 具备可选 Bearer 能力，AgentTeams 直连部署的身份绑定仍为外部待验证**。
+
+目标环境必须在可信网关或 MCP Adapter 处完成动态身份映射，限制 Service 网络入口，并至少验证：无 Token 返回 401、错误 Token 返回 401、错误角色的受控动作被拒绝、正确角色写入可追溯 Actor、密钥可轮换和撤销。未取得这些证据前，不得宣称“AgentTeams → MCP 鉴权已闭环”。
+
 ## 5. 幂等、审计与错误语义
 
 ### 幂等
@@ -108,7 +121,7 @@
 | `INVALID_STATE` | 幂等冲突或业务状态不允许 | 重读业务状态后重新规划 |
 | Envelope `status=partial` | 外部查询只有部分结果 | 保持遏制，禁止关闭 |
 
-当前 Adapter 未实现生产级 OAuth、熔断器和分布式重试；这些属于真实系统接入层，文档不得写成已交付。
+当前 Adapter 的 Bearer 仅是比赛/本地接线能力，未实现生产级 OAuth/mTLS、密钥生命周期、熔断器和分布式重试；这些属于目标部署与真实系统接入层，文档不得写成已交付。
 
 ## 6. 直接验证
 
@@ -125,5 +138,6 @@ uv run --group dev python -m unittest -v tests.test_stateful_core
 ## 7. 生产凭证与替换边界
 
 - 当前 Stateful Mock 只验证契约和状态语义；生产 Adapter 必须按企业系统分别实现 OAuth/mTLS、服务身份、最小权限、超时、重试、熔断和对账。
+- AgentTeams 的动态 Worker 身份必须在运行时通过可信网关或 `MCP_ACTOR_TOKENS_JSON` 等等价机制映射到 Actor；不得把客户端参数、工具默认角色或共享 `MCP_TOKEN` 当成角色身份。
 - POS/WMS/IoT/审批/维修商凭证以及模型 Key 都只能由运行时 Secret、环境变量或外部密钥系统注入，不得出现在 MCP 参数、YAML、ZIP、日志、Trace、测试 fixture 或提交记录中。
 - 模型提供商不是 MCP 契约的一部分。替换 `qwen3.5-plus` 或接入网关时，12 个函数的 Schema、权限、幂等和审计语义保持稳定；仍需重跑 Agent 结构化输出与工具调用回归。
