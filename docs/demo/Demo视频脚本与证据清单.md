@@ -21,7 +21,7 @@ uv run dianxun evaluate
 uv run --group dev python -W error::ResourceWarning -m unittest discover -v
 uv run --group dev ruff check .
 uv run --group dev ruff format --check .
-uv run python 04-模拟数据生成脚本.py --check
+uv run python scripts/generate_demo_data.py --check
 uv run python scripts/build_worker_package.py
 Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 ```

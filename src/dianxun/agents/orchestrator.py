@@ -8,7 +8,7 @@ Framework Manager 不计入业务 Agent。本文件仍服务于缺货、价签�
   任务输入 → 任务拆解 → 上下文传递 → 工具调用 → 结果验证 →
   执行证据沉淀 → 审批与回滚 → 经验沉淀
 
-5 个 Agent(身份见 06-Agent-Identity清单.md):
+5 个 Agent（身份见 docs/competition/06-Agent-Identity清单.md）：
   Orchestrator 总控/Team Leader:任务拆解、调度、状态追踪、冲突仲裁
   Sentry        巡检:多源聚合、异常识别、降噪定级
   Diagnoser     诊断:跨店对标、维度下钻、根因定位

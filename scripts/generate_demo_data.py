@@ -2,10 +2,10 @@
 """Generate a deterministic state seed and optionally initialize runtime.db.
 
 Examples:
-    python 04-模拟数据生成脚本.py
-    python 04-模拟数据生成脚本.py --anchor-time 2026-08-28T09:00:00+08:00 --seed 42
-    python 04-模拟数据生成脚本.py --check
-    python 04-模拟数据生成脚本.py --db demo/state/runtime.db
+    python scripts/generate_demo_data.py
+    python scripts/generate_demo_data.py --anchor-time 2026-08-28T09:00:00+08:00 --seed 42
+    python scripts/generate_demo_data.py --check
+    python scripts/generate_demo_data.py --db demo/state/runtime.db
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from dianxun.state import StateStore  # noqa: E402

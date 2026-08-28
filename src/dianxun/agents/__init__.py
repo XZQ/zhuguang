@@ -6,7 +6,7 @@ AgentTeams 映射:
   Sentry / Diagnoser / Executor / Auditor = 业务 Workers
 
 每个 Agent:
-- 有清晰身份定义(见 06-Agent-Identity清单.md)
+- 有清晰身份定义（见 docs/competition/06-Agent-Identity清单.md）
 - 通过 Skill + MCP 工具完成职能
 - 读写共享上下文总线(ContextBus)
 - 每步经 trace.span 埋点
