@@ -1,6 +1,6 @@
 """S4. restock-order-gen 补货单生成(安全库存模型)。
 
-九要素(详见 skills/restock-order-gen.md):
+九要素（详见 skills/planned/restock-order-gen.md）：
   用途    基于安全库存模型生成补货建议单,支持审批与调整
   输入    store_id, sku_list?, urgency, constraints{预算上限,供应商偏好}
   输出    RestockOrder{items[{sku, suggest_qty, current_stock, daily_sales,

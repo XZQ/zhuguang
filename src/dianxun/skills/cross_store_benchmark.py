@@ -1,6 +1,6 @@
 """S2. cross-store-benchmark 跨店横向对标。
 
-九要素(详见 skills/cross-store-benchmark.md):
+九要素（详见 skills/planned/cross-store-benchmark.md）：
   用途    为异常门店选同商圈/同店型对标店,算基准分布,判断异常是单店孤立还是系统性
   输入    store_id, metric, benchmark_dimensions{商圈,店型,面积段}
   输出    BenchmarkReport{target, comparable[], p50/p90/p95, zscore, conclusion, evidence}

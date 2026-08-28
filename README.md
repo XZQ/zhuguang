@@ -162,7 +162,7 @@ docs/
   demo/                    Demo 视频脚本与证据清单
 ```
 
-完整文档导航见 [`docs/README.md`](docs/README.md)。
+完整文档导航见 [`docs/README.md`](docs/README.md)，交付包与业务源码的边界见 [`packages/README.md`](packages/README.md)。
 
 ## 文档索引
 

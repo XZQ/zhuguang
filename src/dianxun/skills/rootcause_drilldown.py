@@ -1,6 +1,6 @@
 """S3. rootcause-drilldown 维度下钻根因定位。
 
-九要素(详见 skills/rootcause-drilldown.md):
+九要素（详见 skills/rootcause-drilldown/SKILL.md）：
   用途    对异常做维度下钻(门店×品类×时段×供应商),定位可疑根因,输出带证据的根因报告
   输入    anomaly_id, metric, candidate_dimensions?
   输出    RootCauseReport{hypothesis, confidence, drilldown_path, contributing_factors, check_plan}

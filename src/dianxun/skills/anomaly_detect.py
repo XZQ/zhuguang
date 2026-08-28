@@ -1,6 +1,6 @@
 """S1. anomaly-detect 多源异常检测与降噪定级。
 
-九要素(详见 skills/anomaly-detect.md):
+九要素（详见 skills/anomaly-detect/SKILL.md）：
   用途    聚合多源数据,识别异常事件、降噪并定级
   输入    window_start/window_end, store_ids?, data_sources?, thresholds?
   输出    AnomalyList[{anomaly_id, store_id, type, severity, confidence, evidence, ...}]

@@ -1,6 +1,6 @@
 """S7. review-report 复盘报告与知识沉淀(经验飞轮引擎)。
 
-九要素(详见 skills/review-report.md):
+九要素（详见 skills/review-report/SKILL.md）：
   用途    对已闭环事件生成复盘报告,沉淀为知识条目/Skill 更新建议
   输入    anomaly_id(s), closed_events[], knowledge_base_schema
   输出    ReviewReport{timeline, root_cause, actions_taken, validation,
