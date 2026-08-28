@@ -110,7 +110,7 @@ kubectl -n dianxun get deployment,pod,service,pvc
 6. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致。
 7. 记录实际 model/runtime、脱敏的凭证来源类型和可获得的 Token/费用数据；不得显示 Key。
 
-建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/Demo视频脚本与证据清单.md`](../docs/Demo视频脚本与证据清单.md)。
+建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/demo/Demo视频脚本与证据清单.md`](../docs/demo/Demo视频脚本与证据清单.md)。
 
 保存证据前必须脱敏。若当前机器没有 Docker、Kubernetes 或 AgentTeams，不得把 ZIP 校验、YAML 解析或本地 MCP 调用写成“真实 AgentTeams 已跑通”。
 

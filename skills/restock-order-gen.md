@@ -19,4 +19,4 @@
 uv run python demo/run_supplementary.py stockout
 ```
 
-统一清单见 [`../03-Skill九要素卡.md`](../03-Skill九要素卡.md)。
+统一清单见 [`../docs/competition/03-Skill九要素卡.md`](../docs/competition/03-Skill九要素卡.md)。

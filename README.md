@@ -1,4 +1,4 @@
-# 店巡 Agent（筑光）
+# 店巡 Agent（逐光）
 
 面向连锁便利店的多 Agent 异常闭环基础设施。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
 
@@ -29,7 +29,7 @@
 - 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
 - Skill：当前 6 个 P0 均为自定义可复用 Skill；官网与参赛手册 FAQ 对“阿里云官方用云 Skills”的措辞存在差异，状态为“待组委会确认”。
 
-机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md)。
+机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md)。
 
 ## 为什么把冷柜失温作为主展示场景
 
@@ -111,7 +111,7 @@ Linux/macOS 只需去掉 PowerShell 的反引号续行；其余命令相同。
 
 ```powershell
 # 模拟数据完整性
-uv run python 04-模拟数据生成脚本.py --check
+uv run python scripts/generate_demo_data.py --check
 
 # 全量测试
 uv run --group dev python -W error::ResourceWarning -m unittest discover -v
@@ -143,37 +143,45 @@ AgentTeams 版本固定为 `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f19
 ## 仓库结构
 
 ```text
-config/                    冻结事实与版本化比赛 Policy
+config/                    机器可读事实与版本化 Demo Policy
+data/                      缺货、价签等补充场景的合成样例数据
 schemas/                   Incident、MCP、Scenario Schema
 src/dianxun/               领域核心、Skill、MCP、Adapter 与评测器
-demo/                      六个冷柜场景和两个补充入口
-agentteams/                Manager/Team/Worker 与 MCP Kubernetes 资源
-packages/dianxun-worker/   AgentTeams Worker 包源目录
-packages/dianxun-mcp/      MCP 镜像 Dockerfile
-scripts/                   确定性构建脚本
+skills/                    P0 Skill 契约及规划/兼容说明
+demo/                      六个冷柜场景、两个补充入口和运行时状态
+agentteams/                Manager、Team、Worker 与 MCP Kubernetes 资源
+packages/                  Worker 包源与 MCP 镜像构建上下文
+scripts/                   数据生成和确定性制品构建脚本
 dist/                      Worker ZIP 与 SHA-256
 tests/                     单元、集成、契约与评测门禁
 evidence/m4/               脱敏、可复现的本地评测结果
 ppt/                       HTML 演示稿源文件与导出 PDF
-docs/                      实现状态、比赛核对和真实场景差距
+docs/
+  competition/             连续的 01～08 比赛材料及符合性矩阵
+  assessments/             实现状态、真实门店差距与演进门禁
+  demo/                    Demo 视频脚本与证据清单
 ```
+
+完整文档导航见 [`docs/README.md`](docs/README.md)。
 
 ## 文档索引
 
 | 文档 | 内容 |
 |---|---|
-| [`01-作品简介-500字.md`](01-作品简介-500字.md) | 500 字以内作品简介 |
-| [`02-方案PPT结构.md`](02-方案PPT结构.md) | 10 页答辩叙事与证据来源 |
-| [`03-Skill九要素卡.md`](03-Skill九要素卡.md) | 9 个目标 Skill 与 6 个 P0 工程契约 |
-| [`04-模拟数据生成脚本.py`](04-模拟数据生成脚本.py) | 确定性数据生成与校验入口 |
-| [`05-MCP工具契约.md`](05-MCP工具契约.md) | 12 个 P0 MCP 函数、安全和失败语义 |
-| [`06-Agent-Identity清单.md`](06-Agent-Identity清单.md) | 1 Manager + 5 业务 Agent 的身份边界 |
-| [`07-多Agent协同设计.md`](07-多Agent协同设计.md) | 五阶段与赛事八项要求映射 |
-| [`08-复赛改造技术方案.md`](08-复赛改造技术方案.md) | 完整改造方案与里程碑记录 |
-| [`docs/实现状态矩阵.md`](docs/实现状态矩阵.md) | 仓库事实、里程碑状态和证据边界 |
-| [`docs/比赛要求符合性矩阵.md`](docs/比赛要求符合性矩阵.md) | 官网/手册逐项核对、缺口和可提交口径 |
-| [`docs/真实门店差距与演进路线.md`](docs/真实门店差距与演进路线.md) | 与真实门店、HACCP、人员和企业系统的差距及灰度路线 |
-| [`docs/Demo视频脚本与证据清单.md`](docs/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
+| [`docs/competition/01-作品简介-500字.md`](docs/competition/01-作品简介-500字.md) | 500 字以内作品简介 |
+| [`docs/competition/02-方案PPT结构.md`](docs/competition/02-方案PPT结构.md) | 10 页答辩叙事与证据来源 |
+| [`docs/competition/03-Skill九要素卡.md`](docs/competition/03-Skill九要素卡.md) | 9 个目标 Skill 与 6 个 P0 工程契约 |
+| [`docs/competition/04-模拟数据与场景说明.md`](docs/competition/04-模拟数据与场景说明.md) | 确定性 Seed、Scenario 与数据边界 |
+| [`docs/competition/05-MCP工具契约.md`](docs/competition/05-MCP工具契约.md) | 12 个 P0 MCP 函数、安全和失败语义 |
+| [`docs/competition/06-Agent-Identity清单.md`](docs/competition/06-Agent-Identity清单.md) | 1 Manager + 5 业务 Agent 的身份边界 |
+| [`docs/competition/07-多Agent协同设计.md`](docs/competition/07-多Agent协同设计.md) | 五阶段与赛事八项要求映射 |
+| [`docs/competition/08-复赛改造技术方案.md`](docs/competition/08-复赛改造技术方案.md) | 完整改造方案与里程碑记录 |
+| [`docs/competition/比赛要求符合性矩阵.md`](docs/competition/比赛要求符合性矩阵.md) | 官网/手册逐项核对、缺口和可提交口径 |
+| [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md) | 仓库事实、里程碑状态和证据边界 |
+| [`docs/assessments/真实门店差距与演进路线.md`](docs/assessments/真实门店差距与演进路线.md) | 与真实门店、HACCP、人员和企业系统的差距及灰度路线 |
+| [`docs/demo/Demo视频脚本与证据清单.md`](docs/demo/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
+
+模拟数据可执行入口为 [`scripts/generate_demo_data.py`](scripts/generate_demo_data.py)，不与 01～08 文档混放。
 
 ## 安全与已知边界
 
