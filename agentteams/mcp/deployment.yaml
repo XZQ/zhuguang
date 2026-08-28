@@ -34,6 +34,9 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
+            # Authentication is not wired in this static manifest because AgentTeams
+            # Worker gateway keys are dynamic. Complete the trusted Bearer-to-Actor
+            # mapping described in ../README.md before allowing workload traffic.
             - name: HOST
               value: 0.0.0.0
             - name: PORT

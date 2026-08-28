@@ -69,6 +69,8 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 - `query_inventory_batches`；
 - Top-K hypotheses。
 
+同时保留服务端脱敏日志，证明调用 Bearer 已被映射为当前 Worker Actor；另做负向烟测，确认无 Token/错误 Token 被拒绝、错误角色受控动作返回 `FORBIDDEN`，成片只展示脱敏结果。不得显示 Token 或 `gatewayKey` 原文。
+
 强调：
 
 - 商品先停售/隔离；
@@ -155,6 +157,7 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 |---|---:|---:|---|
 | Team Room 与真实委派 | 必须 | 必须 | AgentTeams 平台 |
 | Worker 真实 MCP 调用 | 必须 | 必须 | 平台/MCP 日志 |
+| Worker → MCP Actor 身份绑定 | 必须 | 必须 | 脱敏服务端日志与负向烟测；不得展示 Token |
 | incident_id 与 request_id | 必须 | 必须 | 消息、MCP、Trace |
 | 审批主体和状态 | 必须 | 可选 | 审批记录 |
 | 设备与批次分别验证 | 必须 | 必须 | Auditor 查询 |
@@ -170,6 +173,7 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 - 不用旁白覆盖错误终态；画面中的状态必须与 narration 一致。
 - 不把本地 ScenarioEngine 审批说成真实人工审批。
 - 不把 YAML `state: Running` 说成集群实际 Running。
+- 不把请求带 Bearer Header 说成身份已验证；必须有服务端拒绝与正确 Actor 审计证据。
 - 不声称 RAG、自动回滚或生产云组件已经运行。
 - 不把本地 M4 结果说成 `qwen3.5-plus` 模型效果；模型 Key 必须遮挡，费用无真实账单时明确“未测量”。
 - 当前 P0 为自定义 Skill；组委会口径未确认或官方 Skill 未真实调用前，不说“官方用云 Skill 已满足”。

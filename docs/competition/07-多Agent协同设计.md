@@ -13,7 +13,7 @@
 - Worker 通过 `dianxun-mcp` 访问同一有状态业务世界。
 - Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
 
-仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
+仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派、Worker → MCP 身份绑定和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
 
 ## 2. AgentTeams 五维映射
 
@@ -178,9 +178,10 @@ Agent 之间只传递最小必要引用：
 5. 审批等待/超时在 Room 中真实可见；
 6. Auditor 独立查询，而非复述 Executor；
 7. AgentTeams 资源和 MCP Kubernetes 资源为实际 Running；
-8. 平台消息、业务状态、MCP 返回和 Trace 可关联到同一 incident。
+8. Worker 的动态 Bearer 身份由可信网关或 MCP 映射为正确 Actor，并验证匿名、错误 Token 和越权角色均被拒绝；
+9. 平台消息、业务状态、MCP 返回和 Trace 可关联到同一 incident。
 
-静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足这 8 项。
+静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足这 9 项。尤其不能把 AgentTeams 自动发送 Bearer Header 等同于 MCP 已验证该身份；必须取得服务端拒绝证据和审计 Actor 证据。
 
 ## 9. 模型与 Skill 生态边界
 

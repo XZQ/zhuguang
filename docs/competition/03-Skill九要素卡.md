@@ -20,6 +20,8 @@
 
 目录口径：`skills/<p0-name>/` 是唯一 P0 契约源；`skills/planned/` 保存未进入 P0 Worker 的 P1/P2 说明；`skills/legacy/` 只保留旧链接兼容索引；`packages/dianxun-worker/skills/` 是打包镜像，不能作为第二套规范维护。
 
+各 Skill 的 Owner 和安全边界是业务契约，不等于网络调用者已经完成身份认证。目标 AgentTeams 必须把 Worker 的动态 Bearer 身份可信映射为 MCP Actor，并用负向调用验证 HTTP 401、业务 `FORBIDDEN` 与审计主体；该部署接线仍为外部待验证。
+
 ## 2. P0 Skill 九要素
 
 ### S1. anomaly-detect
