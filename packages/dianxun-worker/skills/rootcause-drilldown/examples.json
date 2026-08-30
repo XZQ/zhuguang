@@ -15,7 +15,23 @@
       ],
       "evidence": [{ "evidence_id": "ev_device" }],
       "quality": "good",
-      "rag": { "status": "disabled", "hits": [] }
+      "rag": {
+        "status": "enabled",
+        "provider": "local-hash-v1",
+        "hits": [
+          {
+            "knowledge_id": "knowledge_000001",
+            "score": 0.88,
+            "confidence": 0.94,
+            "source": {
+              "incident_id": "INC-COLD-OLD",
+              "trace_id": "tr_old",
+              "evidence_ids": ["ev_old"],
+              "span": "压缩机故障处置后由 Auditor 独立复测。"
+            }
+          }
+        ]
+      }
     }
   },
   "failure": {

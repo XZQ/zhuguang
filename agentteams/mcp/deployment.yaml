@@ -34,15 +34,21 @@ spec:
               containerPort: 8080
               protocol: TCP
           env:
-            # Authentication is not wired in this static manifest because AgentTeams
-            # Worker gateway keys are dynamic. Complete the trusted Bearer-to-Actor
-            # mapping described in ../README.md before allowing workload traffic.
             - name: HOST
               value: 0.0.0.0
             - name: PORT
               value: "8080"
             - name: DIANXUN_STATE_DB
               value: /var/lib/dianxun/runtime.db
+            - name: DIANXUN_TRACE_DB
+              value: /var/lib/dianxun/agentteams-trace.db
+            # Provision this Secret after Worker identities are created. The pod
+            # intentionally stays unready until an actor-bound mapping exists.
+            - name: MCP_ACTOR_TOKENS_JSON
+              valueFrom:
+                secretKeyRef:
+                  name: dianxun-agent-identities
+                  key: actor-tokens-json
           resources:
             requests:
               cpu: 100m

@@ -6,10 +6,10 @@
 |---|---|---|
 | `anomaly-detect` | Sentry | 设备与批次查询 |
 | `coldchain-risk-assess` | Diagnoser | 设备与批次查询 |
-| `rootcause-drilldown` | Diagnoser | 设备上下文查询 |
+| `rootcause-drilldown` | Diagnoser | 设备上下文查询；P1 启用时可检索已审核知识 |
 | `work-order-dispatch` | Executor | Policy、审批与工单写入 |
 | `outcome-verify` | Auditor | 独立重查与验证证据记录 |
-| `review-report` | Auditor | 事故复盘输出 |
+| `review-report` | Auditor | 事故复盘与 pending 知识候选；无审核发布权限 |
 
 每个目录包含 AgentTeams 可识别的 `SKILL.md` frontmatter、实际 MCP 调用步骤，以及 manifest、输入/输出 Schema 和成功/失败样例。代码实现仍在 `src/dianxun/skills/`；领域阶段由 `IncidentService` 聚合，工具状态与写操作统一进入远端 `dianxun-mcp` 的 StateStore/Policy 事实层。
 

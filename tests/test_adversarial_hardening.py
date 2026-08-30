@@ -7,7 +7,7 @@ import threading
 import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from dianxun.agents import Orchestrator
 from dianxun.domain import (
@@ -21,7 +21,7 @@ from dianxun.domain import (
 )
 from dianxun.mcp.iot import query_device_series
 from dianxun.mcp.p0 import DEFAULT_POLICY_PATH, MCPService
-from dianxun.mcp.server import MAX_REQUEST_BYTES, MCPHandler, tool_call
+from dianxun.mcp.server import MAX_REQUEST_BYTES, MCPHandler, _validate_server_auth, tool_call
 from dianxun.scenarios import ScenarioEngine
 from dianxun.state import StateStore
 
@@ -132,6 +132,31 @@ class AdversarialHardeningTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertEqual("APPROVAL_INVALID", response["error"]["code"])
         self.assertFalse(self.store.list_workorders(incident_id=self.case.incident_id))
+
+        first = self.service.create_workorder(
+            incident_id=self.case.incident_id,
+            action_id="ACT-REPAIR",
+            store_id="S03",
+            device_id="FROST-S03",
+            fault="compressor failure",
+            budget=2500.0,
+            approval_id=approval_id,
+            idempotency_key="repair-execute-first",
+        )
+        duplicate = self.service.create_workorder(
+            incident_id=self.case.incident_id,
+            action_id="ACT-REPAIR",
+            store_id="S03",
+            device_id="FROST-S03",
+            fault="compressor failure",
+            budget=2500.0,
+            approval_id=approval_id,
+            idempotency_key="repair-execute-second",
+        )
+        self.assertTrue(first["ok"])
+        self.assertFalse(duplicate["ok"])
+        self.assertEqual("INVALID_STATE", duplicate["error"]["code"])
+        self.assertEqual(1, len(self.store.list_workorders(incident_id=self.case.incident_id)))
 
     def test_approval_rejects_invalid_amounts_before_policy_evaluation(self) -> None:
         for index, amount in enumerate((-1.0, float("nan"), float("inf"), True)):
@@ -261,6 +286,57 @@ class AdversarialHardeningTests(unittest.TestCase):
             server.server_close()
             thread.join(timeout=5)
 
+    def test_shared_http_token_cannot_authorize_a_state_change(self) -> None:
+        payload = json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                    "name": "apply_sales_hold",
+                    "arguments": {
+                        "incident_id": self.case.incident_id,
+                        "action_id": "ACT-SHARED-TOKEN",
+                        "store_id": "S03",
+                        "batch_ids": ["BATCH-S03-DAIRY-001"],
+                        "reason": "must not execute",
+                        "idempotency_key": "shared-token-write",
+                    },
+                },
+            }
+        ).encode("utf-8")
+        with patch.dict(
+            "os.environ",
+            {"MCP_TOKEN": "shared-secret", "MCP_ACTOR_TOKENS_JSON": ""},
+        ):
+            server = ThreadingHTTPServer(("127.0.0.1", 0), MCPHandler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                status, body = self._post(server.server_port, payload, token="shared-secret")
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=5)
+        self.assertEqual(200, status)
+        wrapped = json.loads(body)["result"]
+        self.assertTrue(wrapped["isError"])
+        result = json.loads(wrapped["content"][0]["text"])
+        self.assertEqual("FORBIDDEN", result["error"]["code"])
+
+    def test_non_loopback_server_requires_valid_auth_configuration(self) -> None:
+        with patch.dict("os.environ", {}, clear=True):
+            with self.assertRaisesRegex(SystemExit, "without authentication"):
+                _validate_server_auth("0.0.0.0")
+            _validate_server_auth("127.0.0.1")
+        with patch.dict(
+            "os.environ",
+            {"MCP_ACTOR_TOKENS_JSON": '{"token":"UnknownRole"}'},
+            clear=True,
+        ):
+            with self.assertRaisesRegex(SystemExit, "declared actors"):
+                _validate_server_auth("0.0.0.0")
+
     def test_runtime_tool_schema_rejects_missing_and_non_object_arguments(self) -> None:
         missing = tool_call(
             "apply_sales_hold",
@@ -272,6 +348,16 @@ class AdversarialHardeningTests(unittest.TestCase):
             self.assertTrue(wrapped["isError"])
             result = json.loads(wrapped["content"][0]["text"])
             self.assertEqual("INVALID_ARGUMENT", result["error"]["code"])
+
+        wrong_role = tool_call(
+            "query_workorder",
+            {"incident_id": self.case.incident_id},
+            actor="Diagnoser",
+            service=self.service,
+        )
+        self.assertTrue(wrong_role["isError"])
+        result = json.loads(wrong_role["content"][0]["text"])
+        self.assertEqual("FORBIDDEN", result["error"]["code"])
 
     def test_scenario_schema_and_seed_path_are_enforced_at_runtime(self) -> None:
         definition = json.loads(SCENARIO_PATH.read_text(encoding="utf-8"))
@@ -349,17 +435,20 @@ class AdversarialHardeningTests(unittest.TestCase):
         return approval_id
 
     @staticmethod
-    def _post(port: int, payload: bytes) -> tuple[int, str]:
+    def _post(port: int, payload: bytes, *, token: str | None = None) -> tuple[int, str]:
         connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
         try:
+            headers = {
+                "Content-Type": "application/json",
+                "Content-Length": str(len(payload)),
+            }
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
             connection.request(
                 "POST",
                 "/mcp",
                 body=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Content-Length": str(len(payload)),
-                },
+                headers=headers,
             )
             response = connection.getresponse()
             return response.status, response.read().decode("utf-8")

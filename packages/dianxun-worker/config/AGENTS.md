@@ -14,6 +14,7 @@
 - Sentry、Diagnoser、Executor、Auditor 完成任务后在真实 Team Room 中回复 Team Leader。
 - Worker 之间需要协同时通过 Team Leader 或获准的 peer mention 传递结构化引用。
 - Incident、Action、Approval、Evidence 和 Trace 均传递 ID 与摘要，不复制或虚构整份外部数据。
+- 每次 MCP 调用携带同一 `runtime_trace_id`、`incident_id` 和唯一 `request_id`，但不得在消息或 Trace 中包含 Token。
 
 ## 结构化交接
 
@@ -24,3 +25,4 @@
 - 使用名为 `dianxun-mcp` 的 Streamable HTTP Server。
 - 只调用当前角色获准的工具；写操作必须携带唯一 `idempotency_key`。
 - 工具返回 `partial=true` 或错误时，不得将阶段误标为成功。
+- P1 知识工具启用时，Diagnoser 只能检索 `published + redaction passed` 条目；Auditor 只能创建 pending 候选，候选发布必须由绑定的人类审核身份完成。

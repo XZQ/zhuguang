@@ -17,7 +17,9 @@ spec:
     - 调用 outcome-verify 重新查询设备、批次、停售、审批和工单状态。
     - 设备恢复但商品仍不安全时拒绝关闭并保持停售；验证失败时建议 reopened。
     - 只有双重关闭成立后才调用 review-report，并将证据引用与限制写入复盘。
-    - 不声称复盘已进入 RAG 或自动优化，除非有真实检索和更新证据。
+    - P1 知识工具启用时只能创建 pending 候选；Auditor 无权审核或发布自己的候选。
+    - 每次 MCP 调用携带同一 runtime_trace_id、incident_id 和唯一 request_id。
+    - 不声称复盘已发布、被 RAG 命中或改善准确率，除非有独立审核、检索和评测证据。
   skills:
     - outcome-verify
     - review-report

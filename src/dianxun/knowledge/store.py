@@ -1,107 +1,74 @@
-"""知识条目存储(SQLite)。
+"""Backward-compatible facade over the quality-gated knowledge workflow.
 
-满足赛题 2.4 知识库 RAG:检索历史同型异常处置经验,防止幻觉(返回原文引用)。
-生产替换路径:SQLite → PolarDB pgvector(向量检索),接口不变。
+Legacy supplementary demos keep using this module, but ``add`` now creates a
+pending candidate.  It never auto-publishes knowledge into retrieval results.
 """
 
 from __future__ import annotations
 
-import json
-import re
-import sqlite3
-import time
 from pathlib import Path
 
+from ..state import SQLiteStateStore
+from .embeddings import HashEmbeddingProvider
+from .repository import KnowledgeService
+
 _DB = Path(__file__).resolve().parents[3] / "data" / "knowledge.db"
+_TENANT = "legacy-demo"
 
 
-def _conn() -> sqlite3.Connection:
-    _DB.parent.mkdir(parents=True, exist_ok=True)
-    c = sqlite3.connect(str(_DB))
-    c.execute("""CREATE TABLE IF NOT EXISTS knowledge(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT, body TEXT, tags_json TEXT, confidence REAL,
-        trace_id TEXT, created_at REAL,
-        UNIQUE(title))""")
-    c.commit()
-    return c
+def _service() -> KnowledgeService:
+    return KnowledgeService(SQLiteStateStore(_DB), HashEmbeddingProvider())
 
 
 def init() -> None:
-    """建表(幂等)。"""
-    _conn().close()
+    """Create the local candidate schema without publishing any entries."""
+    _service()
 
 
 def add(
-    title: str, body: str, tags: list[str], confidence: float, trace_id: str = ""
-) -> int | None:
-    """新增知识条目。去重(按 title);敏感信息脱敏由调用方处理。"""
-    c = _conn()
-    try:
-        cur = c.execute(
-            "INSERT OR IGNORE INTO knowledge(title,body,tags_json,confidence,trace_id,created_at)"
-            " VALUES(?,?,?,?,?,?)",
-            (title, body, json.dumps(tags, ensure_ascii=False), confidence, trace_id, time.time()),
-        )
-        c.commit()
-        return cur.lastrowid
-    finally:
-        c.close()
+    title: str,
+    body: str,
+    tags: list[str],
+    confidence: float,
+    trace_id: str = "",
+) -> str | None:
+    """Create a pending candidate; retained for supplementary-demo compatibility."""
+    trace = trace_id or "legacy-unassigned"
+    result = _service().create_candidate(
+        tenant_id=_TENANT,
+        incident_id=f"legacy:{trace}",
+        trace_id=trace,
+        title=title,
+        body=body,
+        tags=tags,
+        confidence=confidence,
+        source_evidence_ids=[],
+        created_by="Auditor",
+    )
+    return str(result["knowledge_id"])
 
 
 def search(query: str, topk: int = 5) -> list[dict]:
-    """检索知识条目。
-
-    demo:关键词/标签匹配(标题+正文+标签含查询词)。
-    生产:换 pgvector 余弦相似度,返回 {entry, score, source_span}(防幻觉)。
-    """
-    c = _conn()
-    try:
-        rows = c.execute(
-            "SELECT title,body,tags_json,confidence,trace_id "
-            "FROM knowledge ORDER BY confidence DESC"
-        ).fetchall()
-    finally:
-        c.close()
-    q = query.lower()
-    terms = re.split(r"\s+", q)
-    scored = []
-    for title, body, tags_json, conf, tid in rows:
-        hay = (title + " " + body + " " + tags_json).lower()
-        score = sum(1 for t in terms if t and t in hay) * conf
-        if score > 0:
-            scored.append(
-                {
-                    "title": title,
-                    "body": body,
-                    "tags": json.loads(tags_json),
-                    "confidence": conf,
-                    "trace_id": tid,
-                    "score": round(score, 3),
-                    "source": "knowledge_db",
-                }
-            )
-    scored.sort(key=lambda x: x["score"], reverse=True)
-    return scored[:topk]
+    """Retrieve only reviewed and redaction-passed entries."""
+    return _service().search(tenant_id=_TENANT, query=query, top_k=topk)["hits"]
 
 
 def all_entries() -> list[dict]:
-    c = _conn()
-    try:
-        rows = c.execute(
-            "SELECT title,body,tags_json,confidence,trace_id,created_at "
-            "FROM knowledge ORDER BY created_at DESC"
-        ).fetchall()
-    finally:
-        c.close()
-    return [
-        {
-            "title": t,
-            "body": b,
-            "tags": json.loads(tj),
-            "confidence": cf,
-            "trace_id": tid,
-            "created_at": ca,
-        }
-        for t, b, tj, cf, tid, ca in rows
-    ]
+    return _service().list_items(tenant_id=_TENANT)
+
+
+def review(
+    knowledge_id: str,
+    *,
+    decision: str,
+    reviewer: str,
+    reason: str,
+    redaction_passed: bool,
+) -> dict:
+    return _service().review_candidate(
+        knowledge_id=knowledge_id,
+        decision=decision,
+        reviewer=reviewer,
+        reason=reason,
+        redaction_passed=redaction_passed,
+    )

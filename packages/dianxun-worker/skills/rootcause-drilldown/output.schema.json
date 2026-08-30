@@ -44,7 +44,24 @@
       "required": ["status", "hits"],
       "properties": {
         "status": { "enum": ["disabled", "enabled"] },
-        "hits": { "type": "array" }
+        "provider": { "type": "string" },
+        "quality_gate": { "type": "object" },
+        "hits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["knowledge_id", "score", "confidence", "source"],
+            "properties": {
+              "knowledge_id": { "type": "string" },
+              "score": { "type": "number" },
+              "confidence": { "type": "number" },
+              "source": {
+                "type": "object",
+                "required": ["incident_id", "trace_id", "evidence_ids", "span"]
+              }
+            }
+          }
+        }
       }
     }
   }

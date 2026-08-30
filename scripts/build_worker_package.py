@@ -88,6 +88,28 @@ def package_entries() -> list[tuple[str, Path]]:
     return sorted(entries, key=lambda item: item[0])
 
 
+def _skill_provenance() -> list[dict[str, str]]:
+    result = []
+    for skill in REQUIRED_SKILLS:
+        root = CANONICAL_SKILLS_ROOT / skill
+        manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+        digest = hashlib.sha256()
+        for path in sorted(item for item in root.rglob("*") if item.is_file()):
+            relative = path.relative_to(root).as_posix()
+            digest.update(relative.encode("utf-8"))
+            digest.update(b"\0")
+            digest.update(_normalized_bytes(path))
+            digest.update(b"\0")
+        result.append(
+            {
+                "name": skill,
+                "version": manifest["version"],
+                "sha256": digest.hexdigest(),
+            }
+        )
+    return result
+
+
 def build_worker_package(output: Path = DEFAULT_OUTPUT) -> dict[str, object]:
     """Build the ZIP and SHA-256 sidecar, returning its machine-readable summary."""
     entries = package_entries()
@@ -103,9 +125,29 @@ def build_worker_package(output: Path = DEFAULT_OUTPUT) -> dict[str, object]:
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
     checksum = output.with_suffix(output.suffix + ".sha256")
     checksum.write_text(f"{digest}  {output.name}\n", encoding="ascii", newline="\n")
+    provenance = output.with_suffix(".provenance.json")
+    provenance.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "package": output.name,
+                "package_sha256": digest,
+                "runtime": "qwenpaw",
+                "model": "qwen3.5-plus",
+                "skills": _skill_provenance(),
+            },
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
     return {
         "output": str(output),
         "checksum": str(checksum),
+        "provenance": str(provenance),
         "sha256": digest,
         "files": len(entries),
         "skills": list(REQUIRED_SKILLS),

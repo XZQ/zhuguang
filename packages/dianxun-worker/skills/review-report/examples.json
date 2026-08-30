@@ -22,7 +22,12 @@
       ],
       "verification": { "result": "verified" },
       "lessons": ["device_recovery_does_not_release_goods"],
-      "knowledge": { "retrieval_status": "disabled", "candidate_status": "pending_human_review" },
+      "knowledge": {
+        "retrieval_status": "enabled",
+        "candidate_status": "pending",
+        "knowledge_id": "knowledge_000001",
+        "deduplicated": false
+      },
       "skill_update_suggestions": []
     }
   },
@@ -42,7 +47,10 @@
       "batch_reviews": [],
       "verification": { "result": "manual_review" },
       "lessons": [],
-      "knowledge": { "retrieval_status": "disabled", "candidate_status": "pending_human_review" },
+      "knowledge": {
+        "retrieval_status": "disabled",
+        "candidate_status": "pending_not_persisted"
+      },
       "skill_update_suggestions": []
     }
   }

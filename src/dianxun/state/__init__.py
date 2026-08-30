@@ -1,5 +1,16 @@
-"""SQLite-backed state for the deterministic local business world."""
+"""State-store backends for local evidence and managed PolarDB PostgreSQL."""
 
-from .store import StateStore
+from .factory import create_state_store
+from .postgres import PostgresStateStore
+from .protocols import ConnectionProtocol, StateStoreProtocol, StoreIntegrityError
+from .store import SQLiteStateStore, StateStore
 
-__all__ = ["StateStore"]
+__all__ = [
+    "ConnectionProtocol",
+    "PostgresStateStore",
+    "SQLiteStateStore",
+    "StateStore",
+    "StateStoreProtocol",
+    "StoreIntegrityError",
+    "create_state_store",
+]

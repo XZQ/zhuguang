@@ -13,7 +13,7 @@
 | 解决什么真实问题 | 冷柜失温跨越设备、商品、审批、维修和复核，真正的交付单位不是“发出告警”，而是“安全关闭事件” |
 | 为什么需要多 Agent | 总控、巡检、诊断、处置、稽核职责分离；执行者不能自行宣布成功，Auditor 必须独立重查事实 |
 | 如何约束风险 | 所有受控写经过业务角色、Policy/审批、幂等和审计；设备恢复不等于商品安全，工单完成不等于事件关闭 |
-| 如何证明不是概念稿 | 6 个确定性冷柜场景、42 项测试、6 个 P0 Skill、12 个有状态 MCP 和可复现 Evidence 均在仓库内 |
+| 如何证明不是概念稿 | 6 个确定性冷柜场景、55 个测试用例、6 个 P0 Skill、12 个 P0 MCP、3 个可选知识 MCP 和可复现 Evidence 均在仓库内 |
 | 如何扩展 | 冷柜承担主叙事；缺货、价签保留独立入口，验证同一闭环基础设施可复用，而不稀释答辩重点 |
 
 当前仓库已完成有状态业务核心、冷柜五阶段闭环、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态、Worker → MCP 身份绑定和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
@@ -38,9 +38,11 @@ uv run dianxun evaluate
 | Evidence 关键字段完整率 | 45/45 | 同上 |
 | 适用阶段 Trace 覆盖率 | 26/26 | 同上 |
 | 未授权写、未审批受控写、错误放行、错误关闭、重复副作用 | 均为 0 | 同上 |
-| 自动化测试 | 42 项通过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
+| 自动化测试 | 55 项发现：53 通过、2 个 PolarDB 条件集成测试因无外部实例跳过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
+| PolarDB PostgreSQL 后端 | 代码与 SQL 契约已实现，外部待验证 | `src/dianxun/state/postgres.py`、`src/dianxun/state/sql/` |
+| 知识飞轮 | 候选、人工审核、发布、检索及 Recall@K/MRR 已实现；真实门店改善率未验证 | `tests/test_knowledge_flywheel.py` |
 | AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
-| AgentTeams → MCP 身份绑定 | 外部待验证 | 本地 Adapter 仅验证可选 Bearer；静态部署未映射动态 Worker 身份 |
+| AgentTeams → MCP 身份绑定 | 外部待验证 | Adapter 已强制 Token → Actor 和工具级角色白名单；Deployment 仅声明 Secret 引用，尚无动态 Worker 映射实跑证据 |
 
 上述指标来自固定 seed 和有状态 Mock，只证明仓库内确定性行为，不代表真实门店收益、监管合规或生产可用性。
 
@@ -49,12 +51,13 @@ uv run dianxun evaluate
 - 拓扑：1 个 AgentTeams Framework Manager + 5 个业务 Agent（Orchestrator、Sentry、Diagnoser、Executor、Auditor）。
 - 业务流程：发现与遏制、诊断与决策、处置执行、独立验证、复盘演进。
 - Skill：目标 9 个，其中 P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。
-- MCP：P0 固定 12 个函数，包括 5 个查询和 7 个受控动作。
+- MCP：P0 固定 12 个函数，包括 5 个查询和 7 个受控动作；P1 可选启用 3 个知识工具。
 - 业务核心：`IncidentService` 是阶段迁移和事件状态的唯一事实入口。
+- 状态后端：SQLite 保留为零依赖确定性评测底座；PolarDB PostgreSQL 是托管部署底座，业务层通过同一 StateStore 协议访问。
 - 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
-- 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
+- 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、55 项测试和 M4 评测不调用 LLM。
 - Skill：当前 6 个 P0 均为自定义可复用 Skill；官网与参赛手册 FAQ 对“阿里云官方用云 Skills”的措辞存在差异，状态为“待组委会确认”。
-- 鉴权：本地 HTTP Adapter 支持 `MCP_TOKEN` 或 `MCP_ACTOR_TOKENS_JSON`；前者只认证共享请求，后者才绑定 Actor。当前 AgentTeams 静态直连部署未完成动态 Worker 身份映射。
+- 鉴权：非回环监听未配置认证时拒绝启动；共享 `MCP_TOKEN` 只能调用只读工具，状态写必须使用 `MCP_ACTOR_TOKENS_JSON` 或可信网关绑定 Actor。部署清单引用 Secret，但动态 Worker 身份映射仍需外部验收。
 
 机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md)。
 
@@ -138,7 +141,21 @@ uv run dianxun-mcp
 
 默认 Streamable HTTP / JSON-RPC Adapter 监听 `127.0.0.1:8080`。运行时数据库为 `demo/state/runtime.db`，已被 Git 忽略。
 
-默认未配置 Token 的模式只用于回环地址上的本地 Demo。`MCP_TOKEN` 是共享请求认证，不能区分角色；需要验证调用者角色时必须由运行环境设置 `MCP_ACTOR_TOKENS_JSON`，或在可信网关完成等价映射。不要把工具默认 Actor 当作网络身份。
+默认未配置 Token 的模式只允许回环地址上的本地 Demo；非回环绑定会直接拒绝启动。`MCP_TOKEN` 是共享请求认证，只允许只读工具；所有状态写必须由 `MCP_ACTOR_TOKENS_JSON` 或可信网关完成 Token → Actor 映射。不要把工具默认 Actor 当作网络身份。
+
+### 使用 PolarDB PostgreSQL 与知识飞轮
+
+SQLite 不被删除，它承担无云依赖的确定性回归；PolarDB PostgreSQL 是部署后端。迁移配置必须按 `core → security → cron → archive` 顺序由管理账号执行：
+
+```powershell
+uv sync --extra postgres --group dev
+$env:DIANXUN_DATABASE_URL = "postgresql://<admin>@<host>:5432/<database>?sslmode=require"
+uv run dianxun db-bootstrap --profile core --profile security --profile cron --profile archive
+```
+
+四个 profile 分别提供 pgvector/业务表、RLS 与最小 GRANT、23:00 复盘入队及 `cron.job_run_details` 监控视图、面向已配置 OSS 外部表的审计分区复制与复核。`pg_cron` 只入队，不在数据库内执行 Agent 或 LLM；OSS 归档函数默认不删除源分区。
+
+知识链路默认关闭，通过 `DIANXUN_ENABLE_P1_TOOLS=1` 和 `DIANXUN_RAG_ENABLED=1` 启用。Auditor 只能创建 pending 候选；独立人工审核且脱敏通过后才会生成向量并进入检索。离线 hash embedding 只用于确定性测试，生产可配置 HTTPS 的 OpenAI-compatible embedding endpoint。
 
 Linux/macOS 只需去掉 PowerShell 的反引号续行；其余命令相同。
 
@@ -163,14 +180,14 @@ uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 当前 Worker ZIP SHA-256：
 
 ```text
-0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea
+3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c
 ```
 
 AgentTeams 版本固定为 `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），CRD 为 `agentteams.io/v1beta1`，Manager/Worker runtime 为 `qwenpaw`。构建、部署和动态验收步骤见 [`agentteams/README.md`](agentteams/README.md)。
 
 ### 模型、凭证、费用与替代边界
 
-- `qwen3.5-plus` 只用于目标 AgentTeams Manager/Worker 的任务拆解、结构化协作和工具编排；本地 `uv run dianxun evaluate` 不调用它，因此 6/6 和 42 项测试不是模型效果指标。
+- `qwen3.5-plus` 只用于目标 AgentTeams Manager/Worker 的任务拆解、结构化协作和工具编排；本地 `uv run dianxun evaluate` 不调用它，因此 6/6 和 55 项测试不是模型效果指标。
 - 模型凭证只允许由目标 AgentTeams/Kubernetes 运行时通过 Secret、环境变量或外部密钥系统注入；仓库 YAML、Worker ZIP、Trace 和视频不得包含 Key。
 - 模型费用取决于实际提供商、输入/输出 Token、调用次数和部署资源；当前没有真实平台运行账单，不能给出已验证成本。
 - 可替换为 AgentTeams/QwenPaw 支持且满足结构化输出与工具调用要求的兼容模型。迁移通常不改领域模型和 MCP 契约，但必须调整 `spec.model`/提供商凭证，并重跑结构化输出、工具调用、延迟、费用与安全回归。
@@ -222,9 +239,10 @@ docs/
 
 - 冷链 Policy 只用于比赛合成数据，不替代商品标签、企业 HACCP、设备说明书或所在地法规。
 - POS、库存、IoT、审批和维修商均为有状态 Mock；没有真实企业接口、真实人员 SLA 或真实食品处置授权。
-- RAG、自动回滚、Nacos、Higress、RocketMQ、PolarDB 和 LoongSuite 属于规划或生产替换方向，当前不声明已实现。
+- PolarDB/pgvector/RLS/分区/pg_cron/归档契约和可选知识飞轮已有代码与静态/本地测试，但尚无托管实例、OSS、真实门店基线和生产性能证据；不得表述为云上已投产。
+- 自动回滚、Nacos、Higress、RocketMQ 和 LoongSuite 仍属于规划或生产替换方向。
 - AgentTeams YAML、Worker ZIP 和本地 MCP 兼容烟测不等于真实多 Agent 动态协同。
-- 当前静态 AgentTeams → MCP 直连没有注入动态 Worker 身份映射；取得匿名/错误 Token 拒绝、越权 `FORBIDDEN` 和正确 Actor 审计证据前，不声明部署鉴权闭环。
+- 当前 Deployment 只强制声明 Actor Secret 引用，仓库不含真实动态 Worker 映射值；取得匿名/错误 Token 拒绝、工具级越权 `FORBIDDEN` 和正确 Actor 审计证据前，不声明部署鉴权闭环。
 - 当前 P0 仅使用自定义 Skill；“官方用云 Skills”是否为硬门槛仍需组委会书面确认。
 - 不提交 API Key、真实审批身份、顾客数据、照片原件、运行时数据库或含敏感内容的 Trace。
 

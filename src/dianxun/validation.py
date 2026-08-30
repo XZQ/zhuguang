@@ -14,8 +14,19 @@ import re
 from typing import Any
 
 
-def validate_json(value: Any, schema: dict[str, Any], *, path: str = "$") -> list[str]:
+def validate_json(
+    value: Any,
+    schema: dict[str, Any],
+    *,
+    path: str = "$",
+    _root_schema: dict[str, Any] | None = None,
+) -> list[str]:
     """Return deterministic validation errors for the supported schema subset."""
+    root_schema = schema if _root_schema is None else _root_schema
+    reference = schema.get("$ref")
+    if reference:
+        resolved = _resolve_local_reference(root_schema, reference)
+        return validate_json(value, resolved, path=path, _root_schema=root_schema)
     errors: list[str] = []
 
     if "const" in schema and value != schema["const"]:
@@ -41,7 +52,14 @@ def validate_json(value: Any, schema: dict[str, Any], *, path: str = "$") -> lis
                 errors.append(f"{path}: unexpected property {key!r}")
         for key, child_schema in properties.items():
             if key in value:
-                errors.extend(validate_json(value[key], child_schema, path=f"{path}.{key}"))
+                errors.extend(
+                    validate_json(
+                        value[key],
+                        child_schema,
+                        path=f"{path}.{key}",
+                        _root_schema=root_schema,
+                    )
+                )
 
     if isinstance(value, list):
         minimum_items = schema.get("minItems")
@@ -56,7 +74,14 @@ def validate_json(value: Any, schema: dict[str, Any], *, path: str = "$") -> lis
         item_schema = schema.get("items")
         if item_schema:
             for index, item in enumerate(value):
-                errors.extend(validate_json(item, item_schema, path=f"{path}[{index}]"))
+                errors.extend(
+                    validate_json(
+                        item,
+                        item_schema,
+                        path=f"{path}[{index}]",
+                        _root_schema=root_schema,
+                    )
+                )
 
     if isinstance(value, str):
         minimum_length = schema.get("minLength")
@@ -70,6 +95,9 @@ def validate_json(value: Any, schema: dict[str, Any], *, path: str = "$") -> lis
         minimum = schema.get("minimum")
         if minimum is not None and value < minimum:
             errors.append(f"{path}: must be greater than or equal to {minimum}")
+        maximum = schema.get("maximum")
+        if maximum is not None and value > maximum:
+            errors.append(f"{path}: must be less than or equal to {maximum}")
 
     return errors
 
@@ -94,3 +122,17 @@ def _matches_type(value: Any, expected: str) -> bool:
 
 def _is_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _resolve_local_reference(root: dict[str, Any], reference: str) -> dict[str, Any]:
+    if not reference.startswith("#/"):
+        raise ValueError(f"Only local JSON Schema references are supported: {reference}")
+    current: Any = root
+    for raw in reference[2:].split("/"):
+        key = raw.replace("~1", "/").replace("~0", "~")
+        if not isinstance(current, dict) or key not in current:
+            raise ValueError(f"Unresolvable JSON Schema reference: {reference}")
+        current = current[key]
+    if not isinstance(current, dict):
+        raise ValueError(f"JSON Schema reference does not point to an object: {reference}")
+    return current
