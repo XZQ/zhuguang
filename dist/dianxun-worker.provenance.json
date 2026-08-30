@@ -1,0 +1,39 @@
+{
+  "model": "qwen3.5-plus",
+  "package": "dianxun-worker.zip",
+  "package_sha256": "3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c",
+  "runtime": "qwenpaw",
+  "schema_version": "1.0",
+  "skills": [
+    {
+      "name": "anomaly-detect",
+      "sha256": "8940fcbe26fc05979f624ea3475747617891b5eb07e64e8aeebb049e038f7b07",
+      "version": "1.0.0"
+    },
+    {
+      "name": "coldchain-risk-assess",
+      "sha256": "1a3ca4b1d5e3fae14e9f8505ad2a19f371f2aa37f4ed53400cd3d045cf075699",
+      "version": "1.1.0"
+    },
+    {
+      "name": "rootcause-drilldown",
+      "sha256": "bc1da8b68534bc90fdda733bbf03e7982674b703ccf28cc27ceef0aa8d3e003c",
+      "version": "1.2.0"
+    },
+    {
+      "name": "work-order-dispatch",
+      "sha256": "0ced63be2032cc85fb87162d6a59fe10f5645419770df50057fb8da77080c7cb",
+      "version": "1.0.0"
+    },
+    {
+      "name": "outcome-verify",
+      "sha256": "6120ba916d8254319ceac017085f6fe82b722fa83d9339bdcaca19075435d6d3",
+      "version": "1.1.0"
+    },
+    {
+      "name": "review-report",
+      "sha256": "6b9d8b44480a5cb9896615b52130832a773563a6e303d866398908536017a1d7",
+      "version": "1.1.0"
+    }
+  ]
+}

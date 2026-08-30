@@ -30,7 +30,19 @@
     },
     "verification": { "type": "object" },
     "lessons": { "type": "array", "items": { "type": "string" } },
-    "knowledge": { "type": "object" },
+    "knowledge": {
+      "type": "object",
+      "required": ["retrieval_status", "candidate_status"],
+      "properties": {
+        "retrieval_status": { "enum": ["disabled", "enabled"] },
+        "candidate_status": {
+          "enum": ["pending", "published", "rejected", "pending_not_persisted"]
+        },
+        "knowledge_id": { "type": "string" },
+        "deduplicated": { "type": "boolean" },
+        "reason": { "type": "string" }
+      }
+    },
     "skill_update_suggestions": { "type": "array" }
   }
 }

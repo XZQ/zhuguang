@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from ..domain.enums import ApprovalStatus, BatchDisposition, WorkOrderStatus
+from .protocols import ConnectionProtocol
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -80,6 +81,9 @@ CREATE TABLE IF NOT EXISTS sales_holds (
     verification_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_holds_incident ON sales_holds(incident_id, status);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_active_hold_incident_batch
+    ON sales_holds(incident_id, batch_id)
+    WHERE status = 'active' AND batch_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS approvals (
     approval_id TEXT PRIMARY KEY,
@@ -95,6 +99,7 @@ CREATE TABLE IF NOT EXISTS approvals (
     decision_reason TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_approvals_action ON approvals(action_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_approvals_action ON approvals(action_id);
 
 CREATE TABLE IF NOT EXISTS workorders (
     workorder_id TEXT PRIMARY KEY,
@@ -111,6 +116,7 @@ CREATE TABLE IF NOT EXISTS workorders (
     updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_workorders_incident ON workorders(incident_id);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_workorders_action ON workorders(action_id);
 
 CREATE TABLE IF NOT EXISTS manual_evidence (
     evidence_id TEXT PRIMARY KEY,
@@ -129,6 +135,7 @@ CREATE TABLE IF NOT EXISTS manual_evidence (
 CREATE TABLE IF NOT EXISTS incidents (
     incident_id TEXT PRIMARY KEY,
     trace_id TEXT NOT NULL,
+    tenant_id TEXT NOT NULL,
     store_id TEXT NOT NULL,
     phase TEXT NOT NULL,
     incident_status TEXT NOT NULL,
@@ -168,6 +175,8 @@ CREATE INDEX IF NOT EXISTS idx_verifications_incident
 CREATE TABLE IF NOT EXISTS audit_log (
     audit_id TEXT PRIMARY KEY,
     request_id TEXT NOT NULL,
+    trace_id TEXT,
+    tenant_id TEXT,
     actor TEXT NOT NULL,
     tool_name TEXT NOT NULL,
     incident_id TEXT,
@@ -183,6 +192,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_request ON audit_log(request_id);
 
 CREATE TABLE IF NOT EXISTS idempotency (
     idempotency_key TEXT PRIMARY KEY,
+    tenant_id TEXT,
     tool_name TEXT NOT NULL,
     response_json TEXT NOT NULL,
     audit_id TEXT NOT NULL,
@@ -194,6 +204,54 @@ CREATE TABLE IF NOT EXISTS tool_failures (
     remaining_calls INTEGER NOT NULL,
     error_code TEXT NOT NULL,
     message TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS knowledge_items (
+    knowledge_id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    dedupe_key TEXT NOT NULL,
+    source_incident_id TEXT NOT NULL,
+    source_trace_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    tags_json TEXT NOT NULL,
+    confidence REAL NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
+    redaction_status TEXT NOT NULL CHECK (redaction_status IN ('pending', 'passed', 'failed')),
+    review_status TEXT NOT NULL CHECK (review_status IN ('pending', 'published', 'rejected')),
+    source_evidence_ids_json TEXT NOT NULL,
+    embedding_json TEXT,
+    embedding_model TEXT,
+    created_by TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    reviewed_by TEXT,
+    reviewed_at TEXT,
+    review_reason TEXT,
+    UNIQUE (tenant_id, dedupe_key)
+);
+CREATE INDEX IF NOT EXISTS idx_knowledge_quality
+    ON knowledge_items(tenant_id, review_status, redaction_status, confidence DESC);
+
+CREATE TABLE IF NOT EXISTS review_jobs (
+    job_id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    review_date TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'succeeded', 'failed')),
+    requested_at TEXT NOT NULL,
+    started_at TEXT,
+    finished_at TEXT,
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    last_error TEXT,
+    UNIQUE (tenant_id, review_date)
+);
+
+CREATE TABLE IF NOT EXISTS supplier_contracts (
+    supplier_id TEXT NOT NULL,
+    tenant_id TEXT NOT NULL,
+    supplier_name TEXT NOT NULL,
+    risk_level TEXT NOT NULL,
+    contract_terms_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (tenant_id, supplier_id)
 );
 """
 
@@ -225,11 +283,14 @@ def _ensure_tz(value: str) -> datetime:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
 
-class StateStore:
+class SQLiteStateStore:
     """Small repository with explicit, auditable SQL mutations."""
+
+    backend_name = "sqlite"
 
     def __init__(self, db_path: str | Path) -> None:
         self.path = Path(db_path)
+        self.database_identity = str(self.path.resolve())
 
     def connect(self) -> sqlite3.Connection:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -257,6 +318,10 @@ class StateStore:
             conn.executescript(_SCHEMA)
             conn.commit()
 
+    def ensure_schema(self) -> None:
+        """Create the local schema; remote backends only verify readiness."""
+        self.create_schema()
+
     def initialize(self, seed: dict[str, Any], *, reset: bool = True) -> str:
         """Initialize a deterministic world and return its canonical digest."""
         self.create_schema()
@@ -272,7 +337,8 @@ class StateStore:
                 "virtual_time": anchor_time,
             }
             conn.executemany(
-                "INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)",
+                """INSERT INTO meta(key, value) VALUES(?, ?)
+                   ON CONFLICT(key) DO UPDATE SET value = excluded.value""",
                 meta.items(),
             )
             for row in seed.get("stores", []):
@@ -350,7 +416,8 @@ class StateStore:
     def set_meta(self, key: str, value: str) -> None:
         with self.transaction() as conn:
             conn.execute(
-                "INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)",
+                """INSERT INTO meta(key, value) VALUES(?, ?)
+                   ON CONFLICT(key) DO UPDATE SET value = excluded.value""",
                 (key, value),
             )
 
@@ -382,11 +449,15 @@ class StateStore:
                 snapshot[table] = [dict(row) for row in rows]
         return hashlib.sha256(_canonical(snapshot).encode("utf-8")).hexdigest()
 
-    def next_id(self, conn: sqlite3.Connection, prefix: str) -> str:
+    def next_id(self, conn: ConnectionProtocol, prefix: str) -> str:
         key = f"seq:{prefix}"
         row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
         value = int(row["value"]) + 1 if row else 1
-        conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)", (key, str(value)))
+        conn.execute(
+            """INSERT INTO meta(key, value) VALUES(?, ?)
+               ON CONFLICT(key) DO UPDATE SET value = excluded.value""",
+            (key, str(value)),
+        )
         return f"{prefix}_{value:06d}"
 
     def list_devices(
@@ -564,17 +635,21 @@ class StateStore:
                 "SELECT case_json FROM incidents WHERE incident_id = ?",
                 (incident_id,),
             ).fetchone()
-        return json.loads(row["case_json"]) if row else None
+        if row is None:
+            return None
+        value = row["case_json"]
+        return json.loads(value) if isinstance(value, str) else dict(value)
 
     def save_incident(self, case: dict[str, Any]) -> None:
         with self.transaction() as conn:
             conn.execute(
                 """INSERT INTO incidents(
-                    incident_id, trace_id, store_id, phase, incident_status,
+                    incident_id, trace_id, tenant_id, store_id, phase, incident_status,
                     work_status, case_json, updated_at
-                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(incident_id) DO UPDATE SET
                     trace_id=excluded.trace_id,
+                    tenant_id=excluded.tenant_id,
                     store_id=excluded.store_id,
                     phase=excluded.phase,
                     incident_status=excluded.incident_status,
@@ -584,6 +659,7 @@ class StateStore:
                 (
                     case["incident_id"],
                     case["trace_id"],
+                    case["tenant_id"],
                     case["store_id"],
                     case["phase"],
                     case["incident_status"],
@@ -595,7 +671,7 @@ class StateStore:
 
     def idempotent_result(
         self,
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         idempotency_key: str,
     ) -> dict[str, Any] | None:
@@ -611,15 +687,15 @@ class StateStore:
         return {
             "tool_name": row["tool_name"],
             "actor": row["actor"],
-            "request": json.loads(row["request_json"]) if row["request_json"] else None,
-            "data": json.loads(row["response_json"]),
+            "request": self._decode_json_value(row["request_json"]),
+            "data": self._decode_json_value(row["response_json"]),
             "audit_id": row["audit_id"],
             "replayed": True,
         }
 
     def save_idempotent_result(
         self,
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         tool_name: str,
         idempotency_key: str,
@@ -629,14 +705,21 @@ class StateStore:
     ) -> None:
         conn.execute(
             """INSERT INTO idempotency(
-                idempotency_key, tool_name, response_json, audit_id, created_at
-            ) VALUES(?, ?, ?, ?, ?)""",
-            (idempotency_key, tool_name, _canonical(data), audit_id, created_at),
+                idempotency_key, tenant_id, tool_name, response_json, audit_id, created_at
+            ) SELECT ?, tenant_id, ?, ?, ?, ? FROM audit_log WHERE audit_id = ?""",
+            (
+                idempotency_key,
+                tool_name,
+                _canonical(data),
+                audit_id,
+                created_at,
+                audit_id,
+            ),
         )
 
     def record_audit(
         self,
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         request_id: str,
         actor: str,
@@ -650,15 +733,27 @@ class StateStore:
     ) -> str:
         audit_id = self.next_id(conn, "audit")
         policy = policy or {}
+        tenant_id: str | None = getattr(self, "tenant_id", None)
+        trace_id: str | None = None
+        if incident_id:
+            incident = conn.execute(
+                "SELECT tenant_id, trace_id FROM incidents WHERE incident_id = ?",
+                (incident_id,),
+            ).fetchone()
+            if incident:
+                tenant_id = str(incident["tenant_id"])
+                trace_id = str(incident["trace_id"])
         conn.execute(
             """INSERT INTO audit_log(
-                audit_id, request_id, actor, tool_name, incident_id, action_id,
+                audit_id, request_id, trace_id, tenant_id, actor, tool_name, incident_id, action_id,
                 policy_id, policy_version, policy_source_ref, request_json,
                 response_json, created_at
-            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 audit_id,
                 request_id,
+                trace_id,
+                tenant_id,
                 actor,
                 tool_name,
                 incident_id,
@@ -753,19 +848,24 @@ class StateStore:
                 "SELECT approval_id FROM approvals WHERE status = ? AND deadline <= ?",
                 (ApprovalStatus.PENDING.value, now),
             ).fetchall()
-            cursor = conn.execute(
-                """UPDATE approvals SET status = ?, decided_at = ?, decided_by = ?,
-                   decision_reason = ? WHERE status = ? AND deadline <= ?""",
-                (
-                    ApprovalStatus.TIMEOUT.value,
-                    now,
-                    "ScenarioEngine",
-                    "virtual deadline reached",
-                    ApprovalStatus.PENDING.value,
-                    now,
-                ),
-            )
-            approval_ids = [row["approval_id"] for row in expiring]
+            approval_ids = []
+            for row in expiring:
+                cursor = conn.execute(
+                    """UPDATE approvals SET status = ?, decided_at = ?, decided_by = ?,
+                       decision_reason = ? WHERE approval_id = ? AND status = ?
+                       AND deadline <= ?""",
+                    (
+                        ApprovalStatus.TIMEOUT.value,
+                        now,
+                        "ScenarioEngine",
+                        "virtual deadline reached",
+                        row["approval_id"],
+                        ApprovalStatus.PENDING.value,
+                        now,
+                    ),
+                )
+                if cursor.rowcount == 1:
+                    approval_ids.append(row["approval_id"])
             if approval_ids:
                 placeholders = ",".join("?" for _ in approval_ids)
                 conn.execute(
@@ -773,7 +873,7 @@ class StateStore:
                         WHERE approval_id IN ({placeholders})""",
                     [now, *approval_ids],
                 )
-            return cursor.rowcount
+            return len(approval_ids)
 
     def inject_tool_failure(
         self,
@@ -785,9 +885,13 @@ class StateStore:
     ) -> None:
         with self.transaction() as conn:
             conn.execute(
-                """INSERT OR REPLACE INTO tool_failures(
+                """INSERT INTO tool_failures(
                     tool_name, remaining_calls, error_code, message
-                ) VALUES(?, ?, ?, ?)""",
+                ) VALUES(?, ?, ?, ?)
+                ON CONFLICT(tool_name) DO UPDATE SET
+                    remaining_calls = excluded.remaining_calls,
+                    error_code = excluded.error_code,
+                    message = excluded.message""",
                 (tool_name, remaining_calls, error_code, message),
             )
 
@@ -799,11 +903,13 @@ class StateStore:
             ).fetchone()
             if row is None or row["remaining_calls"] <= 0:
                 return None
-            remaining = row["remaining_calls"] - 1
-            conn.execute(
-                "UPDATE tool_failures SET remaining_calls = ? WHERE tool_name = ?",
-                (remaining, tool_name),
+            cursor = conn.execute(
+                """UPDATE tool_failures SET remaining_calls = remaining_calls - 1
+                   WHERE tool_name = ? AND remaining_calls > 0""",
+                (tool_name,),
             )
+            if cursor.rowcount != 1:
+                return None
             return {"code": row["error_code"], "message": row["message"]}
 
     def _filtered_rows(
@@ -841,6 +947,16 @@ class StateStore:
         decoded = dict(row)
         for key, value in list(decoded.items()):
             if key.endswith("_json"):
-                decoded[key.removesuffix("_json")] = json.loads(value) if value else None
+                decoded[key.removesuffix("_json")] = SQLiteStateStore._decode_json_value(value)
                 del decoded[key]
         return decoded
+
+    @staticmethod
+    def _decode_json_value(value: Any) -> Any:
+        if value is None or isinstance(value, (dict, list, int, float, bool)):
+            return value
+        return json.loads(value)
+
+
+# Backward-compatible constructor used by the deterministic local demo.
+StateStore = SQLiteStateStore

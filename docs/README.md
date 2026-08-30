@@ -13,7 +13,7 @@
 ## 相关资料
 
 - 运行、构建与仓库入口：[`../README.md`](../README.md)
-- AgentTeams 部署与动态验收：[`../agentteams/README.md`](../agentteams/README.md)
+- AgentTeams、PolarDB overlay 与动态验收：[`../agentteams/README.md`](../agentteams/README.md)
 - P0 Skill 规范：[`../skills/README.md`](../skills/README.md)
 - Worker/MCP 交付包边界：[`../packages/README.md`](../packages/README.md)
 - M4 评测报告：[`../evidence/m4/report.md`](../evidence/m4/report.md)
@@ -23,5 +23,5 @@
 
 1. 数字或版本变化时先更新 `config/project-facts.json` 和自动化证据。
 2. 再同步 `competition/`、`assessments/`、AgentTeams README、根 README 和演示稿。
-3. 真实平台、真实门店或官方 Skill 未取得证据前，状态必须保留为“外部待验证”或“待确认”。
+3. 真实 AgentTeams、PolarDB/OSS、真实门店或官方 Skill 未取得证据前，状态必须保留为“外部待验证”或“待确认”。
 4. 目录调整必须同步全部相对链接、命令和代码注释，并执行完整门禁。

@@ -7,4 +7,4 @@
 | [`dianxun-mcp/`](dianxun-mcp/) | MCP 容器镜像构建描述 | `src/dianxun/`、`config/`、`demo/state/`、`schemas/` |
 | [`dianxun-worker/`](dianxun-worker/) | AgentTeams `v1.2.3` Worker ZIP 源布局 | `skills/` 下 6 个 P0 canonical 目录及 Worker config |
 
-生成制品统一进入 `dist/`，不得手工修改 ZIP、校验和或包内 Skill。
+生成制品统一进入 `dist/`，不得手工修改 ZIP、校验和、provenance 或包内 Skill。

@@ -21,6 +21,7 @@ from .. import mcp, trace
 from ..domain import Hypothesis
 
 if TYPE_CHECKING:
+    from ..knowledge import KnowledgeService
     from ..mcp.p0 import MCPService
 
 
@@ -211,6 +212,7 @@ def diagnose_coldchain_hypotheses(
     store_id: str,
     device_id: str,
     trace_id: str,
+    knowledge: KnowledgeService | None = None,
 ) -> dict[str, Any]:
     """Build evidence-linked Top-K hypotheses from the stateful device context."""
     with trace.span(
@@ -344,11 +346,39 @@ def diagnose_coldchain_hypotheses(
             ),
         ]
         hypotheses.sort(key=lambda item: item.confidence, reverse=True)
+        rag: dict[str, Any] = {"status": "disabled", "hits": []}
+        if knowledge is not None:
+            incident = service.store.get_incident(incident_id) or {}
+            query = " ".join(
+                [
+                    "冷柜失温",
+                    str(device.get("model", "")),
+                    str(health.get("state", "")),
+                    str(health.get("compressor_state", "")),
+                    hypotheses[0].label,
+                ]
+            )
+            with trace.span(
+                "knowledge-search",
+                "rag",
+                trace_id,
+                input={"incident_id": incident_id, "top_k": 3},
+            ) as rag_span:
+                rag = knowledge.search(
+                    tenant_id=str(incident.get("tenant_id", "demo")),
+                    query=query,
+                    top_k=3,
+                )
+                rag_span.output = {
+                    "status": rag["status"],
+                    "hit_count": len(rag["hits"]),
+                    "knowledge_ids": [item["knowledge_id"] for item in rag["hits"]],
+                }
         result = {
             "hypotheses": hypotheses[:3],
             "evidence": evidence,
             "quality": "partial" if questionable_readings or not evidence else "good",
-            "rag": {"status": "disabled", "hits": []},
+            "rag": rag,
             "data_quality": {
                 "trusted_readings": len(trusted_readings),
                 "excluded_readings": len(questionable_readings),

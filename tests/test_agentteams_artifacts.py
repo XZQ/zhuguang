@@ -29,8 +29,10 @@ class AgentTeamsArtifactTests(unittest.TestCase):
     def test_worker_package_is_deterministic_and_safe(self) -> None:
         tracked = ROOT / "dist" / "dianxun-worker.zip"
         tracked_checksum = tracked.with_suffix(".zip.sha256")
+        tracked_provenance = tracked.with_suffix(".provenance.json")
         self.assertTrue(tracked.is_file())
         self.assertTrue(tracked_checksum.is_file())
+        self.assertTrue(tracked_provenance.is_file())
 
         with tempfile.TemporaryDirectory() as tmp:
             rebuilt = Path(tmp) / "dianxun-worker.zip"
@@ -39,6 +41,10 @@ class AgentTeamsArtifactTests(unittest.TestCase):
             self.assertEqual(
                 tracked_checksum.read_text(encoding="ascii"),
                 rebuilt.with_suffix(".zip.sha256").read_text(encoding="ascii"),
+            )
+            self.assertEqual(
+                tracked_provenance.read_text(encoding="utf-8"),
+                rebuilt.with_suffix(".provenance.json").read_text(encoding="utf-8"),
             )
             self.assertEqual(hashlib.sha256(tracked.read_bytes()).hexdigest(), summary["sha256"])
 
@@ -59,6 +65,9 @@ class AgentTeamsArtifactTests(unittest.TestCase):
             for skill in REQUIRED_SKILLS:
                 text = archive.read(f"skills/{skill}/SKILL.md").decode("utf-8")
                 self.assertTrue(text.startswith(f"---\nname: {skill}\n"))
+        provenance = json.loads(tracked_provenance.read_text(encoding="utf-8"))
+        self.assertEqual(summary["sha256"], provenance["package_sha256"])
+        self.assertEqual(set(REQUIRED_SKILLS), {item["name"] for item in provenance["skills"]})
 
     def test_agentteams_worker_resources_match_roles_and_package(self) -> None:
         expected_skills = {
@@ -122,6 +131,15 @@ class AgentTeamsArtifactTests(unittest.TestCase):
         self.assertTrue(container["securityContext"]["runAsNonRoot"])
         self.assertTrue(container["securityContext"]["readOnlyRootFilesystem"])
         self.assertEqual(["ALL"], container["securityContext"]["capabilities"]["drop"])
+        environment = {item["name"]: item for item in container["env"]}
+        self.assertEqual(
+            "/var/lib/dianxun/agentteams-trace.db",
+            environment["DIANXUN_TRACE_DB"]["value"],
+        )
+        self.assertEqual(
+            "dianxun-agent-identities",
+            environment["MCP_ACTOR_TOKENS_JSON"]["valueFrom"]["secretKeyRef"]["name"],
+        )
         self.assertEqual(
             "dianxun-mcp-state", pod_spec["volumes"][0]["persistentVolumeClaim"]["claimName"]
         )

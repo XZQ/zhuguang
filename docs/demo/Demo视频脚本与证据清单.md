@@ -30,9 +30,9 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 - 工作区无非预期改动；
 - 六场景 6/6；
-- 全量测试 42 项通过；
+- 全量测试 55 项发现：53 项通过、2 项 PolarDB 条件集成测试跳过；
 - Ruff、格式、模拟数据和确定性 Worker 构建均通过；
-- ZIP SHA-256 为 `0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea`。
+- ZIP SHA-256 为 `3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c`。
 
 ## 3. 视频一：正常闭环（场景 A）
 
@@ -110,7 +110,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 - Trace 中五阶段；
 - Evidence 关键字段；
 - review report 和 pending knowledge candidate；
-- 明确 RAG 当前未启用。
+- 明确 P1 知识工具默认关闭；若展示命中，必须同时展示候选、独立审核、脱敏通过和来源引用。
 
 ## 4. 视频二：失败分支（场景 F）
 
@@ -174,7 +174,7 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 - 不把本地 ScenarioEngine 审批说成真实人工审批。
 - 不把 YAML `state: Running` 说成集群实际 Running。
 - 不把请求带 Bearer Header 说成身份已验证；必须有服务端拒绝与正确 Actor 审计证据。
-- 不声称 RAG、自动回滚或生产云组件已经运行。
+- 不把本地 RAG/SQL 契约写成真实门店改善、PolarDB/OSS 已运行或生产可用；自动回滚仍不宣称实现。
 - 不把本地 M4 结果说成 `qwen3.5-plus` 模型效果；模型 Key 必须遮挡，费用无真实账单时明确“未测量”。
 - 当前 P0 为自定义 Skill；组委会口径未确认或官方 Skill 未真实调用前，不说“官方用云 Skill 已满足”。
 - 提交前由第二人对照本清单逐镜头复核。

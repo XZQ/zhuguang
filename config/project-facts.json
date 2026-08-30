@@ -61,6 +61,34 @@
       "record_manual_evidence"
     ]
   },
+  "p1_mcp": {
+    "enabled_by": "DIANXUN_ENABLE_P1_TOOLS=1",
+    "tools": [
+      "search_knowledge",
+      "create_knowledge_candidate",
+      "review_knowledge_candidate"
+    ]
+  },
+  "state_backends": {
+    "sqlite": {
+      "purpose": "zero_dependency_deterministic_demo_and_evaluation",
+      "status": "verified"
+    },
+    "polardb_postgresql": {
+      "purpose": "managed_deployment_backend",
+      "status": "implemented_code_pending_external_validation",
+      "optional_dependency": "dianxun[postgres]",
+      "migration_profiles": ["core", "security", "cron", "archive"],
+      "features": ["pgvector", "monthly_audit_partitions", "rls", "pg_cron", "oss_fdw_archive_contract"]
+    }
+  },
+  "knowledge_flywheel": {
+    "status": "implemented_optional_pending_real_store_baseline",
+    "publication_gate": ["human_review", "redaction_passed", "confidence"],
+    "auditor_can_auto_publish": false,
+    "retrieval_metrics": ["Recall@K", "MRR"],
+    "claim_boundary": "labeled_dataset_only_not_real_store_improvement"
+  },
   "agentteams": {
     "version": "v1.2.3",
     "commit": "223ddc2b8073e4c8b93bcbb15e1d717f196c04d9",
@@ -94,6 +122,8 @@
       "worker_package_and_yaml_contracts": "verified",
       "local_mcporter_mcp_smoke": "verified",
       "local_mcp_optional_bearer": "verified",
+      "runtime_evidence_schema_and_verifier": "verified",
+      "polardb_kubernetes_overlay": "verified_static",
       "agentteams_mcp_identity_binding": "pending_external_validation",
       "local_runtime": "unavailable",
       "cloud_studio_runtime": "pending"
@@ -119,12 +149,14 @@
     "m3_repository_artifacts": {
       "status": "implemented_static_external_runtime_pending",
       "worker_package": "dist/dianxun-worker.zip",
-      "worker_package_sha256": "0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea",
+      "worker_package_sha256": "3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c",
       "worker_package_files": 33,
       "artifact_contract_tests": 5,
+      "runtime_evidence_contract_tests": 3,
+      "provenance": "dist/dianxun-worker.provenance.json",
       "mcp_deployment": "agentteams/mcp/deployment.yaml",
       "mcp_authentication": {
-        "local_adapter": "optional_bearer_or_actor_token_mapping",
+        "local_adapter": "shared_readonly_or_actor_token_mapping_with_tool_allowlist",
         "static_agentteams_deployment": "dynamic_gateway_key_mapping_not_wired",
         "status": "pending_external_validation"
       }
@@ -140,7 +172,9 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 42,
+      "full_unittest_count": 55,
+      "full_unittest_passed": 53,
+      "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json"
     },
@@ -159,6 +193,7 @@
     "incident": "schemas/incident-case.v1.schema.json",
     "mcp_envelope": "schemas/mcp-envelope.v1.schema.json",
     "scenario": "schemas/scenario.v1.schema.json",
+    "agentteams_runtime_evidence": "schemas/agentteams-run-evidence.v1.schema.json",
     "policy": "config/policies/coldchain-demo.v1.json"
   }
 }

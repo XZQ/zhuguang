@@ -17,4 +17,4 @@ uv run python scripts/build_worker_package.py
 uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 ```
 
-构建器会验证包内 Skill 与 canonical 目录逐字一致，并确定性生成 `dist/dianxun-worker.zip` 及 SHA-256。不要直接修改 `dist/` 或在本目录实现 `IncidentService`、MCP、Policy 和状态存储。
+构建器会验证包内 Skill 与 canonical 目录逐字一致，并确定性生成 ZIP、SHA-256 与逐 Skill provenance。不要直接修改 `dist/` 或在本目录实现 `IncidentService`、MCP、Policy 和状态存储。

@@ -1238,27 +1238,27 @@
       <div class="l">02 · 系统边界</div>
       <div class="r">03 / 10 · ONE CORE</div>
     </div>
-    <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">ONE BUSINESS CORE · TWO ADAPTERS</div>
-    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.1vw,7vh);line-height:1.05;color:var(--text-primary)">一个业务事实核心，两个运行入口</h2>
+    <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">ONE BUSINESS CORE · TWO RUNTIME PROFILES</div>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.1vw,7vh);line-height:1.05;color:var(--text-primary)">一个业务事实核心，两套可验证运行底座</h2>
     <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:3vw;align-items:center">
       <div style="border-top:3px solid var(--accent);padding-top:2vh">
-        <div class="t-meta" style="color:var(--accent);margin-bottom:1.4vh">LOCAL ADAPTER</div>
-        <div style="font-size:max(25px,1.7vw);font-weight:500;color:var(--text-primary);margin-bottom:1.3vh">确定性回归</div>
-        <div style="font-size:max(18px,1.05vw);line-height:1.55;color:var(--text-secondary)">固定 seed<br/>六场景<br/>隔离 SQLite / Trace<br/>无平台依赖</div>
+        <div class="t-meta" style="color:var(--accent);margin-bottom:1.4vh">LOCAL EVALUATION · SQLITE</div>
+        <div style="font-size:max(25px,1.7vw);font-weight:500;color:var(--text-primary);margin-bottom:1.3vh">确定性评测底座</div>
+        <div style="font-size:max(18px,1.05vw);line-height:1.55;color:var(--text-secondary)">固定 seed<br/>六场景<br/>隔离 SQLite + Trace<br/>零平台依赖</div>
       </div>
       <div style="background:var(--ink);color:#fff;padding:4vh 2.8vw;min-height:42vh;display:flex;flex-direction:column;justify-content:center">
         <div class="t-meta" style="color:var(--accent-bright);margin-bottom:2vh">SINGLE SOURCE OF TRUTH</div>
-        <div style="font-family:var(--mono);font-size:max(25px,1.7vw);line-height:1.7">IncidentService<br/>StateStore<br/>PolicyEngine</div>
+        <div style="font-family:var(--mono);font-size:max(25px,1.7vw);line-height:1.7">IncidentService<br/>StateStore<br/>KnowledgeRepository<br/>PolicyEngine</div>
         <div style="border-top:1px solid rgba(255,255,255,.25);margin-top:2.4vh;padding-top:2vh;font-size:max(18px,1.05vw);line-height:1.55;color:rgba(255,255,255,.76)">阶段迁移、事件聚合、实体状态与审计只能通过同一核心。</div>
       </div>
       <div style="border-top:3px solid var(--accent);padding-top:2vh">
-        <div class="t-meta" style="color:var(--accent);margin-bottom:1.4vh">AGENTTEAMS ADAPTER</div>
-        <div style="font-size:max(25px,1.7vw);font-weight:500;color:var(--text-primary);margin-bottom:1.3vh">动态协同目标</div>
-        <div style="font-size:max(18px,1.05vw);line-height:1.55;color:var(--text-secondary)">1 Framework Manager<br/>5 业务 Agent<br/>6 P0 Skill<br/>12 MCP 函数</div>
-        <div style="border-top:1px solid var(--border-subtle);margin-top:1.6vh;padding-top:1.2vh;font-size:max(14px,.82vw);line-height:1.45;color:var(--text-helper)">qwenpaw + qwen3.5-plus<br/>仅目标 Manager / Worker；动态证据外部待验证</div>
+        <div class="t-meta" style="color:var(--accent);margin-bottom:1.4vh">DEPLOYMENT · AGENTTEAMS + POLARDB</div>
+        <div style="font-size:max(25px,1.7vw);font-weight:500;color:var(--text-primary);margin-bottom:1.3vh">动态协同部署底座</div>
+        <div style="font-size:max(18px,1.05vw);line-height:1.55;color:var(--text-secondary)">1 Manager + 5 Agent<br/>PostgreSQL + pgvector<br/>12 P0 + 3 P1 MCP<br/>Trace · RLS · 月分区</div>
+        <div style="border-top:1px solid var(--border-subtle);margin-top:1.6vh;padding-top:1.2vh;font-size:max(14px,.82vw);line-height:1.45;color:var(--text-helper)">YAML / SQL / overlay 已静态验证<br/>托管实例与动态 Trace 外部待验证</div>
       </div>
     </div>
-    <div class="t-meta" style="border-top:1px solid var(--border-subtle);padding-top:1.4vh;line-height:1.45;color:var(--text-helper)">本地 Demo/M4 不调用 LLM；凭证仅运行时注入，费用依提供商与实际用量且当前未测量。替换兼容模型须重跑结构化输出、工具调用、延迟、费用与安全门禁。</div>
+    <div class="t-meta" style="border-top:1px solid var(--border-subtle);padding-top:1.4vh;line-height:1.45;color:var(--text-helper)">两套底座共用同一领域契约：SQLite 已完成本地验证；PolarDB 代码、SQL Profile 与部署 overlay 已实现，待托管实例验收。本地 Demo/M4 不调用 LLM。</div>
   </div>
 </section>
 
@@ -1339,10 +1339,10 @@
       <div style="background:var(--grey-1);padding:3vh 2vw">
         <div class="t-meta" style="color:var(--accent);margin-bottom:1.5vh">EVERY P0 PACKAGE</div>
         <div style="font-size:max(19px,1.15vw);line-height:1.7;color:var(--text-primary)">SKILL.md<br/>manifest.json<br/>input / output Schema<br/>成功 + 失败样例<br/>权限与变更记录</div>
-        <div style="border-top:1px solid var(--border-subtle);margin-top:2vh;padding-top:1.6vh;font-size:max(15px,.9vw);line-height:1.5;color:var(--text-secondary)">P1 跨店对标；P2 缺货与价签。当前 P0 均为自定义 Skill；官网 / 手册 FAQ 对官方用云 Skill 的口径待组委会确认，不冒充已满足。</div>
+        <div style="border-top:1px solid var(--border-subtle);margin-top:2vh;padding-top:1.6vh;font-size:max(15px,.9vw);line-height:1.5;color:var(--text-secondary)">Worker YAML 声明装载并写入 provenance；动态装载 Trace 待平台验证。P1 跨店对标、P2 缺货与价签不阻塞冷柜 P0 主线。</div>
       </div>
     </div>
-    <div class="t-meta" style="color:var(--text-helper)">Worker ZIP SHA-256 · 0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea</div>
+    <div class="t-meta" style="color:var(--text-helper)">Worker ZIP SHA-256 · 3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c</div>
   </div>
 </section>
 
@@ -1351,12 +1351,13 @@
     <div class="split-half">
       <div class="half b-ink" style="padding:5vh 3.2vw;justify-content:flex-start">
         <div class="chrome-min" style="color:rgba(255,255,255,.6);margin-bottom:2vh"><div class="l">07 · MCP</div><div class="r">08 / 10</div></div>
-        <div class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em;margin-bottom:1.5vh">5 QUERIES</div>
+        <div class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em;margin-bottom:1.5vh">5 P0 QUERIES</div>
         <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4vw,6.8vh);line-height:1.04;color:#fff;margin-bottom:3vh">先重查事实<br/>再决定动作</h2>
         <div style="font-family:var(--mono);font-size:max(17px,1vw);line-height:2;color:rgba(255,255,255,.82)">query_device_context<br/>query_inventory_batches<br/>query_sales_holds<br/>query_workorder<br/>query_approval</div>
+        <div class="t-meta" style="border-top:1px solid rgba(255,255,255,.25);margin-top:2vh;padding-top:1.4vh;color:rgba(255,255,255,.62)">P1 默认关闭 · search_knowledge 只返回已审核、已脱敏知识</div>
       </div>
       <div class="half" style="padding:5vh 3.2vw;justify-content:flex-start">
-        <div class="chrome-min" style="margin-bottom:2vh"><div class="l">7 CONTROLLED ACTIONS</div><div class="r">12 P0 FUNCTIONS</div></div>
+        <div class="chrome-min" style="margin-bottom:2vh"><div class="l">7 CONTROLLED ACTIONS</div><div class="r">12 P0 + 3 P1</div></div>
         <div class="t-meta" style="color:var(--accent);letter-spacing:.2em;margin-bottom:1.5vh">FOUR GATES</div>
         <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.7vw,6.2vh);line-height:1.04;color:var(--text-primary);margin-bottom:2.5vh">业务角色 · Policy/审批<br/>幂等 · 审计</h2>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2vh 1.8vw;font-family:var(--mono);font-size:max(15px,.9vw);line-height:1.5;color:var(--text-secondary)">
@@ -1366,7 +1367,7 @@
           <div>record_manual_evidence*</div><div style="color:var(--accent)">payment = forbidden</div>
         </div>
         <div style="border-top:2px solid var(--accent);margin-top:2.4vh;padding-top:1.6vh;font-size:max(18px,1.05vw);line-height:1.55;color:var(--text-primary)">解除停售必须绑定 approved 审批和 Auditor verification；随后 Auditor 再查一次最终状态。</div>
-        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">* 仅 Human / ScenarioEngine；Worker → MCP 身份绑定仍待动态验证</div>
+        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">* 仅 Human / ScenarioEngine；P1 candidate → 独立 Human/HQ 审核 → publish，Auditor 不可自审；Worker → MCP 身份绑定仍待动态验证</div>
       </div>
     </div>
   </div>
@@ -1387,8 +1388,8 @@
       <div style="border-top:3px solid var(--ink);padding-top:2vh"><div style="font-family:var(--sans);font-weight:200;font-size:min(5.3vw,9vh);color:var(--ink)">0</div><div style="font-size:max(19px,1.15vw);color:var(--text-primary)">五类安全违规</div><div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">业务越权 · 未审批 · 错放 · 错关 · 重复</div></div>
     </div>
     <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);padding-top:1.6vh">
-      <div class="t-meta" style="color:var(--text-helper)">全量自动化测试 · 42 项通过</div>
-      <div class="t-meta" style="color:var(--text-helper)">Source · evidence/m4/results.json · uv run dianxun evaluate</div>
+      <div class="t-meta" style="color:var(--text-helper)">unittest · 55 discovered / 53 pass / 2 PolarDB skip</div>
+      <div class="t-meta" style="color:var(--text-helper)">Source · evidence/m4/results.json</div>
     </div>
   </div>
 </section>
@@ -1406,9 +1407,10 @@
         <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.3vw,9vh);line-height:1.02;color:#fff">不是让 Agent 更会<br/>“说已完成”</h2>
         <div style="font-family:var(--sans),var(--sans-zh);font-size:max(23px,1.5vw);line-height:1.55;color:rgba(255,255,255,.85);margin-top:2.5vh">而是让事件只有在证据闭环后才能关闭。</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:2.2vh">
-        <div style="border-top:2px solid #fff;padding-top:1.5vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">REPOSITORY DELIVERED</div><div style="font-size:max(19px,1.12vw);line-height:1.6;color:#fff;margin-top:.8vh">业务核心 · 六场景 · 6 P0 Skill · 12 MCP · Worker ZIP · YAML · 测试/评测 · README · HTML/PDF</div></div>
-        <div style="border-top:2px solid rgba(255,255,255,.45);padding-top:1.5vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">EXTERNAL VALIDATION / CONFIRMATION PENDING</div><div style="font-size:max(18px,1.05vw);line-height:1.55;color:#fff;margin-top:.8vh">Team Room · Worker 委派 · Kubernetes Running · MCP 身份绑定 / Trace · 最终平台录屏 · 官方用云 Skill 口径 / 真实调用</div></div>
+      <div style="display:flex;flex-direction:column;gap:1.5vh">
+        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">REPOSITORY DELIVERED</div><div style="font-size:max(18px,1.05vw);line-height:1.5;color:#fff;margin-top:.6vh">业务核心 · 六场景 · 6 P0 Skill · 12 + 3 MCP · Worker ZIP/YAML · 55 项测试门禁 · HTML/PDF</div></div>
+        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">POLARDB ENGINEERING DELIVERED</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">PostgreSQL Store · pgvector · RLS · 月分区 · pg_cron 入队 · OSS 复制复核归档契约</div></div>
+        <div style="border-top:2px solid rgba(255,255,255,.45);padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">EXTERNAL EVIDENCE PENDING</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">Team Room / Worker 委派 / 动态 Trace · 托管 PolarDB 与 OSS 联调 · 真实门店基线和改善率 · 最终平台录屏 · 官方用云 Skill 口径确认</div></div>
         <div style="border-top:1px solid rgba(255,255,255,.25);padding-top:1.5vh;font-family:var(--mono);font-size:max(16px,.92vw);color:rgba(255,255,255,.78)">github.com/XZQ/zhuguang</div>
       </div>
     </div>

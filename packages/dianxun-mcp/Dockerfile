@@ -15,7 +15,7 @@ COPY demo/state/seed.json ./demo/state/seed.json
 COPY demo/state/scenarios/ ./demo/state/scenarios/
 COPY schemas/ ./schemas/
 
-RUN python -m pip install --no-cache-dir . \
+RUN python -m pip install --no-cache-dir ".[postgres]" \
     && addgroup --system --gid 10001 dianxun \
     && adduser --system --uid 10001 --ingroup dianxun --home /home/dianxun dianxun \
     && mkdir -p /var/lib/dianxun \

@@ -1,7 +1,7 @@
 """The 12 stateful P0 MCP functions.
 
 Every write is permission checked, policy evaluated, idempotent and audited in
-the same SQLite transaction as its business-state mutation.
+the same database transaction as its business-state mutation.
 """
 
 from __future__ import annotations
@@ -21,7 +21,13 @@ from typing import Any
 from ..domain.enums import ApprovalStatus, BatchDisposition, WorkOrderStatus
 from ..domain.models import Evidence
 from ..domain.policy import PolicyDecision, PolicyEngine
-from ..state import StateStore
+from ..knowledge import KnowledgeService, embedding_provider_from_env
+from ..state import (
+    ConnectionProtocol,
+    StateStoreProtocol,
+    StoreIntegrityError,
+    create_state_store,
+)
 from .envelope import ToolEnvelope
 
 _ROOT = Path(__file__).resolve().parents[3]
@@ -52,6 +58,12 @@ def _canonical(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
 
+def _decode_json(value: Any) -> Any:
+    if isinstance(value, (dict, list)):
+        return value
+    return json.loads(value)
+
+
 def _is_finite_nonnegative_number(value: Any) -> bool:
     return (
         isinstance(value, (int, float))
@@ -70,18 +82,112 @@ class MCPService:
 
     def __init__(
         self,
-        store: StateStore,
+        store: StateStoreProtocol,
         policy: PolicyEngine,
         *,
         auto_initialize_seed: str | Path | None = None,
+        knowledge: KnowledgeService | None = None,
     ) -> None:
         self.store = store
         self.policy = policy
-        self.store.create_schema()
+        self.store.ensure_schema()
         if self.store.get_meta("virtual_time") is None:
             if auto_initialize_seed is None:
                 raise RuntimeError("State store is not initialized")
             self.store.initialize_from_file(auto_initialize_seed)
+        self.knowledge = knowledge
+
+    # ----- optional P1 knowledge tools ---------------------------------
+
+    def search_knowledge(
+        self,
+        *,
+        tenant_id: str,
+        query: str,
+        top_k: int = 3,
+        minimum_confidence: float = 0.6,
+        request_id: str | None = None,
+        actor: str = "Diagnoser",
+    ) -> dict[str, Any]:
+        rid = request_id or self._request_id()
+        knowledge = self._require_knowledge()
+        result = knowledge.search(
+            tenant_id=tenant_id,
+            query=query,
+            top_k=top_k,
+            minimum_confidence=minimum_confidence,
+        )
+        return self._ok(rid, result)
+
+    def create_knowledge_candidate(
+        self,
+        *,
+        tenant_id: str,
+        incident_id: str,
+        trace_id: str,
+        title: str,
+        body: str,
+        tags: list[str],
+        confidence: float,
+        source_evidence_ids: list[str],
+        dedupe_key: str | None = None,
+        request_id: str | None = None,
+        actor: str = "Auditor",
+    ) -> dict[str, Any]:
+        rid = request_id or self._request_id()
+        incident = self.store.get_incident(incident_id)
+        if incident is None:
+            return self._error(rid, "NOT_FOUND", f"Unknown incident {incident_id}")
+        if incident["tenant_id"] != tenant_id or incident["trace_id"] != trace_id:
+            return self._error(
+                rid,
+                "FORBIDDEN",
+                "Knowledge candidate tenant/trace does not match the incident",
+            )
+        result = self._require_knowledge().create_candidate(
+            tenant_id=tenant_id,
+            incident_id=incident_id,
+            trace_id=trace_id,
+            title=title,
+            body=body,
+            tags=tags,
+            confidence=confidence,
+            source_evidence_ids=source_evidence_ids,
+            created_by=actor,
+            dedupe_key=dedupe_key,
+            audit_request_id=rid,
+            audit_created_at=self.store.now(),
+        )
+        audit_ref = result.pop("audit_ref", None)
+        return self._ok(rid, result, audit_ref=audit_ref)
+
+    def review_knowledge_candidate(
+        self,
+        *,
+        knowledge_id: str,
+        decision: str,
+        reason: str,
+        redaction_passed: bool,
+        request_id: str | None = None,
+        actor: str = "Human",
+    ) -> dict[str, Any]:
+        rid = request_id or self._request_id()
+        result = self._require_knowledge().review_candidate(
+            knowledge_id=knowledge_id,
+            decision=decision,
+            reviewer=actor,
+            reason=reason,
+            redaction_passed=redaction_passed,
+            audit_request_id=rid,
+            audit_created_at=self.store.now(),
+        )
+        audit_ref = result.pop("audit_ref", None)
+        return self._ok(rid, result, audit_ref=audit_ref)
+
+    def _require_knowledge(self) -> KnowledgeService:
+        if self.knowledge is None:
+            raise RuntimeError("Knowledge tools are disabled for this runtime")
+        return self.knowledge
 
     # ----- five queries -------------------------------------------------
 
@@ -267,7 +373,7 @@ class MCPService:
             "reason": reason,
         }
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(
                 conn,
                 incident_id=incident_id,
@@ -361,7 +467,7 @@ class MCPService:
             "verification_id": verification_id,
         }
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(conn, incident_id=incident_id)
             self._require_approval(
                 conn,
@@ -402,19 +508,22 @@ class MCPService:
                 for row in rows
             ):
                 raise PermissionError("The Auditor release_guard verification is stale")
-            evidence_ids = json.loads(verification["evidence_ids_json"])
-            observed = json.loads(verification["observed_json"])
+            evidence_ids = _decode_json(verification["evidence_ids_json"])
+            observed = _decode_json(verification["observed_json"])
             verified_hold_states = observed.get("released_batch_holds", {})
             if not evidence_ids or not isinstance(verified_hold_states, dict):
                 raise PermissionError("The Auditor release_guard lacks fresh evidence")
             if any(verified_hold_states.get(row["batch_id"]) != "active" for row in rows):
                 raise PermissionError("The Auditor release_guard does not cover the target holds")
-            conn.execute(
+            cursor = conn.execute(
                 f"""UPDATE sales_holds SET status = 'released', released_at = ?,
                     approval_id = ?, verification_id = ?
-                    WHERE hold_id IN ({placeholders}) AND incident_id = ?""",
+                    WHERE hold_id IN ({placeholders}) AND incident_id = ?
+                    AND status = 'active'""",
                 [now, approval_id, verification_id, *hold_ids, incident_id],
             )
+            if cursor.rowcount != len(hold_ids):
+                raise ValueError("One or more holds changed before release completed")
             data = {"hold_ids": hold_ids, "status": "released"}
             self._upsert_action(
                 conn,
@@ -474,7 +583,7 @@ class MCPService:
             "approval_id": approval_id,
         }
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(
                 conn,
                 incident_id=incident_id,
@@ -572,7 +681,7 @@ class MCPService:
             "assignee": assignee,
         }
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(
                 conn,
                 incident_id=incident_id,
@@ -693,7 +802,7 @@ class MCPService:
             "disposition": disposition,
         }
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(conn, incident_id=incident_id)
             self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
             approval_id = self.store.next_id(conn, "approval")
@@ -777,20 +886,30 @@ class MCPService:
         approval = rows[0]
         request = {"approval_id": approval_id, "decision": target.value, "reason": reason}
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
+            lock_clause = " FOR UPDATE" if self.store.backend_name == "postgresql" else ""
             row = conn.execute(
-                "SELECT status, action_id FROM approvals WHERE approval_id = ?",
+                f"SELECT status, action_id FROM approvals WHERE approval_id = ?{lock_clause}",
                 (approval_id,),
             ).fetchone()
             if row is None:
                 raise ValueError(f"Unknown approval {approval_id}")
             if row["status"] != ApprovalStatus.PENDING.value:
                 raise ValueError(f"Approval is already {row['status']}")
-            conn.execute(
+            cursor = conn.execute(
                 """UPDATE approvals SET status = ?, decided_at = ?, decided_by = ?,
-                   decision_reason = ? WHERE approval_id = ?""",
-                (target.value, now, actor, reason, approval_id),
+                   decision_reason = ? WHERE approval_id = ? AND status = ?""",
+                (
+                    target.value,
+                    now,
+                    actor,
+                    reason,
+                    approval_id,
+                    ApprovalStatus.PENDING.value,
+                ),
             )
+            if cursor.rowcount != 1:
+                raise ValueError("Approval changed before the decision was committed")
             action_status = {
                 ApprovalStatus.APPROVED: "approved",
                 ApprovalStatus.REJECTED: "rejected",
@@ -873,7 +992,7 @@ class MCPService:
             "sha256": digest,
         }
 
-        def mutate(conn: sqlite3.Connection, now: str) -> dict[str, Any]:
+        def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(conn, incident_id=incident_id)
             if action_id is not None:
                 self._require_action_reference(
@@ -939,7 +1058,7 @@ class MCPService:
         idempotency_key: str,
         decision: PolicyDecision,
         request: dict[str, Any],
-        mutation: Callable[[sqlite3.Connection, str], dict[str, Any]],
+        mutation: Callable[[ConnectionProtocol, str], dict[str, Any]],
         allow_when_approval_required: bool = False,
     ) -> dict[str, Any]:
         if not isinstance(idempotency_key, str) or not idempotency_key.strip():
@@ -1043,7 +1162,7 @@ class MCPService:
             return self._error(rid, "FORBIDDEN", str(exc))
         except PermissionError as exc:
             return self._error(rid, "APPROVAL_INVALID", str(exc))
-        except (KeyError, ValueError, sqlite3.IntegrityError) as exc:
+        except (KeyError, ValueError, sqlite3.IntegrityError, StoreIntegrityError) as exc:
             return self._error(rid, "INVALID_STATE", str(exc))
 
     def _audit_denial(
@@ -1077,7 +1196,7 @@ class MCPService:
 
     @staticmethod
     def _require_approval(
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         approval_id: str | None,
         incident_id: str,
@@ -1105,8 +1224,8 @@ class MCPService:
         if row["status"] != ApprovalStatus.APPROVED.value:
             raise PermissionError(f"Approval status is {row['status']}, not approved")
         if row["tool_name"] != "create_approval":
-            raise PermissionError("Approval has already been consumed by this action")
-        approved_request = json.loads(row["request_json"])
+            raise ValueError("Approval has already been consumed by this action")
+        approved_request = _decode_json(row["request_json"])
         if (
             row["action_type"] != action_type
             or approved_request.get("requested_action_type") != action_type
@@ -1121,7 +1240,7 @@ class MCPService:
 
     @staticmethod
     def _require_incident_scope(
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         incident_id: str,
         store_id: str | None = None,
@@ -1134,7 +1253,7 @@ class MCPService:
         ).fetchone()
         if row is None:
             raise ValueError(f"Unknown incident {incident_id}")
-        case = json.loads(row["case_json"])
+        case = _decode_json(row["case_json"])
         incident_store = str(row["store_id"])
         if store_id is not None and store_id != incident_store:
             raise ScopeViolation("Requested store does not belong to the incident")
@@ -1169,7 +1288,7 @@ class MCPService:
 
     @staticmethod
     def _ensure_new_action(
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         incident_id: str,
         action_id: str,
@@ -1186,7 +1305,7 @@ class MCPService:
 
     @staticmethod
     def _require_action_reference(
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         incident_id: str,
         action_id: str,
@@ -1202,7 +1321,7 @@ class MCPService:
 
     @staticmethod
     def _upsert_action(
-        conn: sqlite3.Connection,
+        conn: ConnectionProtocol,
         *,
         action_id: str,
         incident_id: str,
@@ -1364,20 +1483,31 @@ class MCPService:
         }
 
 
-_SERVICE_CACHE: tuple[Path, MCPService] | None = None
+_SERVICE_CACHE: tuple[str, MCPService] | None = None
 
 
 def default_service() -> MCPService:
-    """Return a process-local service bound to ``DIANXUN_STATE_DB``."""
+    """Return a process-local service bound to SQLite or ``DIANXUN_DATABASE_URL``."""
     global _SERVICE_CACHE
-    db_path = Path(os.environ.get("DIANXUN_STATE_DB", str(DEFAULT_DB_PATH))).resolve()
-    if _SERVICE_CACHE is None or _SERVICE_CACHE[0] != db_path:
+    target = os.environ.get("DIANXUN_DATABASE_URL") or os.environ.get(
+        "DIANXUN_STATE_DB", str(DEFAULT_DB_PATH)
+    )
+    store = create_state_store(target)
+    cache_key = f"{store.backend_name}:{store.database_identity}"
+    if _SERVICE_CACHE is None or _SERVICE_CACHE[0] != cache_key:
+        auto_seed = DEFAULT_SEED_PATH
+        if store.backend_name == "postgresql" and os.environ.get("DIANXUN_AUTO_SEED") != "1":
+            auto_seed = None
+        knowledge = None
+        if os.environ.get("DIANXUN_ENABLE_P1_TOOLS") == "1":
+            knowledge = KnowledgeService(store, embedding_provider_from_env())
         _SERVICE_CACHE = (
-            db_path,
+            cache_key,
             MCPService(
-                StateStore(db_path),
+                store,
                 PolicyEngine(DEFAULT_POLICY_PATH),
-                auto_initialize_seed=DEFAULT_SEED_PATH,
+                auto_initialize_seed=auto_seed,
+                knowledge=knowledge,
             ),
         )
     return _SERVICE_CACHE[1]

@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import time
 import uuid
@@ -24,7 +25,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-_DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "trace.db"
+_DEFAULT_DB_PATH = (
+    Path(
+        os.environ.get(
+            "DIANXUN_TRACE_DB",
+            Path(__file__).resolve().parent.parent.parent / "data" / "trace.db",
+        )
+    )
+    .expanduser()
+    .resolve()
+)
 _DB_PATH: ContextVar[Path] = ContextVar("dianxun_trace_db", default=_DEFAULT_DB_PATH)
 
 

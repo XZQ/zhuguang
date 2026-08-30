@@ -16,12 +16,19 @@
 from __future__ import annotations
 
 import uuid
+from typing import TYPE_CHECKING
 
 from .. import trace
-from ..knowledge import store as _kb
+
+if TYPE_CHECKING:
+    from ..knowledge import KnowledgeService
 
 
-def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
+def review_report(
+    task_ctx: dict,
+    trace_id: str | None = None,
+    knowledge: KnowledgeService | None = None,
+) -> dict:
     """对已闭环的任务上下文生成复盘报告 + 沉淀知识。
 
     Args:
@@ -55,7 +62,7 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
         # 经验教训
         lessons = _extract_lessons(task_ctx, root_cause, validation)
 
-        # 沉淀知识条目(过质量门:去重/置信度)
+        # 只生成待审核候选；正式发布必须由独立人工质量门完成。
         knowledge_entries = []
         for a in task_ctx.get("anomalies", []):
             entry = {
@@ -72,12 +79,20 @@ def review_report(task_ctx: dict, trace_id: str | None = None) -> dict:
                     validation.get("confidence", 0.8),
                 ),
             }
-            # 低置信度标待人工,不入正式库
-            if entry["confidence"] < 0.6:
-                entry["status"] = "待人工确认"
-            else:
-                entry["status"] = "已入库"
-                _kb.add(entry["title"], entry["body"], entry["tags"], entry["confidence"], tid)
+            entry["status"] = "pending_human_review"
+            if knowledge is not None:
+                persisted = knowledge.create_candidate(
+                    tenant_id=str(task_ctx.get("tenant_id", "legacy-demo")),
+                    incident_id=str(task_ctx.get("task_id", task_id)),
+                    trace_id=tid,
+                    title=entry["title"],
+                    body=entry["body"],
+                    tags=entry["tags"],
+                    confidence=float(entry["confidence"]),
+                    source_evidence_ids=[],
+                    created_by="Auditor",
+                )
+                entry["knowledge_id"] = persisted["knowledge_id"]
             knowledge_entries.append(entry)
 
         # Skill 更新建议
@@ -153,8 +168,9 @@ def review_incident(
     verification: dict,
     scenario: dict,
     trace_id: str,
+    knowledge: KnowledgeService | None = None,
 ) -> dict:
-    """Generate an incident-scoped review without pretending P1 RAG is enabled."""
+    """Generate a review and, when configured, persist a pending candidate."""
     incident_id = incident["incident_id"]
     with trace.span(
         "review-report",
@@ -186,6 +202,42 @@ def review_incident(
                 }
             )
 
+        knowledge_status: dict[str, object] = {
+            "retrieval_status": "disabled" if knowledge is None else "enabled",
+            "candidate_status": "pending_not_persisted",
+            "reason": "Knowledge service is not configured for this runtime",
+        }
+        if knowledge is not None:
+            evidence_ids = sorted(
+                {
+                    evidence_id
+                    for hypothesis in hypotheses
+                    for evidence_id in hypothesis.get("supporting_evidence_ids", [])
+                }
+            )
+            candidate = knowledge.create_candidate(
+                tenant_id=incident["tenant_id"],
+                incident_id=incident_id,
+                trace_id=trace_id,
+                title=f"冷柜失温处置经验·{top.get('label') if top else '证据不足'}",
+                body=(
+                    f"根因候选:{top.get('label') if top else 'insufficient_evidence'};"
+                    f"结论:{verification.get('result')};"
+                    "约束:先遏制、设备恢复不等于商品安全、Auditor独立重查"
+                ),
+                tags=["冷柜失温", top.get("label", "证据不足") if top else "证据不足"],
+                confidence=float(top.get("confidence", 0.0)) if top else 0.0,
+                source_evidence_ids=evidence_ids,
+                created_by="Auditor",
+            )
+            knowledge_status = {
+                "retrieval_status": "enabled",
+                "candidate_status": candidate["review_status"],
+                "knowledge_id": candidate["knowledge_id"],
+                "deduplicated": candidate["deduplicated"],
+                "reason": "Human review and redaction approval are required before retrieval",
+            }
+
         report = {
             "report_id": f"review:{incident_id}",
             "incident_id": incident_id,
@@ -212,11 +264,7 @@ def review_incident(
                 "device_recovery_does_not_release_goods",
                 "auditor_requeries_business_state",
             ],
-            "knowledge": {
-                "retrieval_status": "disabled",
-                "candidate_status": "pending_human_review",
-                "reason": "P1 RAG is outside the P0 completion claim",
-            },
+            "knowledge": knowledge_status,
             "skill_update_suggestions": [],
         }
         sp.output = {

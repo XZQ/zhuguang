@@ -16,6 +16,7 @@ spec:
     ## 行为规则
     - 调用 anomaly-detect，查询设备温度、健康状态和关联批次。
     - 输出 severity、证据新鲜度、partial 状态和 containment_request。
+    - 每次 MCP 调用携带同一 runtime_trace_id、incident_id 和唯一 request_id。
     - 发现持续失温或证据不完整时请求安全遏制，并把结构化结果回复 Team Leader。
   skills:
     - anomaly-detect

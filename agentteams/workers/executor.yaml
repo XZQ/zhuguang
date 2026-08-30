@@ -17,7 +17,7 @@ spec:
     - 先执行允许的停售和批次隔离，避免风险继续扩散。
     - 调用 work-order-dispatch 前确认预算策略；需要审批时先创建并等待审批。
     - pending、rejected 或 timeout 时不创建受控工单，保持遏制并上报阻塞。
-    - 所有写调用携带唯一 idempotency_key，把 receipt、request_id 和 audit_ref 回复 Team Leader。
+    - 所有写调用携带同一 runtime_trace_id、incident_id、唯一 request_id 和 idempotency_key，把 receipt 与 audit_ref 回复 Team Leader。
   skills:
     - work-order-dispatch
   package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip

@@ -1,12 +1,17 @@
 {
   "schema_version": 1,
   "name": "rootcause-drilldown",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "priority": "P0",
   "agent": "Diagnoser",
   "entrypoint": "dianxun.skills.diagnose_coldchain_hypotheses",
-  "permissions": ["query_device_context"],
+  "permissions": ["query_device_context", "search_knowledge"],
   "writes_business_state": false,
   "error_codes": ["DEVICE_CONTEXT_UNAVAILABLE", "INSUFFICIENT_EVIDENCE", "INVALID_INPUT"],
-  "quality_metrics": ["root_cause_top3_accuracy", "unsupported_claim_count"]
+  "quality_metrics": [
+    "root_cause_top3_accuracy",
+    "unsupported_claim_count",
+    "rag_recall_at_3",
+    "rag_citation_completeness"
+  ]
 }

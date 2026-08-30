@@ -1,10 +1,10 @@
 # 逐光｜MCP 工具连接层接口契约
 
-> P0 唯一口径：12 个有状态 MCP 函数，包括 5 个查询与 7 个受控动作。当前实现位于 `src/dianxun/mcp/p0.py`，协议 Adapter 位于 `src/dianxun/mcp/server.py`。
+> P0 唯一口径：12 个有状态 MCP 函数，包括 5 个查询与 7 个受控动作。另有 3 个默认关闭的 P1 知识工具。当前实现位于 `src/dianxun/mcp/p0.py`，协议 Adapter 位于 `src/dianxun/mcp/server.py`。
 
 ## 1. 实现边界
 
-当前 Server 通过 Streamable HTTP / JSON-RPC 暴露工具，后端是同一 SQLite 业务世界。它用于比赛 Demo 和确定性评测，不是已接入的真实 POS、WMS、IoT、审批或维修商 API。
+当前 Server 通过 Streamable HTTP / JSON-RPC 暴露工具。SQLite 是比赛 Demo 与确定性评测后端；PolarDB PostgreSQL 是可选部署后端，两者通过同一 StateStore 协议进入相同业务世界。它仍不是已接入的真实 POS、WMS、IoT、审批或维修商 API。
 
 所有响应使用统一 Envelope：
 
@@ -29,7 +29,7 @@
 - `partial`：返回可用子结果和缺失项；调用方必须显式降级，关键验证不得据此关闭。
 - `error`：包含稳定错误码，不用空数组伪装成功。
 - 查询与动作都返回 `request_id`；Evidence 可通过 `incident_id` 关联事件。
-- 每次写操作必须携带 `idempotency_key`，并进入审计记录。
+- 7 个 P0 受控动作必须携带 `idempotency_key` 并进入 Audit Log；P1 候选以 `tenant_id + dedupe_key` 去重，审核以知识条目的终态约束防止重复改写。
 
 ## 2. 五个查询函数
 
@@ -42,6 +42,8 @@
 | `query_approval` | Auditor | approval/action/incident | 审批状态、决定人和原因 | 未批准或超时不能执行受控动作 |
 
 查询函数只读，但仍记录请求 ID 和 Evidence；它们的返回值是业务验证依据，不是 Agent 的自然语言复述。
+
+工具级白名单允许独立复查所需的交叉读取：`query_device_context` 和 `query_inventory_batches` 可由 Sentry、Diagnoser、Auditor 调用，`query_approval` 可由 Executor、Auditor 调用，其余查询保持表中角色；共享 `AuthenticatedClient` 只能进入这些只读函数。任何 Actor-bound Token 调用白名单外工具都返回 `FORBIDDEN`。
 
 ## 3. 七个受控动作
 
@@ -56,6 +58,16 @@
 | `record_manual_evidence` | Human / ScenarioEngine | 记录测温、照片 URI/哈希或人工说明；不得嵌入敏感原件 | 相同证据动作不重复写入 |
 
 `decide_approval` 和 `record_manual_evidence` 的调用身份必须由可信入口注入。HTTP Adapter 不接受客户端用普通参数伪造 Human。
+
+### 默认关闭的三个 P1 知识工具
+
+| 函数 | 调用者 | 约束 |
+|---|---|---|
+| `search_knowledge` | Diagnoser | 只返回 `published + redaction passed + confidence gate` 条目，并保留事故、Trace 和 Evidence 引用 |
+| `create_knowledge_candidate` | Auditor | 只创建 pending 候选；按租户去重，不得自动发布 |
+| `review_knowledge_candidate` | Human / HQ Reviewer | 只有可信映射的人工身份可批准或拒绝；批准前必须脱敏通过 |
+
+通过 `DIANXUN_ENABLE_P1_TOOLS=1` 启用。P0 `mcp-tools` 仍固定输出 12 个函数，使用 `mcp-tools --include-p1` 才显示 15 个。
 
 ## 4. Policy 与权限
 
@@ -82,12 +94,12 @@
 
 协议 Adapter 提供两种可选 Bearer 模式：
 
-- `MCP_ACTOR_TOKENS_JSON`：将每个 Token 映射到可信 Actor，并以该 Actor 覆盖工具默认角色；这是当前唯一能验证“调用身份 → 业务角色”绑定的本地机制。
-- `MCP_TOKEN`：只验证共享 Token，不能区分 Sentry、Diagnoser、Executor、Auditor 或 Human，不应作为细粒度授权证明。
+- `MCP_ACTOR_TOKENS_JSON`：将每个 Token 映射到可信 Actor；Adapter 再按每个工具的角色白名单授权，错误角色即使持有有效 Token 也返回 `FORBIDDEN`。这是当前唯一能验证“调用身份 → 业务角色 → 工具权限”绑定的本地机制。
+- `MCP_TOKEN`：只验证共享 Token，不能区分 Sentry、Diagnoser、Executor、Auditor 或 Human；HTTP 边界仅允许它调用只读工具，所有状态写返回 `FORBIDDEN`。
 
-两者均未配置时，Adapter 为本机确定性 Demo 保留匿名兼容模式，工具使用契约中的默认 Actor。该模式只能在回环地址或受控测试环境使用；任何能访问 `/mcp` 的客户端都不应因此被视为可信 Worker。
+两者均未配置时，Adapter 只为本机确定性 Demo 保留匿名兼容模式，工具使用契约中的默认 Actor；非回环监听会拒绝启动。
 
-当前 `agentteams/mcp/deployment.yaml` 没有注入上述凭证映射。AgentTeams `v1.2.3` Worker 运行时发送的 `gatewayKey` 是动态值，而 Worker CR 的 `mcpServers` 静态字段只声明 `name/url/transport`；仓库静态 YAML 无法提前证明这些动态 Key 已由 MCP 验证并映射到正确 Actor。因此当前状态是：**本地 Adapter 具备可选 Bearer 能力，AgentTeams 直连部署的身份绑定仍为外部待验证**。
+当前 `agentteams/mcp/deployment.yaml` 已强制引用 `dianxun-agent-identities` Secret，Secret 缺失时 Pod 不会就绪。AgentTeams `v1.2.3` Worker 的 `gatewayKey` 是动态值，而 Worker CR 只能静态声明 `name/url/transport`；仍需在目标环境创建映射并完成正负向烟测。因此当前状态是：**部署默认失败关闭，动态 Worker 身份绑定仍为外部待验证**。
 
 目标环境必须在可信网关或 MCP Adapter 处完成动态身份映射，限制 Service 网络入口，并至少验证：无 Token 返回 401、错误 Token 返回 401、错误角色的受控动作被拒绝、正确角色写入可追溯 Actor、密钥可轮换和撤销。未取得这些证据前，不得宣称“AgentTeams → MCP 鉴权已闭环”。
 
@@ -95,7 +107,7 @@
 
 ### 幂等
 
-- 所有动作必须提供非空 `idempotency_key`。
+- 所有 P0 动作必须提供非空 `idempotency_key`；P1 候选与审核使用上文的实体级幂等约束。
 - 同键同请求返回同一业务结果，不产生第二个 hold、approval 或 workorder。
 - 同键不同语义必须拒绝，不能静默覆盖历史动作。
 
@@ -133,7 +145,7 @@ uv run dianxun mcp-call query_device_context --arguments '{"device_id":"FROST-S0
 uv run --group dev python -m unittest -v tests.test_stateful_core
 ```
 
-`mcp-tools` 的输出必须与 `config/project-facts.json` 中 12 个名称完全一致。新增、删除或重命名函数时，必须同步 Server registry、Schema、测试、README、本文和 Worker Skill。
+`mcp-tools` 的 P0 输出必须与 `config/project-facts.json` 中 12 个名称完全一致；`--include-p1` 输出 15 个。新增、删除或重命名函数时，必须同步 Server registry、Schema、测试、README、本文和 Worker Skill。
 
 ## 7. 生产凭证与替换边界
 

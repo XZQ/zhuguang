@@ -60,7 +60,7 @@
 | 用途 | 将压缩机故障、传感器故障、门未关闭等候选按证据排序，输出 Top-K 与检查计划。 |
 | 输入输出 | 输入 anomaly、设备健康/门/电源/维护证据；输出 ranked hypotheses、confidence、supporting/contradicting evidence 和 next checks。 |
 | 调用条件 | 遏制完成且 Diagnoser 获得设备上下文后调用。 |
-| 依赖工具 | `query_device_context`；P1 RAG 未启用时明确记录 disabled。 |
+| 依赖工具 | `query_device_context`；P1 工具启用时可调用 `search_knowledge`，关闭或无命中时明确记录 disabled/no hits。 |
 | 失败处理 | 证据不足时保留多个假设并降低置信度；工具 partial 时输出证据缺口，不硬编码压缩机故障。 |
 | 安全边界 | 只读；不能因跨店或相关性证据直接写入“确定根因”。 |
 | 复用价值 | Top-K + 证据缺口模式可复用于设备、供应链和运营异常诊断。 |
@@ -102,7 +102,7 @@
 | 用途 | 按 incident/batch 关联时间线、根因、动作、验证和改进项，输出复盘与知识候选。 |
 | 输入输出 | 输入 IncidentCase、actions、verifications、Evidence refs；输出 review、lessons、knowledge candidates 和 Skill 建议。 |
 | 调用条件 | Auditor 验证通过且事件进入 LEARN 时调用；未安全关闭的场景不伪造完成复盘。 |
-| 依赖工具 | IncidentService 快照和本地 Trace/Evidence；当前不依赖真实 RAG。 |
+| 依赖工具 | IncidentService 快照和 Trace/Evidence；P1 启用时调用 `create_knowledge_candidate`，但没有审核/发布权限。 |
 | 失败处理 | 证据不完整时标记 partial；知识候选保持 pending，不自动发布或宣称未来检索命中。 |
 | 安全边界 | 输出需脱敏；不得自动修改生产 Skill、Policy 或正式知识库。 |
 | 复用价值 | 可复用于任何需要审计复盘和人工治理的事件闭环。 |

@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..domain.enums import WorkOrderStatus
-from ..state import StateStore
+from ..state import StateStoreProtocol
 from ..validation import validate_json
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ class ScenarioEngine:
 
     def __init__(
         self,
-        store: StateStore,
+        store: StateStoreProtocol,
         scenario_path: str | Path,
         *,
         service: MCPService | None = None,

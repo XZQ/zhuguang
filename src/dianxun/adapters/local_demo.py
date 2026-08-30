@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,7 @@ from ..domain import (
     Severity,
     WorkStatus,
 )
+from ..knowledge import KnowledgeService, embedding_provider_from_env
 from ..mcp.p0 import DEFAULT_POLICY_PATH, DEFAULT_SEED_PATH, MCPService
 from ..scenarios import ScenarioEngine
 from ..skills import (
@@ -31,7 +33,7 @@ from ..skills import (
     outcome_verify,
     review_incident,
 )
-from ..state import StateStore
+from ..state import StateStoreProtocol, create_state_store
 
 
 class LocalDemoAdapter:
@@ -45,19 +47,29 @@ class LocalDemoAdapter:
         policy_path: str | Path = DEFAULT_POLICY_PATH,
         seed_path: str | Path = DEFAULT_SEED_PATH,
         trace_db_path: str | Path | None = None,
+        enable_rag: bool | None = None,
     ) -> None:
-        state_path = Path(db_path)
-        self.store = StateStore(state_path)
-        self.trace_db_path = (
-            Path(trace_db_path)
-            if trace_db_path is not None
-            else state_path.with_suffix(".trace.db")
-        )
+        self.store: StateStoreProtocol = create_state_store(db_path)
+        if trace_db_path is not None:
+            self.trace_db_path = Path(trace_db_path)
+        elif self.store.backend_name == "sqlite":
+            self.trace_db_path = Path(db_path).with_suffix(".trace.db")
+        else:
+            self.trace_db_path = Path(
+                os.environ.get("DIANXUN_TRACE_DB", "demo/state/polardb.trace.db")
+            ).resolve()
         self.policy = PolicyEngine(policy_path)
+        rag_enabled = (
+            os.environ.get("DIANXUN_RAG_ENABLED") == "1" if enable_rag is None else enable_rag
+        )
+        self.knowledge = (
+            KnowledgeService(self.store, embedding_provider_from_env()) if rag_enabled else None
+        )
         self.mcp = MCPService(
             self.store,
             self.policy,
             auto_initialize_seed=seed_path,
+            knowledge=self.knowledge,
         )
         self.scenario = ScenarioEngine(self.store, scenario_path, service=self.mcp)
         self.incidents = IncidentService(self.store)
@@ -287,6 +299,7 @@ class LocalDemoAdapter:
                     verification=verification,
                     scenario=definition,
                     trace_id=trace_id,
+                    knowledge=self.knowledge,
                 )
                 phase_outputs["LEARN"] = review
                 final_case = self.incidents.close_after_learning(incident_id)
@@ -407,6 +420,7 @@ class LocalDemoAdapter:
                 store_id=store_id,
                 device_id=device_id,
                 trace_id=trace_id,
+                knowledge=self.knowledge,
             )
             self._append_evidence(incident_id, diagnosis["evidence"])
             self.incidents.replace_hypotheses(incident_id, diagnosis["hypotheses"])

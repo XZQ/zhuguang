@@ -18,7 +18,7 @@ from .enums import (
 from .models import Action, Decision, Evidence, Hypothesis, IncidentCase, Verification
 
 if TYPE_CHECKING:
-    from ..state.store import StateStore
+    from ..state import StateStoreProtocol
 
 
 class InvalidTransition(ValueError):
@@ -47,7 +47,7 @@ class IncidentService:
     not assign ``RESOLVED`` or ``CLOSED`` directly.
     """
 
-    def __init__(self, store: StateStore) -> None:
+    def __init__(self, store: StateStoreProtocol) -> None:
         self.store = store
 
     def create(self, case: IncidentCase) -> IncidentCase:
@@ -234,10 +234,19 @@ class IncidentService:
         case.verifications.append(verification)
         with self.store.transaction() as conn:
             conn.execute(
-                """INSERT OR REPLACE INTO verifications(
+                """INSERT INTO verifications(
                     verification_id, incident_id, subject, result, verifier,
                     evidence_ids_json, expected_json, observed_json, verified_at
-                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(verification_id) DO UPDATE SET
+                    incident_id = excluded.incident_id,
+                    subject = excluded.subject,
+                    result = excluded.result,
+                    verifier = excluded.verifier,
+                    evidence_ids_json = excluded.evidence_ids_json,
+                    expected_json = excluded.expected_json,
+                    observed_json = excluded.observed_json,
+                    verified_at = excluded.verified_at""",
                 (
                     verification.verification_id,
                     incident_id,

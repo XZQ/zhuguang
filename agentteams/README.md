@@ -11,15 +11,17 @@ agentteams/
   team.yaml
   workers/*.yaml
   mcp/{pvc,deployment,service}.yaml
+  overlays/polardb/{kustomization,deployment-patch}.yaml
 packages/dianxun-worker/
   manifest.json
   config/{SOUL,AGENTS}.md
   skills/<6 个 P0 Skill>/...
 packages/dianxun-mcp/Dockerfile
 dist/dianxun-worker.zip
+dist/dianxun-worker.provenance.json
 ```
 
-Worker YAML 的 `spec.package` 指向公共仓库中真实的 HTTP ZIP，而不是普通目录。ZIP 的 SHA-256 位于 `dist/dianxun-worker.zip.sha256`，当前值为 `0a905c2b33dc28fb0b2427349fa2ed59af35c1c85afee9b1e54a7f1f7c832fea`。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须将该镜像推送到可访问的镜像仓库并替换镜像地址。
+Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP。当前 SHA-256 为 `3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c`；`dist/dianxun-worker.provenance.json` 还记录每个 Skill 的版本与内容哈希。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为集群可访问的镜像。
 
 当前仓库只提交脱敏、可复现的配置。只有真实平台产生的 Team Room、委派消息、MCP 调用和资源状态才是动态证据；本地契约测试不能替代它们。
 
@@ -35,7 +37,7 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内当前有 5 项 AgentTeams artifact 契约测试；整个项目的 42 项自动化测试和六场景评测也已通过。这些结果验证静态包、业务核心和本地 MCP 行为，不验证平台动态委派或 `qwen3.5-plus` 模型效果。
+仓库内有 5 项 AgentTeams artifact 测试和 3 项动态证据校验器测试；全量发现 55 项测试，其中 53 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
 
 ## 2. 模型、凭证、费用与 Skill 类型
 
@@ -60,6 +62,9 @@ kubectl set image -f agentteams/mcp/deployment.yaml \
   mcp=REGISTRY/dianxun-mcp:0.2.0 --local -o yaml > /tmp/dianxun-mcp-deployment.yaml
 
 kubectl apply -f agentteams/namespace.yaml
+kubectl -n dianxun create secret generic dianxun-agent-identities \
+  --from-file=actor-tokens-json=/secure/local/actor-tokens.json \
+  --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f agentteams/mcp/pvc.yaml
 kubectl apply -f /tmp/dianxun-mcp-deployment.yaml
 kubectl apply -f agentteams/mcp/service.yaml
@@ -67,7 +72,9 @@ kubectl -n dianxun rollout status deployment/dianxun-mcp
 kubectl -n dianxun get pod,service,pvc
 ```
 
-在本地镜像已加载且名称不变时，可直接 apply 原始 `deployment.yaml`。MCP 以单副本运行并使用 PVC 保存 SQLite 状态；空卷首次启动时从固定 Seed 初始化。Service 的集群内地址为：
+`/secure/local/actor-tokens.json` 必须位于仓库外并限制访问；不要把 Secret YAML、命令输出或真实 Token 保存到仓库和录屏中。
+
+在本地镜像已加载且名称不变时，可直接 apply 原始 `deployment.yaml`。MCP 以单副本运行并使用 PVC 保存 SQLite 状态与 Trace；空卷首次启动时从固定 Seed 初始化。Deployment 强制引用 `dianxun-agent-identities` Secret，未创建时 Pod 不会就绪。Service 的集群内地址为：
 
 ```text
 http://dianxun-mcp.dianxun.svc.cluster.local/mcp
@@ -77,12 +84,64 @@ http://dianxun-mcp.dianxun.svc.cluster.local/mcp
 
 HTTP Adapter 支持：
 
-- `MCP_TOKEN`：共享 Bearer 请求认证，不区分 Worker 角色；
+- `MCP_TOKEN`：共享 Bearer 请求认证，不区分 Worker 角色，只允许只读工具；
 - `MCP_ACTOR_TOKENS_JSON`：Bearer Token → Actor 映射，可将服务身份绑定到业务角色。
 
-未配置时 Adapter 为本地兼容保留匿名模式。当前 `deployment.yaml` 没有注入两者，Worker CR 的 `mcpServers` 也只支持 `name/url/transport`；AgentTeams `v1.2.3` 运行时使用的 Worker `gatewayKey` 是动态值，不能在仓库静态 YAML 中预填。因此原始 Deployment 只适合受控比赛网络中的接线骨架，不是生产鉴权模板，也不能据此宣称 Worker 身份已经验证。
+未配置时 Adapter 只在回环地址保留匿名 Demo；非回环监听会拒绝启动。`deployment.yaml` 已引用 Actor 映射 Secret，但 Worker CR 的 `mcpServers` 只支持 `name/url/transport`，动态 `gatewayKey` 不能预填进仓库。因此必须在 Worker 创建后由部署者把真实动态身份写入集群 Secret 或可信网关；静态引用本身不能证明 Worker 身份已经验证。
 
-目标环境必须在 Worker 创建后，通过可信网关或运行时 Secret 将动态 Bearer 身份映射到正确 Actor，并限制 MCP Service 的网络入口。动态验收至少包括：无 Token/错误 Token 返回 401；错误角色执行受控动作得到 `FORBIDDEN`；正确调用的 Audit Log 记录实际 Actor；密钥可轮换/撤销。任何日志、命令、视频和提交都不得出现 Token 或 `gatewayKey` 原文。
+目标环境必须在 Worker 创建后，通过可信网关或运行时 Secret 将动态 Bearer 身份映射到正确 Actor，并限制 MCP Service 的网络入口。Adapter 会再次按工具级角色白名单授权。动态验收至少包括：无 Token/错误 Token 返回 401；错误角色调用不属于自己的查询或动作得到 `FORBIDDEN`；正确调用的 Audit Log 记录实际 Actor；密钥可轮换/撤销。任何日志、命令、视频和提交都不得出现 Token 或 `gatewayKey` 原文。
+
+### PolarDB overlay
+
+`agentteams/overlays/polardb` 将状态库切换为 PolarDB PostgreSQL，并启用 3 个知识工具和远程 embedding。它只引用以下 Secret，不提交真实值：
+
+- `dianxun-polardb-runtime/database-url`：受 RLS 约束的运行账号 DSN；
+- `dianxun-embedding-runtime/{endpoint,model,api-key}`：HTTPS embedding 服务配置；
+- `dianxun-agent-identities/actor-tokens-json`：动态 Token → Actor 映射。
+
+数据库管理员需先从可信环境按顺序执行：
+
+```powershell
+uv run dianxun db-bootstrap --profile core --profile security --profile cron --profile archive
+```
+
+迁移/安全管理员还要为每个数据库登录账号登记不可自改的 principal scope。下面只展示无密码示例，角色名、租户和门店需按目标环境替换；密码、DSN 和轮换配置必须由 PolarDB/Kubernetes Secret 或外部密钥系统完成：
+
+```sql
+-- 门店运行账号：可执行状态闭环，但被限制在 demo / S03。
+CREATE ROLE dianxun_app_demo_s03 LOGIN INHERIT;
+GRANT dianxun_runtime TO dianxun_app_demo_s03;
+INSERT INTO dianxun_principal_scope(database_role, tenant_id, runtime_role, store_id)
+VALUES ('dianxun_app_demo_s03', 'demo', 'runtime', 'S03')
+ON CONFLICT(database_role) DO UPDATE SET
+    tenant_id = EXCLUDED.tenant_id,
+    runtime_role = EXCLUDED.runtime_role,
+    store_id = EXCLUDED.store_id;
+
+-- 租户总部账号：可看该租户全部门店及供应商信息，不能跨租户。
+CREATE ROLE dianxun_hq_demo LOGIN INHERIT;
+GRANT dianxun_hq TO dianxun_hq_demo;
+INSERT INTO dianxun_principal_scope(database_role, tenant_id, runtime_role, store_id)
+VALUES ('dianxun_hq_demo', 'demo', 'hq', NULL)
+ON CONFLICT(database_role) DO UPDATE SET
+    tenant_id = EXCLUDED.tenant_id,
+    runtime_role = EXCLUDED.runtime_role,
+    store_id = EXCLUDED.store_id;
+
+-- 业务只读账号：只能 SELECT 已授权业务表，仍受租户和门店 RLS 限制。
+CREATE ROLE dianxun_ro_demo_s03 LOGIN INHERIT;
+GRANT dianxun_business_ro TO dianxun_ro_demo_s03;
+INSERT INTO dianxun_principal_scope(database_role, tenant_id, runtime_role, store_id)
+VALUES ('dianxun_ro_demo_s03', 'demo', 'runtime', 'S03')
+ON CONFLICT(database_role) DO UPDATE SET
+    tenant_id = EXCLUDED.tenant_id,
+    runtime_role = EXCLUDED.runtime_role,
+    store_id = EXCLUDED.store_id;
+```
+
+`dianxun_principal_scope` 对运行、HQ 和业务只读组角色均不可写，只有迁移/安全管理员可以配置；租户 HQ 不得登记为 `tenant_id='*'`。每类账号应使用独立 DSN 直连，不能依赖 `SET ROLE` 伪装身份，因为 RLS 以 `session_user` 为准。上线门禁必须用三类独立登录分别验证 `SELECT session_user, * FROM dianxun_current_scope()`、跨门店/跨租户不可见、只读写入失败、租户 HQ 仅能访问本租户供应商信息。
+
+随后执行 `kubectl apply -k agentteams/overlays/polardb`。迁移 DSN 与运行 DSN 必须分离；运行账号不得拥有建角色、建扩展或 DELETE 权限。`pg_cron` 只入队，`dianxun_cron_health` 用于监控；OSS foreign table 由云环境预配置，归档函数只复制、复核并记 manifest，不删除源分区。
 
 ## 4. 应用 AgentTeams 资源
 
@@ -126,9 +185,17 @@ kubectl -n dianxun get deployment,pod,service,pvc
 
 保存证据前必须脱敏。若当前机器没有 Docker、Kubernetes 或 AgentTeams，不得把 ZIP 校验、YAML 解析或本地 MCP 调用写成“真实 AgentTeams 已跑通”。
 
+将脱敏后的双分支证据整理为 `schemas/agentteams-run-evidence.v1.schema.json` 对应的 JSON，再运行：
+
+```powershell
+uv run dianxun agentteams-verify <evidence.json> --output <gate-report.json>
+```
+
+校验器要求正确角色-阶段委派、四类 Worker 工具调用、人工审批、包/Skill provenance、安全正负向结果、唯一关联 ID 和非占位 Trace 哈希。它只校验提交的证据包，不能生成或替代真实平台证据。
+
 ## 安全说明
 
 - YAML 和 ZIP 不含 API Key、审批身份或固定 Bearer Token。
-- 当前 ClusterIP 是比赛环境的内部直连接线骨架，静态 Deployment 未注入动态 Worker 身份映射；生产环境必须由可信网关/Adapter 完成认证和 Actor 授权，并限制后端 Service 的网络入口。
+- 当前 ClusterIP 是比赛环境的内部直连接线骨架，Deployment 只声明 Actor Secret 引用，仓库未注入真实动态 Worker 映射值；生产环境必须由可信网关/Adapter 完成认证和工具级 Actor 授权，并限制后端 Service 的网络入口。
 - 请求带 Bearer Header 只证明客户端发送了字段，不证明服务端已验证；取得 401、`FORBIDDEN` 和正确 Actor 审计证据前，状态保持“外部待验证”。
 - 冷链阈值和 Seed 仅用于比赛 Demo，不替代 HACCP、设备说明书、食品安全人员判断或当地监管要求。

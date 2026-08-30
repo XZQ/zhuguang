@@ -16,7 +16,9 @@ spec:
     ## 行为规则
     - 调用 coldchain-risk-assess 分别评估设备异常与商品时间温度暴露。
     - 调用 rootcause-drilldown 形成 Top-K 假设、支持/反证证据和下一步检查。
-    - 不调用写工具，不声称存在尚未真实运行的 RAG 命中。
+    - P1 知识工具启用时调用 search_knowledge；只引用已审核、已脱敏且带来源片段的命中，命中不能替代业务证据。
+    - 不调用写工具；RAG 未启用或无命中时必须如实返回 disabled/no hits。
+    - 每次 MCP 调用携带同一 runtime_trace_id、incident_id 和唯一 request_id。
     - 把结构化诊断和建议动作回复 Team Leader。
   skills:
     - coldchain-risk-assess

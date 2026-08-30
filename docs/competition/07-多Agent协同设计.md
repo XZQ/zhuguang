@@ -11,7 +11,7 @@
 - 5 个业务 Agent，其中 Orchestrator 是 Team Leader，另外 4 个为领域 Worker；
 - 6 个 P0 Skill 进入确定性 Worker ZIP；
 - Worker 通过 `dianxun-mcp` 访问同一有状态业务世界。
-- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、42 项测试和 M4 评测不调用 LLM。
+- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、55 项测试和 M4 评测不调用 LLM。
 
 仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派、Worker → MCP 身份绑定和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
 
@@ -69,7 +69,7 @@
 1. `IncidentService` 在独立验证通过后聚合为 `RESOLVED`。
 2. Auditor 调用 `review-report` 生成时间线、批次关联、改进项和待审知识候选。
 3. Orchestrator 只有在 LEARN 完成后请求迁移 `CLOSED`。
-4. 当前不宣称知识候选已进入生产 RAG，也不自动修改 Skill/Policy。
+4. 知识候选只有经独立人工审核和脱敏通过后才进入可选检索；当前不宣称真实门店改善率，也不自动修改 Skill/Policy。
 
 ## 4. 八项要求如何嵌入五阶段
 
@@ -82,7 +82,7 @@
 | 结果验证 | 阶段 4 | outcome-verify、Auditor 重查、两次放行验证 |
 | 执行证据沉淀 | 全阶段 | Evidence、audit、隔离 Trace、M4 report |
 | 审批与回滚/补偿 | 阶段 3～4 | pending/timeout、审批绑定、停售保持、reopen；通用自动回滚未声明已实现 |
-| 经验沉淀 | 阶段 5 | review-report 和 pending knowledge candidates；真实 RAG 为 P1 未启用 |
+| 经验沉淀 | 阶段 5 | review-report、pending knowledge candidates、可选审核/检索；真实门店基线外部待验证 |
 
 因此：
 
@@ -112,7 +112,7 @@ uv run dianxun evaluate
 - 场景、Top-1、Top-3 均 6/6；
 - Evidence 关键字段 45/45；
 - 适用阶段 Trace 26/26；
-- 全量自动化测试 42 项通过；
+- 全量发现 55 项自动化测试：53 项通过，2 项外部 PolarDB 条件测试跳过；
 - 未授权写、未审批受控写、错误放行、错误关闭和重复副作用均为 0。
 
 这些指标来自有状态 Mock 和隔离数据库；不能换写成真实门店经营效果。
