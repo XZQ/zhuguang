@@ -13,7 +13,7 @@
 | 解决什么真实问题 | 冷柜失温跨越设备、商品、审批、维修和复核，真正的交付单位不是“发出告警”，而是“安全关闭事件” |
 | 为什么需要多 Agent | 总控、巡检、诊断、处置、稽核职责分离；执行者不能自行宣布成功，Auditor 必须独立重查事实 |
 | 如何约束风险 | 所有受控写经过业务角色、Policy/审批、幂等和审计；设备恢复不等于商品安全，工单完成不等于事件关闭 |
-| 如何证明不是概念稿 | 6 个确定性冷柜场景、55 个测试用例、6 个 P0 Skill、12 个 P0 MCP、3 个可选知识 MCP 和可复现 Evidence 均在仓库内 |
+| 如何证明不是概念稿 | 6 个确定性冷柜场景、72 个测试用例、6 个 P0 Skill、12 个 P0 MCP、3 个可选知识 MCP 和可复现 Evidence 均在仓库内 |
 | 如何扩展 | 冷柜承担主叙事；缺货、价签保留独立入口，验证同一闭环基础设施可复用，而不稀释答辩重点 |
 
 当前仓库已完成有状态业务核心、冷柜五阶段闭环、AgentTeams `v1.2.3` Worker/MCP 部署产物，以及与实现一致的参赛材料。真实 Team Room、Worker 委派、Kubernetes Running 状态、Worker → MCP 身份绑定和平台 Trace 仍需在外部 AgentTeams 环境动态验证，仓库内结果不能替代该证据。
@@ -29,6 +29,15 @@ uv run dianxun evaluate
 
 评测会在临时 SQLite/Trace 数据库中运行 6 个正常与失败分支，确定性重写 `evidence/m4/results.json` 和 `evidence/m4/report.md`；只有全部本地 P0 门禁通过才退出 `0`。
 
+进一步的架构证据与可视化入口：
+
+```powershell
+uv run dianxun ablation        # 消融对照:full / no_auditor / single_agent / rule_only
+uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故指挥台
+```
+
+消融对照在同样六个场景上逐层拆除架构（去 Auditor、单一身份、纯规则诊断），确定性重写 `evidence/m4/ablation.json` 和 `evidence/m4/ablation.md`；事故指挥台把六个场景的 Agent 交接链、设备状态链、商品批次处置、审批、审计与 Auditor 判决渲染成同屏只读 HTML。
+
 ## 当前可验证结论
 
 | 结论 | 当前结果 | 证据 |
@@ -38,7 +47,10 @@ uv run dianxun evaluate
 | Evidence 关键字段完整率 | 45/45 | 同上 |
 | 适用阶段 Trace 覆盖率 | 26/26 | 同上 |
 | 未授权写、未审批受控写、错误放行、错误关闭、重复副作用 | 均为 0 | 同上 |
-| 自动化测试 | 55 项发现：53 通过、2 个 PolarDB 条件集成测试因无外部实例跳过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
+| 消融对照：无 Auditor | 5 起错误关闭、5 次自我宣告关闭、5 次朴素放行全部被 MCP/审批层拦截、实际危险放行 0 | [`evidence/m4/ablation.md`](evidence/m4/ablation.md) |
+| 消融对照：单一身份 / 纯规则 | 单一身份 6 次受控写全被 Policy 拒绝（保持 OPEN）；纯规则 Top-1 降至 4/6、2 张错派工单、安全违规 0 | 同上 |
+| 事故指挥台 | 六场景同屏只读 HTML（交接链、温度曲线、批次处置、审批、审计、判决） | [`evidence/m4/command-center.html`](evidence/m4/command-center.html) |
+| 自动化测试 | 72 项发现：70 通过、2 个 PolarDB 条件集成测试因无外部实例跳过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
 | PolarDB PostgreSQL 后端 | 代码与 SQL 契约已实现，外部待验证 | `src/dianxun/state/postgres.py`、`src/dianxun/state/sql/` |
 | 知识飞轮 | 候选、人工审核、发布、检索及 Recall@K/MRR 已实现；真实门店改善率未验证 | `tests/test_knowledge_flywheel.py` |
 | AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
@@ -55,7 +67,7 @@ uv run dianxun evaluate
 - 业务核心：`IncidentService` 是阶段迁移和事件状态的唯一事实入口。
 - 状态后端：SQLite 保留为零依赖确定性评测底座；PolarDB PostgreSQL 是托管部署底座，业务层通过同一 StateStore 协议访问。
 - 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
-- 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、55 项测试和 M4 评测不调用 LLM。
+- 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、72 项测试和 M4 评测不调用 LLM。
 - Skill：当前 6 个 P0 均为自定义可复用 Skill；官网与参赛手册 FAQ 对“阿里云官方用云 Skills”的措辞存在差异，状态为“待组委会确认”。
 - 鉴权：非回环监听未配置认证时拒绝启动；共享 `MCP_TOKEN` 只能调用只读工具，状态写必须使用 `MCP_ACTOR_TOKENS_JSON` 或可信网关绑定 Actor。部署清单引用 Secret，但动态 Worker 身份映射仍需外部验收。
 
@@ -187,7 +199,7 @@ AgentTeams 版本固定为 `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f19
 
 ### 模型、凭证、费用与替代边界
 
-- `qwen3.5-plus` 只用于目标 AgentTeams Manager/Worker 的任务拆解、结构化协作和工具编排；本地 `uv run dianxun evaluate` 不调用它，因此 6/6 和 55 项测试不是模型效果指标。
+- `qwen3.5-plus` 只用于目标 AgentTeams Manager/Worker 的任务拆解、结构化协作和工具编排；本地 `uv run dianxun evaluate` 不调用它，因此 6/6 和 72 项测试不是模型效果指标。
 - 模型凭证只允许由目标 AgentTeams/Kubernetes 运行时通过 Secret、环境变量或外部密钥系统注入；仓库 YAML、Worker ZIP、Trace 和视频不得包含 Key。
 - 模型费用取决于实际提供商、输入/输出 Token、调用次数和部署资源；当前没有真实平台运行账单，不能给出已验证成本。
 - 可替换为 AgentTeams/QwenPaw 支持且满足结构化输出与工具调用要求的兼容模型。迁移通常不改领域模型和 MCP 契约，但必须调整 `spec.model`/提供商凭证，并重跑结构化输出、工具调用、延迟、费用与安全回归。

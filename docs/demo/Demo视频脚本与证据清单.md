@@ -18,6 +18,8 @@ git status --short --branch
 git rev-parse HEAD
 uv sync --group dev
 uv run dianxun evaluate
+uv run dianxun ablation
+uv run dianxun command-center
 uv run --group dev python -W error::ResourceWarning -m unittest discover -v
 uv run --group dev ruff check .
 uv run --group dev ruff format --check .
@@ -30,7 +32,8 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 - 工作区无非预期改动；
 - 六场景 6/6；
-- 全量测试 55 项发现：53 项通过、2 项 PolarDB 条件集成测试跳过；
+- 全量测试 72 项发现：70 项通过、2 项 PolarDB 条件集成测试跳过；
+- 四变体消融门禁通过，`evidence/m4/command-center.html` 已确定性生成；
 - Ruff、格式、模拟数据和确定性 Worker 构建均通过；
 - ZIP SHA-256 为 `3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c`。
 
