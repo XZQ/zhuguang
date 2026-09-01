@@ -7,32 +7,32 @@
   "skills": [
     {
       "name": "anomaly-detect",
-      "sha256": "8940fcbe26fc05979f624ea3475747617891b5eb07e64e8aeebb049e038f7b07",
+      "sha256": "e9d9a42916c99fff24dc26acde83bee4934c9de2b865229c1245a8800e0f49c0",
       "version": "1.0.0"
     },
     {
       "name": "coldchain-risk-assess",
-      "sha256": "1a3ca4b1d5e3fae14e9f8505ad2a19f371f2aa37f4ed53400cd3d045cf075699",
+      "sha256": "c2082f0e3e85e37ae19fb4c7cdc67e4e78a37417e4591b96e62865f81c233bc1",
       "version": "1.1.0"
     },
     {
       "name": "rootcause-drilldown",
-      "sha256": "bc1da8b68534bc90fdda733bbf03e7982674b703ccf28cc27ceef0aa8d3e003c",
+      "sha256": "ceff842fa5e42e26492dfc6f9573708ddd648e1f4b390739dfcdb142c663f8a5",
       "version": "1.2.0"
     },
     {
       "name": "work-order-dispatch",
-      "sha256": "0ced63be2032cc85fb87162d6a59fe10f5645419770df50057fb8da77080c7cb",
+      "sha256": "d56e9b6529a3c66ee10379378f1bf3819810e8b22a4ced32c0bdc22296f4570b",
       "version": "1.0.0"
     },
     {
       "name": "outcome-verify",
-      "sha256": "6120ba916d8254319ceac017085f6fe82b722fa83d9339bdcaca19075435d6d3",
+      "sha256": "2da8e744190b2ff331341c88a6b3904c0a64fcbb0ad313e520b5341622e3295d",
       "version": "1.1.0"
     },
     {
       "name": "review-report",
-      "sha256": "6b9d8b44480a5cb9896615b52130832a773563a6e303d866398908536017a1d7",
+      "sha256": "5dd86cca278a4a7981a577d888546bdf51cff02b070aacefe5e70a6419bbcc31",
       "version": "1.1.0"
     }
   ]

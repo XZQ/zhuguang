@@ -530,7 +530,11 @@ class MCPHandler(BaseHTTPRequestHandler):
         except ValueError:
             length = 0
         if length > MAX_REQUEST_BYTES:
-            self.rfile.read1(MAX_REQUEST_BYTES + 1)
+            # Drain a bounded prefix before closing so a client that sent the
+            # smallest oversized body can receive the JSON error instead of a
+            # TCP reset caused by unread request bytes. Never drain beyond the
+            # configured limit plus the byte needed to prove oversize.
+            self.rfile.read(MAX_REQUEST_BYTES + 1)
             self.close_connection = True
             self._send(
                 400,
