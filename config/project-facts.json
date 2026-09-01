@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-08-28",
+  "updated_at": "2026-09-01",
   "owner": "XZQ",
   "project_name": "逐光",
   "display_name": "逐光｜店巡 Agent",
@@ -172,11 +172,37 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 55,
-      "full_unittest_passed": 53,
+      "full_unittest_count": 72,
+      "full_unittest_passed": 70,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
-      "results": "evidence/m4/results.json"
+      "results": "evidence/m4/results.json",
+      "ablation": {
+        "suite_id": "dianxun-p0-coldchain-ablation-v1",
+        "variants": ["full", "no_auditor", "single_agent", "rule_only"],
+        "gate_passed": true,
+        "headline": {
+          "no_auditor": {
+            "erroneous_closures": 5,
+            "release_denials": 5,
+            "release_executed": 0,
+            "dangerous_release_batches": 0
+          },
+          "single_agent": {
+            "denied_write_attempts": 6,
+            "contained": 0,
+            "closed": 0
+          },
+          "rule_only": {
+            "top1_hits": 4,
+            "misrouted_workorders": 2,
+            "safety_violations": 0
+          }
+        },
+        "results": "evidence/m4/ablation.json",
+        "report": "evidence/m4/ablation.md"
+      },
+      "command_center_html": "evidence/m4/command-center.html"
     },
     "m5_materials": {
       "documents": "implemented",

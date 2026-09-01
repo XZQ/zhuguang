@@ -92,12 +92,14 @@
 - Evidence 关键字段完整 45/45。
 - 适用阶段 Trace 覆盖 26/26。
 - 未授权业务写、未审批受控写、错误放行、错误关闭、重复副作用均为 0。
-- 全量发现 55 项自动化测试：53 项通过，2 项 PolarDB 条件集成测试因无外部实例跳过。
+- 全量发现 72 项自动化测试：70 项通过，2 项 PolarDB 条件集成测试因无外部实例跳过。
+- 四变体消融门禁通过；无 Auditor 时出现 5 起错误关闭，单一身份的 6 次受控写全部被 Policy 拒绝，纯规则诊断 Top-1 降至 4/6。
+- 只读事故指挥台把六场景的 Agent 交接、设备/商品状态、审批、审计和 Auditor 判决同屏呈现。
 - 标注口径：固定 seed + 隔离 SQLite/Trace + 有状态 Mock；不是生产 KPI 或真实经营收益。
 
 ## P10 交付与边界：仓库内可复现，平台证据不冒充
 
-- 已交付：代码、六场景、评测报告、6 个 P0 Skill 契约、12+3 MCP、Worker ZIP/provenance、AgentTeams/Kubernetes/PolarDB overlay、HTML 演示稿和 PDF。
+- 已交付：代码、六场景、评测与消融报告、事故指挥台、6 个 P0 Skill 契约、12+3 MCP、Worker ZIP/provenance、AgentTeams/Kubernetes/PolarDB overlay、HTML 演示稿和 PDF。
 - 可复现命令：`uv run dianxun evaluate`。
 - 外部待验证：Team Room、Worker 委派、Kubernetes Running、Worker → MCP 身份绑定、同一任务的平台 MCP/Trace，以及托管 PolarDB、OSS 归档和真实知识基线。
 - 外部待确认：是否必须真实使用阿里云官方用云 Skill；若是，必须增加必要的真实调用、失败处理和证据，不能装饰性堆叠。

@@ -37,7 +37,7 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内有 5 项 AgentTeams artifact 测试和 3 项动态证据校验器测试；全量发现 55 项测试，其中 53 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
+仓库内有 5 项 AgentTeams artifact 测试和 3 项动态证据校验器测试；全量发现 72 项测试，其中 70 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
 
 ## 2. 模型、凭证、费用与 Skill 类型
 

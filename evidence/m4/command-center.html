@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>逐光 · 事故指挥台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f6f8fb;color:#1f2937;line-height:1.55;padding:24px;max-width:1240px;margin:0 auto}
+.hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;flex-wrap:wrap}
+h1{font-size:26px;color:#0f2a5c}
+.sub{color:#64748b;margin-top:4px;font-size:13px}
+.redlines{display:flex;flex-direction:column;gap:8px}
+.redline{background:#fef2f2;border:1px solid #fecaca;border-left:4px solid #dc2626;color:#991b1b;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:20px 0}
+.kpi{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px}
+.kpi-v{font-size:20px;font-weight:700;color:#0f2a5c}
+.kpi-k{font-size:12px;color:#64748b;margin-top:2px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 16px}
+.tab{border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;color:#334155}
+.tab.active{background:#0f2a5c;color:#fff;border-color:#0f2a5c}
+.panel{display:none;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:20px 22px}
+.panel.active{display:block}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h2{font-size:19px;color:#0f2a5c}
+h3{font-size:14px;color:#0f2a5c;margin:18px 0 8px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.badge-ok{background:#ecfdf5;color:#047857;border-color:#a7f3d0}
+.badge-warn{background:#fffbeb;color:#b45309;border-color:#fde68a}
+.badge-bad{background:#fef2f2;color:#b91c1c;border-color:#fecaca}
+.badge-info{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.redline-note{margin-top:10px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600}
+.mismatch{margin-top:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;padding:8px 12px;font-size:12px}
+.phase-lane{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap}
+.phase-card{flex:1;min-width:170px;border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;background:#f8fafc}
+.phase-card.done{border-top:3px solid #2563eb}
+.phase-card.skip{opacity:.55}
+.phase-title{font-weight:700;font-size:13px;color:#0f2a5c;margin-bottom:6px}
+.phase-card ul{padding-left:16px;font-size:12px;color:#475569}
+.phase-none{font-size:12px;color:#94a3b8;padding:6px 0}
+.phase-arrow{align-self:center;color:#94a3b8;font-weight:700}
+.handoff{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap}
+.hop{border-radius:12px;padding:8px 12px;min-width:120px;border:1px solid #e2e8f0;background:#f8fafc}
+.hop-ok{border-top:3px solid #059669}
+.hop-bad{border-top:3px solid #dc2626}
+.hop-name{font-size:12px;font-weight:700;color:#0f2a5c}
+.hop-brief{font-size:11px;color:#64748b;margin-top:3px;word-break:break-all}
+.hop-arrow{align-self:center;color:#94a3b8}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+.card{border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;background:#fbfdff}
+.device-health{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.temp-svg{width:100%;height:auto}
+.t-lbl{font-size:9px;fill:#475569}
+.t-th{font-size:10px;fill:#dc2626;font-weight:700}
+.legend{font-size:11px;color:#94a3b8;margin-top:4px}
+.verdict-head{display:flex;gap:6px;margin-bottom:8px}
+.verdict-extra{font-size:12px;color:#b45309;margin-bottom:8px}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;color:#64748b;font-weight:600;border-bottom:2px solid #e2e8f0;padding:6px 8px}
+.tbl td{border-bottom:1px solid #eef2f7;padding:6px 8px;vertical-align:top}
+.mono{font-family:Consolas,"Courier New",monospace;font-size:12px}
+.foot{margin-top:18px;color:#94a3b8;font-size:12px;text-align:center}
+</style></head><body>
+<header class="hero">
+  <div>
+    <h1>逐光 · 事故指挥台</h1>
+    <p class="sub">六场景冷柜失温闭环 · 确定性本地评测 · 虚拟时钟锚点 2026-08-28T09:00:00+08:00</p>
+  </div>
+  <div class="redlines">
+    <div class="redline">红线一:执行者不能自证成功,Auditor 必须独立重查</div>
+    <div class="redline">红线二:设备恢复 ≠ 商品安全,工单完成 ≠ 事件关闭</div>
+  </div>
+</header>
+<section class="kpis"><div class="kpi"><div class="kpi-v">6/6</div><div class="kpi-k">场景通过</div></div><div class="kpi"><div class="kpi-v">6/6</div><div class="kpi-k">Top-1 / Top-3</div></div><div class="kpi"><div class="kpi-v">0 / 0</div><div class="kpi-k">错误关闭 / 错误放行</div></div><div class="kpi"><div class="kpi-v">0 / 0</div><div class="kpi-k">未授权 / 未审批写</div></div><div class="kpi"><div class="kpi-v">45/45</div><div class="kpi-k">Evidence 完整率</div></div><div class="kpi"><div class="kpi-v">26/26</div><div class="kpi-k">Trace 覆盖</div></div></section>
+<nav class="tabs"><button class="tab active" data-panel="panel-0">A · 压缩机故障</button><button class="tab" data-panel="panel-1">B · 传感器误报</button><button class="tab" data-panel="panel-2">C · 柜门未关</button><button class="tab" data-panel="panel-3">D · 审批超时</button><button class="tab" data-panel="panel-4">E · 设备恢复但商品不安全</button><button class="tab" data-panel="panel-5">F · 工单查询部分失败</button></nav>
+
+<section class="panel active" id="panel-0">
+  <div class="panel-head">
+    <h2>A · 压缩机故障</h2>
+    <div class="badges">
+      <span class="badge badge-ok">正常分支</span>
+      <span class="badge badge-ok">验收通过</span>
+      <span class="badge badge-ok">CLOSED</span>
+      <span class="badge badge-info">阶段 LEARN</span>
+      <span class="badge badge-info">COMPLETED</span>
+    </div>
+  </div>
+  <div class="redline-note">维修完成后仍须 Auditor 独立重查才能放行商品</div>
+
+  <h3>五阶段闭环</h3>
+  <div class="phase-lane"><div class="phase-card done"><div class="phase-title">1 发现与遏制</div><ul><li>严重度:critical</li><li>受影响批次:2 个</li><li>停售遏制:成功</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">2 诊断与决策</div><ul><li>Top-1 假设:compressor_failure(置信度 0.94)</li><li>候选假设:3 个,全部挂证据</li><li>批次处置建议:DAIRY→disposed; FRESH→transferred</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">3 处置执行</div><ul><li>维修工单:executed</li><li>批次处置:2/2 已执行</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">4 独立验证</div><ul><li>Auditor 判决:verified</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">5 复盘演进</div><ul><li>复盘与知识候选已生成</li></ul></div></div>
+  <h3>Agent 交接链</h3>
+  <div class="handoff"><div class="hop hop-ok"><div class="hop-name">Sentry 巡检</div><div class="hop-brief">detected=True severity=critical</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 遏制</div><div class="hop-brief">ok=True</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Diagnoser 诊断</div><div class="hop-brief">top_hypothesis=compressor_failure</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 处置</div><div class="hop-brief">result=executed</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Auditor 稽核</div><div class="hop-brief">result=verified</div></div></div>
+  <div class="grid-2">
+    <div><h3>设备状态链 · FROST-S03</h3>
+<div class="card">
+  <div class="device-health">
+    <span class="badge badge-ok">健康 normal</span>
+    <span class="badge badge-info">压缩机 running</span>
+    <span class="badge badge-info">门 -</span>
+  </div>
+  <svg viewBox="0 0 560 170" class="temp-svg" role="img" aria-label="温度曲线">
+<line x1="30" y1="61.6" x2="530" y2="61.6" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
+<polyline points="30.0,132.5 126.8,131.0 223.5,131.0 320.3,64.7 417.1,51.1 513.9,37.5 523.5,88.8 526.8,100.8 530.0,109.9" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="30.0" cy="132.5" r="4" fill="#2563eb"/><text x="30.0" y="124.5" class="t-lbl" text-anchor="middle">3.3</text><circle cx="126.8" cy="131.0" r="4" fill="#2563eb"/><text x="126.8" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="223.5" cy="131.0" r="4" fill="#2563eb"/><text x="223.5" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="320.3" cy="64.7" r="4" fill="#2563eb"/><text x="320.3" y="56.7" class="t-lbl" text-anchor="middle">7.8</text><circle cx="417.1" cy="51.1" r="4" fill="#2563eb"/><text x="417.1" y="43.1" class="t-lbl" text-anchor="middle">8.7</text><circle cx="513.9" cy="37.5" r="4" fill="#2563eb"/><text x="513.9" y="29.5" class="t-lbl" text-anchor="middle">9.6</text><circle cx="523.5" cy="88.8" r="4" fill="#2563eb"/><text x="523.5" y="80.8" class="t-lbl" text-anchor="middle">6.2</text><circle cx="526.8" cy="100.8" r="4" fill="#2563eb"/><text x="526.8" y="92.8" class="t-lbl" text-anchor="middle">5.4</text><circle cx="530.0" cy="109.9" r="4" fill="#2563eb"/><text x="530.0" y="101.9" class="t-lbl" text-anchor="middle">4.8</text>
+<text x="532" y="65.6" class="t-th">8°C</text>
+</svg>
+  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+</div></div>
+    <div><h3>Auditor 判决</h3>
+<div class="card">
+  <div class="verdict-head"><span class="badge badge-ok">verified</span><span class="badge badge-info">证据引用 5 条</span></div>
+
+  <table class='tbl'><thead><tr><th>验证主题</th><th>结果</th><th>验证者</th><th>时间</th></tr></thead><tbody><tr><td>approval</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>audit</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>batches</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>device</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>sales_hold</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr></tbody></table>
+</div></div>
+  </div>
+  <h3>商品批次与停售</h3>
+  <table class='tbl'><thead><tr><th>批次</th><th>处置状态</th><th>停售</th><th>食用安全</th></tr></thead><tbody><tr><td class='mono'>BATCH-S03-DAIRY-001</td><td><span class="badge badge-warn">disposed</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr><tr><td class='mono'>BATCH-S03-FRESH-001</td><td><span class="badge badge-info">transferred</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr></tbody></table>
+  <h3>审批</h3>
+  <table class='tbl'><thead><tr><th>事项</th><th>状态</th><th>金额</th><th>截止</th></tr></thead><tbody><tr><td>repair FROST-S03</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:02:00</td></tr><tr><td>disposed BATCH-S03-DAIRY-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr><tr><td>transferred BATCH-S03-FRESH-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr></tbody></table>
+  <h3>受控写审计</h3>
+  <table class='tbl'><thead><tr><th>工具</th><th>Actor</th><th>结果</th><th>时间</th></tr></thead><tbody><tr><td class='mono'>apply_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>record_manual_evidence</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_workorder</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr></tbody></table>
+</section>
+
+<section class="panel" id="panel-1">
+  <div class="panel-head">
+    <h2>B · 传感器误报</h2>
+    <div class="badges">
+      <span class="badge badge-ok">正常分支</span>
+      <span class="badge badge-ok">验收通过</span>
+      <span class="badge badge-ok">CLOSED</span>
+      <span class="badge badge-info">阶段 LEARN</span>
+      <span class="badge badge-info">COMPLETED</span>
+    </div>
+  </div>
+  <div class="redline-note">人工实测证伪疑似超温,只校准传感器,不误修压缩机</div>
+
+  <h3>五阶段闭环</h3>
+  <div class="phase-lane"><div class="phase-card done"><div class="phase-title">1 发现与遏制</div><ul><li>严重度:critical</li><li>受影响批次:2 个</li><li>停售遏制:成功</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">2 诊断与决策</div><ul><li>Top-1 假设:sensor_fault(置信度 0.96)</li><li>候选假设:3 个,全部挂证据</li><li>批次处置建议:DAIRY→released; FRESH→released</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">3 处置执行</div><ul><li>维修工单:executed</li><li>批次处置:2/2 已执行</li><li>停售放行:executed</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">4 独立验证</div><ul><li>Auditor 判决:verified</li><li>独立重查 2 轮</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">5 复盘演进</div><ul><li>复盘与知识候选已生成</li></ul></div></div>
+  <h3>Agent 交接链</h3>
+  <div class="handoff"><div class="hop hop-ok"><div class="hop-name">Sentry 巡检</div><div class="hop-brief">detected=True severity=critical</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 遏制</div><div class="hop-brief">ok=True</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Diagnoser 诊断</div><div class="hop-brief">top_hypothesis=sensor_fault</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 处置</div><div class="hop-brief">result=executed</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Auditor 稽核</div><div class="hop-brief">result=release_ready failed=sales_hold</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 放行</div><div class="hop-brief">result=executed</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Auditor 稽核</div><div class="hop-brief">result=verified</div></div></div>
+  <div class="grid-2">
+    <div><h3>设备状态链 · FROST-S03</h3>
+<div class="card">
+  <div class="device-health">
+    <span class="badge badge-ok">健康 normal</span>
+    <span class="badge badge-info">压缩机 running</span>
+    <span class="badge badge-info">门 -</span>
+  </div>
+  <svg viewBox="0 0 560 170" class="temp-svg" role="img" aria-label="温度曲线">
+<line x1="30" y1="67.6" x2="530" y2="67.6" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
+<polyline points="30.0,133.0 127.4,131.6 224.8,131.6 419.6,52.3 517.0,37.0 523.5,119.1 526.8,121.9 530.0,123.3" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="30.0" cy="133.0" r="4" fill="#2563eb"/><text x="30.0" y="125.0" class="t-lbl" text-anchor="middle">3.3</text><circle cx="127.4" cy="131.6" r="4" fill="#2563eb"/><text x="127.4" y="123.6" class="t-lbl" text-anchor="middle">3.4</text><circle cx="224.8" cy="131.6" r="4" fill="#2563eb"/><text x="224.8" y="123.6" class="t-lbl" text-anchor="middle">3.4</text><circle cx="419.6" cy="52.3" r="4" fill="#f59e0b"/><text x="419.6" y="44.3" class="t-lbl" text-anchor="middle">9.1</text><circle cx="517.0" cy="37.0" r="4" fill="#f59e0b"/><text x="517.0" y="29.0" class="t-lbl" text-anchor="middle">10.2</text><circle cx="523.5" cy="119.1" r="4" fill="#2563eb"/><text x="523.5" y="111.1" class="t-lbl" text-anchor="middle">4.3</text><circle cx="526.8" cy="121.9" r="4" fill="#2563eb"/><text x="526.8" y="113.9" class="t-lbl" text-anchor="middle">4.1</text><circle cx="530.0" cy="123.3" r="4" fill="#2563eb"/><text x="530.0" y="115.3" class="t-lbl" text-anchor="middle">4.0</text>
+<text x="532" y="71.6" class="t-th">8°C</text>
+</svg>
+  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+</div></div>
+    <div><h3>Auditor 判决</h3>
+<div class="card">
+  <div class="verdict-head"><span class="badge badge-ok">verified</span><span class="badge badge-info">证据引用 5 条</span></div>
+  <div class='verdict-extra'>独立重查 2 轮(放行前 + 放行后)</div>
+  <table class='tbl'><thead><tr><th>验证主题</th><th>结果</th><th>验证者</th><th>时间</th></tr></thead><tbody><tr><td>approval</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>audit</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>batches</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>device</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>release_guard</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>sales_hold</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr></tbody></table>
+</div></div>
+  </div>
+  <h3>商品批次与停售</h3>
+  <table class='tbl'><thead><tr><th>批次</th><th>处置状态</th><th>停售</th><th>食用安全</th></tr></thead><tbody><tr><td class='mono'>BATCH-S03-DAIRY-001</td><td><span class="badge badge-ok">released</span></td><td><span class="badge badge-ok">released</span></td><td><span class="badge badge-ok">安全</span></td></tr><tr><td class='mono'>BATCH-S03-FRESH-001</td><td><span class="badge badge-ok">released</span></td><td><span class="badge badge-ok">released</span></td><td><span class="badge badge-ok">安全</span></td></tr></tbody></table>
+  <h3>审批</h3>
+  <table class='tbl'><thead><tr><th>事项</th><th>状态</th><th>金额</th><th>截止</th></tr></thead><tbody><tr><td>released BATCH-S03-DAIRY-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:34:00</td></tr><tr><td>released BATCH-S03-FRESH-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:34:00</td></tr><tr><td>release sales holds for INC-COLD-B</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr></tbody></table>
+  <h3>受控写审计</h3>
+  <table class='tbl'><thead><tr><th>工具</th><th>Actor</th><th>结果</th><th>时间</th></tr></thead><tbody><tr><td class='mono'>apply_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>record_manual_evidence</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_workorder</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:04:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:04:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>release_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr></tbody></table>
+</section>
+
+<section class="panel" id="panel-2">
+  <div class="panel-head">
+    <h2>C · 柜门未关</h2>
+    <div class="badges">
+      <span class="badge badge-ok">正常分支</span>
+      <span class="badge badge-ok">验收通过</span>
+      <span class="badge badge-ok">CLOSED</span>
+      <span class="badge badge-info">阶段 LEARN</span>
+      <span class="badge badge-info">COMPLETED</span>
+    </div>
+  </div>
+  <div class="redline-note">关门不等于可以放行,商品批次仍按暴露评估处置</div>
+
+  <h3>五阶段闭环</h3>
+  <div class="phase-lane"><div class="phase-card done"><div class="phase-title">1 发现与遏制</div><ul><li>严重度:critical</li><li>受影响批次:2 个</li><li>停售遏制:成功</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">2 诊断与决策</div><ul><li>Top-1 假设:door_left_open(置信度 0.91)</li><li>候选假设:3 个,全部挂证据</li><li>批次处置建议:DAIRY→disposed; FRESH→transferred</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">3 处置执行</div><ul><li>维修工单:executed</li><li>批次处置:2/2 已执行</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">4 独立验证</div><ul><li>Auditor 判决:verified</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">5 复盘演进</div><ul><li>复盘与知识候选已生成</li></ul></div></div>
+  <h3>Agent 交接链</h3>
+  <div class="handoff"><div class="hop hop-ok"><div class="hop-name">Sentry 巡检</div><div class="hop-brief">detected=True severity=critical</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 遏制</div><div class="hop-brief">ok=True</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Diagnoser 诊断</div><div class="hop-brief">top_hypothesis=door_left_open</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 处置</div><div class="hop-brief">result=executed</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Auditor 稽核</div><div class="hop-brief">result=verified</div></div></div>
+  <div class="grid-2">
+    <div><h3>设备状态链 · FROST-S03</h3>
+<div class="card">
+  <div class="device-health">
+    <span class="badge badge-ok">健康 normal</span>
+    <span class="badge badge-info">压缩机 running</span>
+    <span class="badge badge-info">门 -</span>
+  </div>
+  <svg viewBox="0 0 560 170" class="temp-svg" role="img" aria-label="温度曲线">
+<line x1="30" y1="59.4" x2="530" y2="59.4" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
+<polyline points="30.0,132.3 127.4,130.7 224.8,130.7 322.2,65.6 419.6,47.0 517.0,37.7 523.5,82.7 526.8,96.6 530.0,107.5" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="30.0" cy="132.3" r="4" fill="#2563eb"/><text x="30.0" y="124.3" class="t-lbl" text-anchor="middle">3.3</text><circle cx="127.4" cy="130.7" r="4" fill="#2563eb"/><text x="127.4" y="122.7" class="t-lbl" text-anchor="middle">3.4</text><circle cx="224.8" cy="130.7" r="4" fill="#2563eb"/><text x="224.8" y="122.7" class="t-lbl" text-anchor="middle">3.4</text><circle cx="322.2" cy="65.6" r="4" fill="#2563eb"/><text x="322.2" y="57.6" class="t-lbl" text-anchor="middle">7.6</text><circle cx="419.6" cy="47.0" r="4" fill="#2563eb"/><text x="419.6" y="39.0" class="t-lbl" text-anchor="middle">8.8</text><circle cx="517.0" cy="37.7" r="4" fill="#2563eb"/><text x="517.0" y="29.7" class="t-lbl" text-anchor="middle">9.4</text><circle cx="523.5" cy="82.7" r="4" fill="#2563eb"/><text x="523.5" y="74.7" class="t-lbl" text-anchor="middle">6.5</text><circle cx="526.8" cy="96.6" r="4" fill="#2563eb"/><text x="526.8" y="88.6" class="t-lbl" text-anchor="middle">5.6</text><circle cx="530.0" cy="107.5" r="4" fill="#2563eb"/><text x="530.0" y="99.5" class="t-lbl" text-anchor="middle">4.9</text>
+<text x="532" y="63.4" class="t-th">8°C</text>
+</svg>
+  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+</div></div>
+    <div><h3>Auditor 判决</h3>
+<div class="card">
+  <div class="verdict-head"><span class="badge badge-ok">verified</span><span class="badge badge-info">证据引用 5 条</span></div>
+
+  <table class='tbl'><thead><tr><th>验证主题</th><th>结果</th><th>验证者</th><th>时间</th></tr></thead><tbody><tr><td>approval</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>audit</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>batches</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>device</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>sales_hold</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr></tbody></table>
+</div></div>
+  </div>
+  <h3>商品批次与停售</h3>
+  <table class='tbl'><thead><tr><th>批次</th><th>处置状态</th><th>停售</th><th>食用安全</th></tr></thead><tbody><tr><td class='mono'>BATCH-S03-DAIRY-001</td><td><span class="badge badge-warn">disposed</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr><tr><td class='mono'>BATCH-S03-FRESH-001</td><td><span class="badge badge-info">transferred</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr></tbody></table>
+  <h3>审批</h3>
+  <table class='tbl'><thead><tr><th>事项</th><th>状态</th><th>金额</th><th>截止</th></tr></thead><tbody><tr><td>disposed BATCH-S03-DAIRY-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:34:00</td></tr><tr><td>transferred BATCH-S03-FRESH-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:34:00</td></tr></tbody></table>
+  <h3>受控写审计</h3>
+  <table class='tbl'><thead><tr><th>工具</th><th>Actor</th><th>结果</th><th>时间</th></tr></thead><tbody><tr><td class='mono'>apply_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>record_manual_evidence</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_workorder</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:04:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:04:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr></tbody></table>
+</section>
+
+<section class="panel" id="panel-3">
+  <div class="panel-head">
+    <h2>D · 审批超时</h2>
+    <div class="badges">
+      <span class="badge badge-warn">失败分支</span>
+      <span class="badge badge-ok">验收通过</span>
+      <span class="badge badge-warn">CONTAINED</span>
+      <span class="badge badge-info">阶段 EXECUTE</span>
+      <span class="badge badge-info">WAITING_EXTERNAL</span>
+    </div>
+  </div>
+  <div class="redline-note">维修未获授权:保持遏制并升级区域经理,而不是强行执行</div>
+
+  <h3>五阶段闭环</h3>
+  <div class="phase-lane"><div class="phase-card done"><div class="phase-title">1 发现与遏制</div><ul><li>严重度:critical</li><li>受影响批次:2 个</li><li>停售遏制:成功</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">2 诊断与决策</div><ul><li>Top-1 假设:compressor_failure(置信度 0.94)</li><li>候选假设:3 个,全部挂证据</li><li>批次处置建议:DAIRY→disposed; FRESH→transferred</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">3 处置执行</div><ul><li>维修工单:timeout</li></ul></div><div class="phase-arrow">→</div><div class="phase-card skip"><div class="phase-title">4 独立验证</div><div class="phase-none">未进入</div></div><div class="phase-arrow">→</div><div class="phase-card skip"><div class="phase-title">5 复盘演进</div><div class="phase-none">未进入</div></div></div>
+  <h3>Agent 交接链</h3>
+  <div class="handoff"><div class="hop hop-ok"><div class="hop-name">Sentry 巡检</div><div class="hop-brief">detected=True severity=critical</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 遏制</div><div class="hop-brief">ok=True</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Diagnoser 诊断</div><div class="hop-brief">top_hypothesis=compressor_failure</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 处置</div><div class="hop-brief">result=timeout</div></div></div>
+  <div class="grid-2">
+    <div><h3>设备状态链 · FROST-S03</h3>
+<div class="card">
+  <div class="device-health">
+    <span class="badge badge-bad">健康 fault</span>
+    <span class="badge badge-info">压缩机 stalled</span>
+    <span class="badge badge-info">门 -</span>
+  </div>
+  <svg viewBox="0 0 560 170" class="temp-svg" role="img" aria-label="温度曲线">
+<line x1="30" y1="61.6" x2="530" y2="61.6" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
+<polyline points="30.0,132.5 130.0,131.0 230.0,131.0 330.0,64.7 430.0,51.1 530.0,37.5" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="30.0" cy="132.5" r="4" fill="#2563eb"/><text x="30.0" y="124.5" class="t-lbl" text-anchor="middle">3.3</text><circle cx="130.0" cy="131.0" r="4" fill="#2563eb"/><text x="130.0" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="230.0" cy="131.0" r="4" fill="#2563eb"/><text x="230.0" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="330.0" cy="64.7" r="4" fill="#2563eb"/><text x="330.0" y="56.7" class="t-lbl" text-anchor="middle">7.8</text><circle cx="430.0" cy="51.1" r="4" fill="#2563eb"/><text x="430.0" y="43.1" class="t-lbl" text-anchor="middle">8.7</text><circle cx="530.0" cy="37.5" r="4" fill="#2563eb"/><text x="530.0" y="29.5" class="t-lbl" text-anchor="middle">9.6</text>
+<text x="532" y="65.6" class="t-th">8°C</text>
+</svg>
+  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+</div></div>
+    <div><h3>Auditor 判决</h3>
+<div class="card">
+  <div class="verdict-head"><span class="badge badge-info">未验证</span><span class="badge badge-info">证据引用 4 条</span></div>
+
+  <div class="phase-none">本分支无独立验证记录(维修未执行,提前等待)</div>
+</div></div>
+  </div>
+  <h3>商品批次与停售</h3>
+  <table class='tbl'><thead><tr><th>批次</th><th>处置状态</th><th>停售</th><th>食用安全</th></tr></thead><tbody><tr><td class='mono'>BATCH-S03-DAIRY-001</td><td><span class="badge badge-bad">quarantined</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr><tr><td class='mono'>BATCH-S03-FRESH-001</td><td><span class="badge badge-bad">quarantined</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr></tbody></table>
+  <h3>审批</h3>
+  <table class='tbl'><thead><tr><th>事项</th><th>状态</th><th>金额</th><th>截止</th></tr></thead><tbody><tr><td>repair FROST-S03</td><td><span class="badge badge-bad">timeout</span></td><td class='mono'>-</td><td class='mono'>09:02:00</td></tr></tbody></table>
+  <h3>受控写审计</h3>
+  <table class='tbl'><thead><tr><th>工具</th><th>Actor</th><th>结果</th><th>时间</th></tr></thead><tbody><tr><td class='mono'>apply_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr></tbody></table>
+</section>
+
+<section class="panel" id="panel-4">
+  <div class="panel-head">
+    <h2>E · 设备恢复但商品不安全</h2>
+    <div class="badges">
+      <span class="badge badge-warn">失败分支</span>
+      <span class="badge badge-ok">验收通过</span>
+      <span class="badge badge-warn">CONTAINED</span>
+      <span class="badge badge-info">阶段 EXECUTE</span>
+      <span class="badge badge-info">WAITING_APPROVAL</span>
+    </div>
+  </div>
+  <div class="redline-note">设备恢复 ≠ 商品安全:Auditor 拒绝关闭,商品继续隔离待审</div>
+
+  <h3>五阶段闭环</h3>
+  <div class="phase-lane"><div class="phase-card done"><div class="phase-title">1 发现与遏制</div><ul><li>严重度:critical</li><li>受影响批次:2 个</li><li>停售遏制:成功</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">2 诊断与决策</div><ul><li>Top-1 假设:compressor_failure(置信度 0.94)</li><li>候选假设:3 个,全部挂证据</li><li>批次处置建议:DAIRY→disposed; FRESH→transferred</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">3 处置执行</div><ul><li>维修工单:executed</li><li>批次处置:0/2 已执行</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">4 独立验证</div><ul><li>Auditor 判决:manual_review</li><li>未通过条件:batches, approval</li></ul></div><div class="phase-arrow">→</div><div class="phase-card skip"><div class="phase-title">5 复盘演进</div><div class="phase-none">未进入</div></div></div>
+  <h3>Agent 交接链</h3>
+  <div class="handoff"><div class="hop hop-ok"><div class="hop-name">Sentry 巡检</div><div class="hop-brief">detected=True severity=critical</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 遏制</div><div class="hop-brief">ok=True</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Diagnoser 诊断</div><div class="hop-brief">top_hypothesis=compressor_failure</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 处置</div><div class="hop-brief">result=executed</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Auditor 稽核</div><div class="hop-brief">result=manual_review failed=batches,approval</div></div></div>
+  <div class="grid-2">
+    <div><h3>设备状态链 · FROST-S03</h3>
+<div class="card">
+  <div class="device-health">
+    <span class="badge badge-ok">健康 normal</span>
+    <span class="badge badge-info">压缩机 running</span>
+    <span class="badge badge-info">门 -</span>
+  </div>
+  <svg viewBox="0 0 560 170" class="temp-svg" role="img" aria-label="温度曲线">
+<line x1="30" y1="61.6" x2="530" y2="61.6" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
+<polyline points="30.0,132.5 126.8,131.0 223.5,131.0 320.3,64.7 417.1,51.1 513.9,37.5 523.5,88.8 526.8,100.8 530.0,109.9" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="30.0" cy="132.5" r="4" fill="#2563eb"/><text x="30.0" y="124.5" class="t-lbl" text-anchor="middle">3.3</text><circle cx="126.8" cy="131.0" r="4" fill="#2563eb"/><text x="126.8" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="223.5" cy="131.0" r="4" fill="#2563eb"/><text x="223.5" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="320.3" cy="64.7" r="4" fill="#2563eb"/><text x="320.3" y="56.7" class="t-lbl" text-anchor="middle">7.8</text><circle cx="417.1" cy="51.1" r="4" fill="#2563eb"/><text x="417.1" y="43.1" class="t-lbl" text-anchor="middle">8.7</text><circle cx="513.9" cy="37.5" r="4" fill="#2563eb"/><text x="513.9" y="29.5" class="t-lbl" text-anchor="middle">9.6</text><circle cx="523.5" cy="88.8" r="4" fill="#2563eb"/><text x="523.5" y="80.8" class="t-lbl" text-anchor="middle">6.2</text><circle cx="526.8" cy="100.8" r="4" fill="#2563eb"/><text x="526.8" y="92.8" class="t-lbl" text-anchor="middle">5.4</text><circle cx="530.0" cy="109.9" r="4" fill="#2563eb"/><text x="530.0" y="101.9" class="t-lbl" text-anchor="middle">4.8</text>
+<text x="532" y="65.6" class="t-th">8°C</text>
+</svg>
+  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+</div></div>
+    <div><h3>Auditor 判决</h3>
+<div class="card">
+  <div class="verdict-head"><span class="badge badge-warn">manual_review</span><span class="badge badge-info">证据引用 4 条</span></div>
+  <div class='verdict-extra'>未通过条件:batches, approval</div>
+  <table class='tbl'><thead><tr><th>验证主题</th><th>结果</th><th>验证者</th><th>时间</th></tr></thead><tbody><tr><td>approval</td><td><span class="badge badge-bad">未过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>audit</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>batches</td><td><span class="badge badge-bad">未过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>device</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr><tr><td>sales_hold</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:05:00</td></tr></tbody></table>
+</div></div>
+  </div>
+  <h3>商品批次与停售</h3>
+  <table class='tbl'><thead><tr><th>批次</th><th>处置状态</th><th>停售</th><th>食用安全</th></tr></thead><tbody><tr><td class='mono'>BATCH-S03-DAIRY-001</td><td><span class="badge badge-bad">quarantined</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr><tr><td class='mono'>BATCH-S03-FRESH-001</td><td><span class="badge badge-bad">quarantined</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr></tbody></table>
+  <h3>审批</h3>
+  <table class='tbl'><thead><tr><th>事项</th><th>状态</th><th>金额</th><th>截止</th></tr></thead><tbody><tr><td>repair FROST-S03</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:02:00</td></tr><tr><td>disposed BATCH-S03-DAIRY-001</td><td><span class="badge badge-warn">pending</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr><tr><td>transferred BATCH-S03-FRESH-001</td><td><span class="badge badge-warn">pending</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr></tbody></table>
+  <h3>受控写审计</h3>
+  <table class='tbl'><thead><tr><th>工具</th><th>Actor</th><th>结果</th><th>时间</th></tr></thead><tbody><tr><td class='mono'>apply_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_workorder</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr></tbody></table>
+</section>
+
+<section class="panel" id="panel-5">
+  <div class="panel-head">
+    <h2>F · 工单查询部分失败</h2>
+    <div class="badges">
+      <span class="badge badge-warn">失败分支</span>
+      <span class="badge badge-ok">验收通过</span>
+      <span class="badge badge-warn">CONTAINED</span>
+      <span class="badge badge-info">阶段 EXECUTE</span>
+      <span class="badge badge-info">BLOCKED</span>
+    </div>
+  </div>
+  <div class="redline-note">工单完成 ≠ 事件关闭:工具部分失败时保持遏制并阻断</div>
+
+  <h3>五阶段闭环</h3>
+  <div class="phase-lane"><div class="phase-card done"><div class="phase-title">1 发现与遏制</div><ul><li>严重度:critical</li><li>受影响批次:2 个</li><li>停售遏制:成功</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">2 诊断与决策</div><ul><li>Top-1 假设:compressor_failure(置信度 0.94)</li><li>候选假设:3 个,全部挂证据</li><li>批次处置建议:DAIRY→disposed; FRESH→transferred</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">3 处置执行</div><ul><li>维修工单:executed</li><li>批次处置:2/2 已执行</li></ul></div><div class="phase-arrow">→</div><div class="phase-card done"><div class="phase-title">4 独立验证</div><ul><li>Auditor 判决:reopened</li><li>未通过条件:device</li><li>工具部分失败:workorder</li></ul></div><div class="phase-arrow">→</div><div class="phase-card skip"><div class="phase-title">5 复盘演进</div><div class="phase-none">未进入</div></div></div>
+  <h3>Agent 交接链</h3>
+  <div class="handoff"><div class="hop hop-ok"><div class="hop-name">Sentry 巡检</div><div class="hop-brief">detected=True severity=critical</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 遏制</div><div class="hop-brief">ok=True</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Diagnoser 诊断</div><div class="hop-brief">top_hypothesis=compressor_failure</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Executor 处置</div><div class="hop-brief">result=executed</div></div><div class="hop-arrow">→</div><div class="hop hop-ok"><div class="hop-name">Auditor 稽核</div><div class="hop-brief">result=reopened failed=device</div></div></div>
+  <div class="grid-2">
+    <div><h3>设备状态链 · FROST-S03</h3>
+<div class="card">
+  <div class="device-health">
+    <span class="badge badge-ok">健康 normal</span>
+    <span class="badge badge-info">压缩机 running</span>
+    <span class="badge badge-info">门 -</span>
+  </div>
+  <svg viewBox="0 0 560 170" class="temp-svg" role="img" aria-label="温度曲线">
+<line x1="30" y1="61.6" x2="530" y2="61.6" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
+<polyline points="30.0,132.5 126.8,131.0 223.5,131.0 320.3,64.7 417.1,51.1 513.9,37.5 523.5,88.8 526.8,100.8 530.0,109.9" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="30.0" cy="132.5" r="4" fill="#2563eb"/><text x="30.0" y="124.5" class="t-lbl" text-anchor="middle">3.3</text><circle cx="126.8" cy="131.0" r="4" fill="#2563eb"/><text x="126.8" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="223.5" cy="131.0" r="4" fill="#2563eb"/><text x="223.5" y="123.0" class="t-lbl" text-anchor="middle">3.4</text><circle cx="320.3" cy="64.7" r="4" fill="#2563eb"/><text x="320.3" y="56.7" class="t-lbl" text-anchor="middle">7.8</text><circle cx="417.1" cy="51.1" r="4" fill="#2563eb"/><text x="417.1" y="43.1" class="t-lbl" text-anchor="middle">8.7</text><circle cx="513.9" cy="37.5" r="4" fill="#2563eb"/><text x="513.9" y="29.5" class="t-lbl" text-anchor="middle">9.6</text><circle cx="523.5" cy="88.8" r="4" fill="#2563eb"/><text x="523.5" y="80.8" class="t-lbl" text-anchor="middle">6.2</text><circle cx="526.8" cy="100.8" r="4" fill="#2563eb"/><text x="526.8" y="92.8" class="t-lbl" text-anchor="middle">5.4</text><circle cx="530.0" cy="109.9" r="4" fill="#2563eb"/><text x="530.0" y="101.9" class="t-lbl" text-anchor="middle">4.8</text>
+<text x="532" y="65.6" class="t-th">8°C</text>
+</svg>
+  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+</div></div>
+    <div><h3>Auditor 判决</h3>
+<div class="card">
+  <div class="verdict-head"><span class="badge badge-bad">reopened</span><span class="badge badge-info">证据引用 4 条</span></div>
+  <div class='verdict-extra'>未通过条件:device · 工具部分失败:workorder</div>
+  <table class='tbl'><thead><tr><th>验证主题</th><th>结果</th><th>验证者</th><th>时间</th></tr></thead><tbody><tr><td>approval</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>audit</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>batches</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>device</td><td><span class="badge badge-bad">未过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr><tr><td>sales_hold</td><td><span class="badge badge-ok">通过</span></td><td>Auditor</td><td class='mono'>09:06:00</td></tr></tbody></table>
+</div></div>
+  </div>
+  <h3>商品批次与停售</h3>
+  <table class='tbl'><thead><tr><th>批次</th><th>处置状态</th><th>停售</th><th>食用安全</th></tr></thead><tbody><tr><td class='mono'>BATCH-S03-DAIRY-001</td><td><span class="badge badge-warn">disposed</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr><tr><td class='mono'>BATCH-S03-FRESH-001</td><td><span class="badge badge-info">transferred</span></td><td><span class="badge badge-bad">停售中</span></td><td><span class="badge badge-bad">不安全</span></td></tr></tbody></table>
+  <h3>审批</h3>
+  <table class='tbl'><thead><tr><th>事项</th><th>状态</th><th>金额</th><th>截止</th></tr></thead><tbody><tr><td>repair FROST-S03</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:02:00</td></tr><tr><td>disposed BATCH-S03-DAIRY-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr><tr><td>transferred BATCH-S03-FRESH-001</td><td><span class="badge badge-ok">approved</span></td><td class='mono'>-</td><td class='mono'>09:35:00</td></tr></tbody></table>
+  <h3>受控写审计</h3>
+  <table class='tbl'><thead><tr><th>工具</th><th>Actor</th><th>结果</th><th>时间</th></tr></thead><tbody><tr><td class='mono'>apply_sales_hold</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:00:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_workorder</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:01:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>create_approval</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:05:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>decide_approval</td><td>ScenarioEngine</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr><tr><td class='mono'>apply_batch_disposition</td><td>Executor</td><td><span class="badge badge-ok">成功</span></td><td class='mono'>09:06:00</td></tr></tbody></table>
+</section>
+
+<footer class="foot">数据来自有状态 Mock 与固定 seed,仅证明仓库内确定性行为;不代表真实门店收益或生产可用性。</footer>
+<script>
+document.querySelectorAll('.tab').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.panel).classList.add('active');
+  });
+});
+</script>
+</body></html>

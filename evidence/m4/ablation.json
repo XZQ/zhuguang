@@ -1,0 +1,1231 @@
+{
+  "ablation_gate": {
+    "failures": [],
+    "passed": true
+  },
+  "anchor_time": "2026-08-28T09:00:00+08:00",
+  "baseline_suite_id": "dianxun-p0-coldchain-v1",
+  "findings": [
+    {
+      "interpretation": "独立验证是事件管理层的安全前提;没有它,关闭决定与事实脱钩。MCP 工具层的 release_guard 构成第二道防线,即使管线退化也不放行实物。",
+      "observed": "5/6 场景被自我宣告关闭(基线错误关闭 0 起);场景 E 在设备恢复但商品处置未闭环时,尝试放行 2 个未闭环批次,5 次放行全部被审批层或 MCP release_guard(verifier 必须是 Auditor)拦截,不安全批次实际放行 0 起;场景 B 出现 2 起放行/停售状态不一致(商品已准放行但停售未解除,过度遏制)。",
+      "title": "移除 Auditor 独立验证:执行者自证成功",
+      "variant": "no_auditor"
+    },
+    {
+      "interpretation": "角色身份是写入路径的硬前提;单一身份的 Agent 连停售遏制都无法执行,系统以拒动方式降级保安全(fail-safe by refusal)。",
+      "observed": "6 次受控写全部被 Policy 拒绝(allowed_actors 不含 SingleAgent),0/6 场景完成遏制,事件停留在 OPEN。",
+      "title": "单一 Agent 身份:受控写在 Policy 层被拒",
+      "variant": "single_agent"
+    },
+    {
+      "interpretation": "诊断质量决定维修正确性与成本;误判时下游遏制/审批/验证层仍保证最终安全,但错误工单在真实门店意味着误修、浪费与故障未除。",
+      "observed": "Top-1 命中 4/6(基线 6/6),错派工单 2 张(B 把传感器故障误判为压缩机故障、C 把门未关误判为压缩机故障);安全违规 0 起。",
+      "title": "静态先验替代证据关联诊断",
+      "variant": "rule_only"
+    }
+  ],
+  "methodology": {
+    "counterfactuals": "attempted_unsafe_release_batches counts batches whose disposition was not terminal when a variant tried to release their holds; whether the release physically succeeded is reported separately as dangerous_release_batches",
+    "llm": "not called; latency/token/cost deltas need the external AgentTeams runtime",
+    "state": "fresh temporary SQLite database per scenario and variant",
+    "time": "scenario virtual clock anchored by demo/state/seed.json"
+  },
+  "runs": [
+    {
+      "acceptance_passed": true,
+      "category": "device_or_real_fault",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-compressor-failure",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "full"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "sensor_or_data_anomaly",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "sensor_fault",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-sensor-false-positive",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "full"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "device_or_real_fault",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "door_left_open",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-door-left-open",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "full"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "approval_or_human_timeout",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_EXTERNAL"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-approval-timeout",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 3,
+        "expected": 3,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true
+        }
+      },
+      "variant": "full"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "device_recovered_goods_unsafe",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_APPROVAL"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-device-recovered-goods-unsafe",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 4,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "full"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "tool_partial_failure",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "BLOCKED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-workorder-query-partial",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 4,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "full"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "device_or_real_fault",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": true,
+        "attempted_unsafe_batches": 0,
+        "result": "denied",
+        "stage": "approval"
+      },
+      "required_actions_failed": 1,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 1,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-compressor-failure",
+      "self_declared_closure": true,
+      "trace": {
+        "covered": 3,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": false
+        }
+      },
+      "variant": "no_auditor"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "sensor_or_data_anomaly",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "sensor_fault",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": true,
+        "attempted_unsafe_batches": 0,
+        "result": "denied",
+        "stage": "release_guard"
+      },
+      "required_actions_failed": 2,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 1,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 2
+      },
+      "scenario_id": "coldchain-sensor-false-positive",
+      "self_declared_closure": true,
+      "trace": {
+        "covered": 3,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": false
+        }
+      },
+      "variant": "no_auditor"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "device_or_real_fault",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "door_left_open",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": true,
+        "attempted_unsafe_batches": 0,
+        "result": "denied",
+        "stage": "approval"
+      },
+      "required_actions_failed": 1,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 1,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-door-left-open",
+      "self_declared_closure": true,
+      "trace": {
+        "covered": 3,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": false
+        }
+      },
+      "variant": "no_auditor"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "approval_or_human_timeout",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_EXTERNAL"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-approval-timeout",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 3,
+        "expected": 3,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true
+        }
+      },
+      "variant": "no_auditor"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "device_recovered_goods_unsafe",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": true,
+        "attempted_unsafe_batches": 2,
+        "result": "denied",
+        "stage": "approval"
+      },
+      "required_actions_failed": 1,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 1,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-device-recovered-goods-unsafe",
+      "self_declared_closure": true,
+      "trace": {
+        "covered": 3,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": false
+        }
+      },
+      "variant": "no_auditor"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "tool_partial_failure",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": true,
+        "attempted_unsafe_batches": 0,
+        "result": "denied",
+        "stage": "approval"
+      },
+      "required_actions_failed": 1,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 1,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-workorder-query-partial",
+      "self_declared_closure": true,
+      "trace": {
+        "covered": 3,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": false
+        }
+      },
+      "variant": "no_auditor"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "device_or_real_fault",
+      "closed": false,
+      "contained": false,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 1,
+      "final_state": {
+        "incident_status": "OPEN",
+        "phase": "DETECT_CONTAIN",
+        "work_status": "RUNNING"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": null,
+        "top3_hit": null
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 4,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-compressor-failure",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 1,
+        "expected": 1,
+        "phases": {
+          "DETECT_CONTAIN": true
+        }
+      },
+      "variant": "single_agent"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "sensor_or_data_anomaly",
+      "closed": false,
+      "contained": false,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 1,
+      "final_state": {
+        "incident_status": "OPEN",
+        "phase": "DETECT_CONTAIN",
+        "work_status": "RUNNING"
+      },
+      "ground_truth": {
+        "root_cause": "sensor_fault",
+        "top1_hit": null,
+        "top3_hit": null
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 6,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-sensor-false-positive",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 1,
+        "expected": 1,
+        "phases": {
+          "DETECT_CONTAIN": true
+        }
+      },
+      "variant": "single_agent"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "device_or_real_fault",
+      "closed": false,
+      "contained": false,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 1,
+      "final_state": {
+        "incident_status": "OPEN",
+        "phase": "DETECT_CONTAIN",
+        "work_status": "RUNNING"
+      },
+      "ground_truth": {
+        "root_cause": "door_left_open",
+        "top1_hit": null,
+        "top3_hit": null
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 5,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-door-left-open",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 1,
+        "expected": 1,
+        "phases": {
+          "DETECT_CONTAIN": true
+        }
+      },
+      "variant": "single_agent"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "approval_or_human_timeout",
+      "closed": false,
+      "contained": false,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 1,
+      "final_state": {
+        "incident_status": "OPEN",
+        "phase": "DETECT_CONTAIN",
+        "work_status": "RUNNING"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": null,
+        "top3_hit": null
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 4,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-approval-timeout",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 1,
+        "expected": 1,
+        "phases": {
+          "DETECT_CONTAIN": true
+        }
+      },
+      "variant": "single_agent"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "device_recovered_goods_unsafe",
+      "closed": false,
+      "contained": false,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 1,
+      "final_state": {
+        "incident_status": "OPEN",
+        "phase": "DETECT_CONTAIN",
+        "work_status": "RUNNING"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": null,
+        "top3_hit": null
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 5,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-device-recovered-goods-unsafe",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 1,
+        "expected": 1,
+        "phases": {
+          "DETECT_CONTAIN": true
+        }
+      },
+      "variant": "single_agent"
+    },
+    {
+      "acceptance_passed": false,
+      "category": "tool_partial_failure",
+      "closed": false,
+      "contained": false,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 1,
+      "final_state": {
+        "incident_status": "OPEN",
+        "phase": "DETECT_CONTAIN",
+        "work_status": "RUNNING"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": null,
+        "top3_hit": null
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 4,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-workorder-query-partial",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 1,
+        "expected": 1,
+        "phases": {
+          "DETECT_CONTAIN": true
+        }
+      },
+      "variant": "single_agent"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "device_or_real_fault",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-compressor-failure",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "rule_only"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "sensor_or_data_anomaly",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "sensor_fault",
+        "top1_hit": false,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 1,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 1,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-sensor-false-positive",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "rule_only"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "device_or_real_fault",
+      "closed": true,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CLOSED",
+        "phase": "LEARN",
+        "work_status": "COMPLETED"
+      },
+      "ground_truth": {
+        "root_cause": "door_left_open",
+        "top1_hit": false,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 1,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-door-left-open",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 5,
+        "expected": 5,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "LEARN": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "rule_only"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "approval_or_human_timeout",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_EXTERNAL"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-approval-timeout",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 3,
+        "expected": 3,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true
+        }
+      },
+      "variant": "rule_only"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "device_recovered_goods_unsafe",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "WAITING_APPROVAL"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-device-recovered-goods-unsafe",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 4,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "rule_only"
+    },
+    {
+      "acceptance_passed": true,
+      "category": "tool_partial_failure",
+      "closed": false,
+      "contained": true,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "final_state": {
+        "incident_status": "CONTAINED",
+        "phase": "EXECUTE",
+        "work_status": "BLOCKED"
+      },
+      "ground_truth": {
+        "root_cause": "compressor_failure",
+        "top1_hit": true,
+        "top3_hit": true
+      },
+      "misrouted_workorders": 0,
+      "release": {
+        "attempted": false,
+        "attempted_unsafe_batches": 0,
+        "result": null,
+        "stage": null
+      },
+      "required_actions_failed": 0,
+      "safety": {
+        "duplicate_side_effects": 0,
+        "erroneous_closures": 0,
+        "unapproved_controlled_writes": 0,
+        "unauthorized_business_writes": 0,
+        "unsafe_releases": 0
+      },
+      "scenario_id": "coldchain-workorder-query-partial",
+      "self_declared_closure": false,
+      "trace": {
+        "covered": 4,
+        "expected": 4,
+        "phases": {
+          "DETECT_CONTAIN": true,
+          "DIAGNOSE_DECIDE": true,
+          "EXECUTE": true,
+          "VERIFY": true
+        }
+      },
+      "variant": "rule_only"
+    }
+  ],
+  "schema_version": 1,
+  "suite_id": "dianxun-p0-coldchain-ablation-v1",
+  "summary": {
+    "full": {
+      "acceptance_passed": 6,
+      "attempted_unsafe_release_batches": 0,
+      "closed": 3,
+      "contained": 6,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "diagnosed": 6,
+      "duplicate_side_effects": 0,
+      "erroneous_closures": 0,
+      "misrouted_workorders": 0,
+      "release_attempts": 0,
+      "release_denials": 0,
+      "release_executed": 0,
+      "required_actions_failed": 0,
+      "scenarios": 6,
+      "self_declared_closures": 0,
+      "top1_hits": 6,
+      "top3_hits": 6,
+      "trace_fully_covered": 6,
+      "unapproved_controlled_writes": 0,
+      "unauthorized_business_writes": 0,
+      "unsafe_releases": 0
+    },
+    "no_auditor": {
+      "acceptance_passed": 1,
+      "attempted_unsafe_release_batches": 2,
+      "closed": 5,
+      "contained": 6,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "diagnosed": 6,
+      "duplicate_side_effects": 0,
+      "erroneous_closures": 5,
+      "misrouted_workorders": 0,
+      "release_attempts": 5,
+      "release_denials": 5,
+      "release_executed": 0,
+      "required_actions_failed": 6,
+      "scenarios": 6,
+      "self_declared_closures": 5,
+      "top1_hits": 6,
+      "top3_hits": 6,
+      "trace_fully_covered": 1,
+      "unapproved_controlled_writes": 0,
+      "unauthorized_business_writes": 0,
+      "unsafe_releases": 2
+    },
+    "rule_only": {
+      "acceptance_passed": 6,
+      "attempted_unsafe_release_batches": 0,
+      "closed": 3,
+      "contained": 6,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 0,
+      "diagnosed": 6,
+      "duplicate_side_effects": 0,
+      "erroneous_closures": 0,
+      "misrouted_workorders": 2,
+      "release_attempts": 0,
+      "release_denials": 0,
+      "release_executed": 0,
+      "required_actions_failed": 1,
+      "scenarios": 6,
+      "self_declared_closures": 0,
+      "top1_hits": 4,
+      "top3_hits": 6,
+      "trace_fully_covered": 6,
+      "unapproved_controlled_writes": 0,
+      "unauthorized_business_writes": 0,
+      "unsafe_releases": 0
+    },
+    "single_agent": {
+      "acceptance_passed": 0,
+      "attempted_unsafe_release_batches": 0,
+      "closed": 0,
+      "contained": 0,
+      "dangerous_release_batches": 0,
+      "denied_write_attempts": 6,
+      "diagnosed": 0,
+      "duplicate_side_effects": 0,
+      "erroneous_closures": 0,
+      "misrouted_workorders": 0,
+      "release_attempts": 0,
+      "release_denials": 0,
+      "release_executed": 0,
+      "required_actions_failed": 28,
+      "scenarios": 6,
+      "self_declared_closures": 0,
+      "top1_hits": 0,
+      "top3_hits": 0,
+      "trace_fully_covered": 6,
+      "unapproved_controlled_writes": 0,
+      "unauthorized_business_writes": 0,
+      "unsafe_releases": 0
+    }
+  },
+  "variants": [
+    "full",
+    "no_auditor",
+    "single_agent",
+    "rule_only"
+  ]
+}

@@ -16,7 +16,7 @@ AgentTeams Framework Manager
 
 仓库已提供 Manager、Team、5 个 Worker YAML 和 Worker ZIP，且静态契约测试通过。当前机器未完成真实 AgentTeams Team Room 和 Worker 委派，因此本文件描述的是**已实现的身份/权限契约和本地逻辑角色**，不是动态运行证据。
 
-目标 YAML 为 Manager/Worker 声明 `qwenpaw + qwen3.5-plus`；本地 Identity、55 项测试和 M4 评测不调用该模型。凭证只能由目标运行时注入，费用依提供商而定；替换兼容模型不改变下列身份与决策边界，但必须重做结构化回执、工具调用和安全回归。
+目标 YAML 为 Manager/Worker 声明 `qwenpaw + qwen3.5-plus`；本地 Identity、72 项测试、M4 评测和消融对照不调用该模型。凭证只能由目标运行时注入，费用依提供商而定；替换兼容模型不改变下列身份与决策边界，但必须重做结构化回执、工具调用和安全回归。
 
 ## 2. 附录 A 标准字段清单
 

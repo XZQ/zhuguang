@@ -66,6 +66,20 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate.add_argument("--scenario-dir", type=_path, default=DEFAULT_SCENARIO_DIR)
     evaluate.add_argument("--output-dir", type=_path, default=DEFAULT_EVIDENCE_DIR)
 
+    ablation = subparsers.add_parser(
+        "ablation",
+        help="run architecture ablation variants across the six scenarios",
+    )
+    ablation.add_argument("--scenario-dir", type=_path, default=DEFAULT_SCENARIO_DIR)
+    ablation.add_argument("--output-dir", type=_path, default=DEFAULT_EVIDENCE_DIR)
+
+    command_center = subparsers.add_parser(
+        "command-center",
+        help="render the read-only incident command-center HTML from the six scenarios",
+    )
+    command_center.add_argument("--scenario-dir", type=_path, default=DEFAULT_SCENARIO_DIR)
+    command_center.add_argument("--output", type=_path, default=None)
+
     mcp_tools = subparsers.add_parser("mcp-tools", help="print P0 and optional P1 tools")
     mcp_tools.add_argument("--include-p1", action="store_true")
 
@@ -199,6 +213,28 @@ def main(argv: list[str] | None = None) -> int:
             }
         )
         return 0 if evaluation["local_m4_gate"]["passed"] else 1
+    if args.command == "ablation":
+        from .ablation import run_ablation, write_ablation_artifacts
+
+        ablation = run_ablation(args.scenario_dir)
+        json_path, report_path = write_ablation_artifacts(ablation, args.output_dir)
+        _print_json(
+            {
+                "suite_id": ablation["suite_id"],
+                "gate": ablation["ablation_gate"],
+                "summary": ablation["summary"],
+                "results": str(json_path),
+                "report": str(report_path),
+            }
+        )
+        return 0 if ablation["ablation_gate"]["passed"] else 1
+    if args.command == "command-center":
+        from .command_center import DEFAULT_COMMAND_CENTER_PATH, build_command_center
+
+        output_path = args.output or DEFAULT_COMMAND_CENTER_PATH
+        target = build_command_center(args.scenario_dir, output_path)
+        _print_json({"command_center": str(target), "bytes": target.stat().st_size})
+        return 0
     if args.command == "demo-run":
         store = create_state_store(args.db)
         _require_remote_reset(store, args.allow_remote_reset)
