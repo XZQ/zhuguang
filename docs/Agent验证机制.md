@@ -45,7 +45,7 @@
 # src/dianxun/domain/policy.py
 class PolicyEngine:
     """策略引擎：评估操作是否合规"""
-    
+
     def evaluate(
         self,
         actor: str,
@@ -61,15 +61,15 @@ class PolicyEngine:
         - approvers: 审批人列表
         - reason: 决策原因
         """
-        
+
         # L1: 低风险，自动放行
         if risk_level <= 1:
             return PolicyDecision(allowed=True, ...)
-        
+
         # L2-L3: 中风险，需要审批
         if risk_level <= 3:
             return PolicyDecision(allowed=True, approval_required=True, ...)
-        
+
         # L4-L5: 高风险，审批或拒绝
         return PolicyDecision(allowed=False, reason="高风险操作需人工介入")
 ```
@@ -80,8 +80,9 @@ class PolicyEngine:
 # src/dianxun/mcp/p0.py
 class ScopeViolation(PermissionError):
     """操作超出事件边界时抛出"""
-    
+
     pass
+
 
 def _require_incident_scope(
     conn,
@@ -112,15 +113,15 @@ def release_sales_hold(self, *, verification_id: str, ...) -> dict:
     3. 验证必须在冻结之后创建
     4. 验证必须覆盖所有目标批次
     """
-    
+
     # 验证 Auditor 验证存在且有效
     verification = conn.execute("""
-        SELECT * FROM verifications 
+        SELECT * FROM verifications
         WHERE verification_id = ?
         AND result = 'passed'
         AND verifier = 'Auditor'
     """, (verification_id,)).fetchone()
-    
+
     if verification is None:
         raise PermissionError("需要有效的 Auditor 验证")
 ```
