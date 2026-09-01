@@ -35,3 +35,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# 本地助手记忆
+.workbuddy/
