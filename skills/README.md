@@ -1,6 +1,6 @@
 # 逐光｜Skill 目录索引
 
-复赛唯一事实口径为 9 个目标 Skill：P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。只有根目录下 6 个同名目录是 P0 工程契约源；规划说明和旧入口分区存放，避免与可装载 Skill 混淆。
+复赛唯一事实口径为 9 个目标 Skill：P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。只有根目录下 6 个同名目录是 P0 工程契约源；[`registry.json`](registry.json) 固定当前可路由版本和内容哈希，[`LIFECYCLE.md`](LIFECYCLE.md) 定义发布、灰度、兼容、升级、回滚与退役。规划说明和旧入口分区存放，避免与可装载 Skill 混淆。
 
 > 汇总材料见 [../docs/competition/03-Skill九要素卡.md](../docs/competition/03-Skill九要素卡.md)
 
@@ -21,8 +21,12 @@
 | 路径 | 定位 | 维护规则 |
 |---|---|---|
 | `skills/<p0-name>/` | 6 个 P0 Skill 的唯一契约源 | `SKILL.md`、manifest、Schema 和样例必须一起维护 |
+| [`registry.json`](registry.json) | P0 发布事实源 | `name + version + digest` 唯一标识 release；当前 6 个 stable、0 个 canary |
+| [`LIFECYCLE.md`](LIFECYCLE.md) | 生命周期门禁 | SemVer、确定性灰度、升级/兼容、回滚和退役规则 |
 | [`planned/`](planned/) | P1/P2 设计与补充入口说明 | 不代表已形成可导入的 AgentTeams Skill 包 |
 | [`legacy/`](legacy/) | 旧 P0 单文件入口的兼容索引 | 只指向 canonical 目录，不复制契约正文 |
 | `packages/dianxun-worker/skills/` | AgentTeams Worker 打包镜像 | 不独立设计；必须与 6 个 canonical 目录逐字一致 |
 
-修改 P0 契约后必须同步 Worker 镜像，并运行 `uv run python scripts/build_worker_package.py` 与 `tests.test_agentteams_artifacts`；构建器会拒绝内容分叉。
+运行时 P0 Skill Span 自动记录 `skill_name`、`skill_version`、`skill_digest`、渠道和 Registry 版本；AgentTeams 外部证据 Schema 同样要求每次 Skill/工具调用与 provenance 一致。
+
+修改 P0 契约后必须同步 Worker 镜像，并运行 `tests.test_skill_registry`、`uv run python scripts/build_worker_package.py` 与 `tests.test_agentteams_artifacts`；构建器会拒绝内容或 Registry 分叉。

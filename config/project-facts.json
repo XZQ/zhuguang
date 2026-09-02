@@ -165,11 +165,27 @@
     "m3_repository_artifacts": {
       "status": "implemented_static_external_runtime_pending",
       "worker_package": "dist/dianxun-worker.zip",
-      "worker_package_sha256": "3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c",
-      "worker_package_files": 33,
+      "worker_package_sha256": "2f7e7d86ae7b115a966c5bcd57091ded7597df5939bb3031e91015e151979ffe",
+      "worker_package_files": 35,
       "artifact_contract_tests": 5,
       "runtime_evidence_contract_tests": 3,
+      "skill_registry_contract_tests": 4,
       "provenance": "dist/dianxun-worker.provenance.json",
+      "skill_registry": {
+        "path": "skills/registry.json",
+        "schema": "schemas/skill-registry.v1.schema.json",
+        "registry_version": "1.0.0",
+        "stable_releases": 6,
+        "active_canaries": 0,
+        "lifecycle": "skills/LIFECYCLE.md",
+        "trace_identity_fields": [
+          "skill_name",
+          "skill_version",
+          "skill_digest",
+          "skill_channel",
+          "skill_registry_version"
+        ]
+      },
       "mcp_deployment": "agentteams/mcp/deployment.yaml",
       "mcp_authentication": {
         "local_adapter": "shared_readonly_or_actor_token_mapping_with_tool_allowlist",
@@ -188,8 +204,8 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 72,
-      "full_unittest_passed": 70,
+      "full_unittest_count": 76,
+      "full_unittest_passed": 74,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json",

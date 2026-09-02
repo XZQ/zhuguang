@@ -20,6 +20,7 @@ REQUIRED_SKILLS = (
     "outcome-verify",
     "review-report",
 )
+SKILL_SUPPORT_FILES = ("registry.json", "LIFECYCLE.md")
 TEXT_SUFFIXES = {".json", ".md", ".py", ".toml", ".yaml", ".yml"}
 ZIP_TIMESTAMP = (2026, 8, 28, 0, 0, 0)
 
@@ -69,6 +70,28 @@ def _validate_source() -> None:
         if not skill_md.startswith(f"---\nname: {skill}\n"):
             raise ValueError(f"{skill}/SKILL.md lacks AgentTeams frontmatter")
 
+    for filename in SKILL_SUPPORT_FILES:
+        packaged = PACKAGE_ROOT / "skills" / filename
+        canonical = CANONICAL_SKILLS_ROOT / filename
+        if not packaged.is_file() or not canonical.is_file():
+            raise ValueError(f"Missing Skill support file: {filename}")
+        if _normalized_bytes(packaged) != _normalized_bytes(canonical):
+            raise ValueError(f"Packaged skills/{filename} differs from canonical source")
+
+    registry = json.loads((CANONICAL_SKILLS_ROOT / "registry.json").read_text(encoding="utf-8"))
+    registered = {item["name"]: item for item in registry.get("skills", [])}
+    provenance = {item["name"]: item for item in _skill_provenance()}
+    if set(registered) != set(REQUIRED_SKILLS):
+        raise ValueError("Skill registry names differ from required P0 Skills")
+    for skill in REQUIRED_SKILLS:
+        stable = registered[skill].get("stable", {})
+        if stable.get("channel") != "stable":
+            raise ValueError(f"{skill} has no stable Registry release")
+        if stable.get("version") != provenance[skill]["version"]:
+            raise ValueError(f"{skill} Registry version differs from manifest")
+        if stable.get("digest") != provenance[skill]["sha256"]:
+            raise ValueError(f"{skill} Registry digest differs from canonical source")
+
 
 def package_entries() -> list[tuple[str, Path]]:
     """Return sorted archive names and source paths."""
@@ -79,8 +102,12 @@ def package_entries() -> list[tuple[str, Path]]:
         for path in root.rglob("*"):
             if not path.is_file():
                 continue
-            if root_name == "skills" and path.relative_to(root).parts[0] not in REQUIRED_SKILLS:
-                continue
+            if root_name == "skills":
+                relative_parts = path.relative_to(root).parts
+                is_skill_file = relative_parts[0] in REQUIRED_SKILLS
+                is_support_file = len(relative_parts) == 1 and path.name in SKILL_SUPPORT_FILES
+                if not is_skill_file and not is_support_file:
+                    continue
             archive_name = PurePosixPath(path.relative_to(PACKAGE_ROOT).as_posix())
             if archive_name.is_absolute() or ".." in archive_name.parts:
                 raise ValueError(f"Unsafe package path: {archive_name}")
@@ -126,6 +153,9 @@ def build_worker_package(output: Path = DEFAULT_OUTPUT) -> dict[str, object]:
     checksum = output.with_suffix(output.suffix + ".sha256")
     checksum.write_text(f"{digest}  {output.name}\n", encoding="ascii", newline="\n")
     provenance = output.with_suffix(".provenance.json")
+    registry_path = CANONICAL_SKILLS_ROOT / "registry.json"
+    lifecycle_path = CANONICAL_SKILLS_ROOT / "LIFECYCLE.md"
+    registry = json.loads(registry_path.read_text(encoding="utf-8"))
     provenance.write_text(
         json.dumps(
             {
@@ -135,6 +165,15 @@ def build_worker_package(output: Path = DEFAULT_OUTPUT) -> dict[str, object]:
                 "runtime": "qwenpaw",
                 "model": "qwen3.5-plus",
                 "skills": _skill_provenance(),
+                "skill_registry": {
+                    "path": "skills/registry.json",
+                    "registry_version": registry["registry_version"],
+                    "sha256": hashlib.sha256(_normalized_bytes(registry_path)).hexdigest(),
+                },
+                "skill_lifecycle": {
+                    "path": "skills/LIFECYCLE.md",
+                    "sha256": hashlib.sha256(_normalized_bytes(lifecycle_path)).hexdigest(),
+                },
             },
             ensure_ascii=False,
             indent=2,

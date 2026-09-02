@@ -58,7 +58,20 @@
 `tests/test_skill_contracts.py` 同时校验成功/失败静态样例和运行时反例；这解决的是结构
 契约，不证明 LLM 语义正确性。
 
-### 2.2 策略合规检查
+### 2.2 Skill Registry 与 Trace 身份
+
+`skills/registry.json` 将每个 P0 release 固定为 `name + version + digest`。运行时进入
+`trace.span(..., kind="skill")` 时会解析 stable/canary release，并在 SQLite Span 中写入：
+
+- `skill_name`、`skill_version`、`skill_digest`；
+- `skill_channel`、`skill_registry_version`。
+
+旧 Trace 数据库通过向后兼容的 `ALTER TABLE ADD COLUMN` 自动迁移；历史行保持空值，不伪造
+版本身份。canary 按 Skill 名和 trace/incident ID 的 SHA-256 固定分桶，重试不会漂移。
+AgentTeams 证据 Schema `1.1` 同时要求 Skill load 和每次工具调用携带 version/digest，校验器
+会与当前 Worker provenance 逐项比对。真实平台是否产生这些字段仍以导出 Trace 为准。
+
+### 2.3 策略合规检查
 
 ```python
 # src/dianxun/domain/policy.py
@@ -92,7 +105,7 @@ return PolicyDecision(
 PolicyEngine 不按虚构的 L1-L5 数值区间自动推断；它按版本化策略中的 action、
 `allowed_actors`、风险等级和审批条件逐项判断。
 
-### 2.3 事件边界约束
+### 2.4 事件边界约束
 
 ```python
 # src/dianxun/mcp/p0.py
@@ -119,7 +132,7 @@ def _require_incident_scope(
     # 实现细节见 p0.py:_require_incident_scope
 ```
 
-### 2.4 交叉验证（Auditor 独立验证）
+### 2.5 交叉验证（Auditor 独立验证）
 
 ```python
 # src/dianxun/mcp/p0.py - release_sales_hold
@@ -224,13 +237,14 @@ if previous:
 ```bash
 # 验证相关测试
 tests/test_skill_contracts.py       # 六个 Skill 静态与运行时输出契约
+tests/test_skill_registry.py        # Registry、SemVer、灰度、退役和 Trace 版本身份
 tests/test_stateful_core.py         # SQLite/Policy/MCP 状态与聚合门
 tests/test_adversarial_hardening.py # scope/审批/release guard/HTTP 边界
 tests/test_coldchain_workflow.py    # 六场景端到端验证链
 tests/test_knowledge_flywheel.py    # 知识人工发布边界
 ```
 
-当前全量门禁发现 72 项，其中 70 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
+当前全量门禁发现 76 项，其中 74 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
 六个 P0 Skill 运行时输出契约、12 个 P0 MCP registry/调用路径、六场景闭环和主要安全
 边界均有自动化证据。仓库尚未生成正式行/分支覆盖率，也没有多线程/多进程争用压测或
 真实 AgentTeams/PolarDB 运行证据，不能表述为“所有关键点 100% 覆盖”。

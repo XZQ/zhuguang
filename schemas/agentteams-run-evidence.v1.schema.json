@@ -15,7 +15,7 @@
     "runs"
   ],
   "properties": {
-    "schema_version": { "const": "1.0" },
+    "schema_version": { "const": "1.1" },
     "evidence_kind": { "const": "agentteams_runtime" },
     "capture_status": { "const": "observed" },
     "captured_at": { "type": "string", "minLength": 1 },
@@ -43,11 +43,19 @@
       "uniqueItems": true,
       "items": {
         "type": "object",
-        "required": ["worker", "skill", "version", "package_sha256", "loaded_at"],
+        "required": [
+          "worker",
+          "skill",
+          "version",
+          "skill_digest",
+          "package_sha256",
+          "loaded_at"
+        ],
         "properties": {
           "worker": { "type": "string" },
           "skill": { "type": "string" },
           "version": { "type": "string" },
+          "skill_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "package_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "loaded_at": { "type": "string" }
         }
@@ -128,6 +136,8 @@
             "required": [
               "worker",
               "skill",
+              "skill_version",
+              "skill_digest",
               "tool",
               "request_id",
               "incident_id",
@@ -139,6 +149,8 @@
             "properties": {
               "worker": { "type": "string" },
               "skill": { "type": "string" },
+              "skill_version": { "type": "string" },
+              "skill_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
               "tool": { "type": "string" },
               "request_id": { "type": "string" },
               "incident_id": { "type": "string" },

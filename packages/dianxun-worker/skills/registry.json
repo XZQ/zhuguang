@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "registry_version": "1.0.0",
+  "lifecycle_policy": {
+    "versioning": "semver",
+    "channels": ["stable", "canary"],
+    "max_canary_percent": 25,
+    "promotion_gates": [
+      "contract_and_example_validation",
+      "deterministic_worker_package",
+      "local_normal_and_failure_regression",
+      "agentteams_skill_trace_identity",
+      "zero_new_safety_violations"
+    ],
+    "rollback_triggers": [
+      "schema_contract_failure",
+      "unsafe_action_or_false_closure",
+      "error_or_partial_rate_regression",
+      "latency_budget_regression"
+    ],
+    "retirement_gates": [
+      "replacement_and_owner_named",
+      "new_routing_disabled",
+      "retention_window_elapsed",
+      "audit_and_restore_artifacts_retained"
+    ]
+  },
+  "skills": [
+    {
+      "name": "anomaly-detect",
+      "owner": "Sentry",
+      "status": "active",
+      "stable": {
+        "version": "1.0.0",
+        "digest": "8940fcbe26fc05979f624ea3475747617891b5eb07e64e8aeebb049e038f7b07",
+        "channel": "stable",
+        "artifact": "skills/anomaly-detect"
+      },
+      "canary": null,
+      "rollback_target": null,
+      "compatibility": {
+        "input_schema_major": 1,
+        "output_schema_major": 1,
+        "minimum_worker_manifest": "1.0"
+      },
+      "retirement": null
+    },
+    {
+      "name": "coldchain-risk-assess",
+      "owner": "Diagnoser",
+      "status": "active",
+      "stable": {
+        "version": "1.1.0",
+        "digest": "1a3ca4b1d5e3fae14e9f8505ad2a19f371f2aa37f4ed53400cd3d045cf075699",
+        "channel": "stable",
+        "artifact": "skills/coldchain-risk-assess"
+      },
+      "canary": null,
+      "rollback_target": null,
+      "compatibility": {
+        "input_schema_major": 1,
+        "output_schema_major": 1,
+        "minimum_worker_manifest": "1.0"
+      },
+      "retirement": null
+    },
+    {
+      "name": "rootcause-drilldown",
+      "owner": "Diagnoser",
+      "status": "active",
+      "stable": {
+        "version": "1.2.0",
+        "digest": "bc1da8b68534bc90fdda733bbf03e7982674b703ccf28cc27ceef0aa8d3e003c",
+        "channel": "stable",
+        "artifact": "skills/rootcause-drilldown"
+      },
+      "canary": null,
+      "rollback_target": null,
+      "compatibility": {
+        "input_schema_major": 1,
+        "output_schema_major": 1,
+        "minimum_worker_manifest": "1.0"
+      },
+      "retirement": null
+    },
+    {
+      "name": "work-order-dispatch",
+      "owner": "Executor",
+      "status": "active",
+      "stable": {
+        "version": "1.0.0",
+        "digest": "0ced63be2032cc85fb87162d6a59fe10f5645419770df50057fb8da77080c7cb",
+        "channel": "stable",
+        "artifact": "skills/work-order-dispatch"
+      },
+      "canary": null,
+      "rollback_target": null,
+      "compatibility": {
+        "input_schema_major": 1,
+        "output_schema_major": 1,
+        "minimum_worker_manifest": "1.0"
+      },
+      "retirement": null
+    },
+    {
+      "name": "outcome-verify",
+      "owner": "Auditor",
+      "status": "active",
+      "stable": {
+        "version": "1.1.0",
+        "digest": "6120ba916d8254319ceac017085f6fe82b722fa83d9339bdcaca19075435d6d3",
+        "channel": "stable",
+        "artifact": "skills/outcome-verify"
+      },
+      "canary": null,
+      "rollback_target": null,
+      "compatibility": {
+        "input_schema_major": 1,
+        "output_schema_major": 1,
+        "minimum_worker_manifest": "1.0"
+      },
+      "retirement": null
+    },
+    {
+      "name": "review-report",
+      "owner": "Auditor",
+      "status": "active",
+      "stable": {
+        "version": "1.1.0",
+        "digest": "6b9d8b44480a5cb9896615b52130832a773563a6e303d866398908536017a1d7",
+        "channel": "stable",
+        "artifact": "skills/review-report"
+      },
+      "canary": null,
+      "rollback_target": null,
+      "compatibility": {
+        "input_schema_major": 1,
+        "output_schema_major": 1,
+        "minimum_worker_manifest": "1.0"
+      },
+      "retirement": null
+    }
+  ]
+}

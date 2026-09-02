@@ -1,9 +1,18 @@
 {
   "model": "qwen3.5-plus",
   "package": "dianxun-worker.zip",
-  "package_sha256": "3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c",
+  "package_sha256": "2f7e7d86ae7b115a966c5bcd57091ded7597df5939bb3031e91015e151979ffe",
   "runtime": "qwenpaw",
   "schema_version": "1.0",
+  "skill_lifecycle": {
+    "path": "skills/LIFECYCLE.md",
+    "sha256": "c6c1540e0cdf7eec91f9695e6d825185445ecbcbe82c96ad5384384bed60eef5"
+  },
+  "skill_registry": {
+    "path": "skills/registry.json",
+    "registry_version": "1.0.0",
+    "sha256": "d5c395da6a5d6879b83d2ac135eb8233822d6b8adecbab898a272abab8081846"
+  },
   "skills": [
     {
       "name": "anomaly-detect",

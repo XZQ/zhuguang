@@ -54,9 +54,24 @@ def _connect() -> sqlite3.Connection:
             status TEXT NOT NULL,         -- ok | error | degraded
             error TEXT,
             start_ms INTEGER NOT NULL,
-            end_ms INTEGER NOT NULL
+            end_ms INTEGER NOT NULL,
+            skill_name TEXT,
+            skill_version TEXT,
+            skill_digest TEXT,
+            skill_channel TEXT,
+            skill_registry_version TEXT
         )"""
     )
+    existing_columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(spans)").fetchall()}
+    for column in (
+        "skill_name",
+        "skill_version",
+        "skill_digest",
+        "skill_channel",
+        "skill_registry_version",
+    ):
+        if column not in existing_columns:
+            conn.execute(f"ALTER TABLE spans ADD COLUMN {column} TEXT")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_trace ON spans(trace_id)")
     conn.commit()
     return conn
@@ -100,6 +115,11 @@ class Span:
     error: str | None = None
     start_ms: int = field(default_factory=lambda: int(time.time() * 1000))
     end_ms: int = 0
+    skill_name: str | None = None
+    skill_version: str | None = None
+    skill_digest: str | None = None
+    skill_channel: str | None = None
+    skill_registry_version: str | None = None
 
     def finish(self, output: Any = None, status: str = "ok", error: str | None = None):
         self.end_ms = int(time.time() * 1000)
@@ -115,7 +135,11 @@ def _persist(span: Span) -> None:
     conn = _connect()
     try:
         conn.execute(
-            "INSERT OR REPLACE INTO spans VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            """INSERT OR REPLACE INTO spans(
+                span_id, trace_id, parent_id, name, kind, input_json, output_json,
+                status, error, start_ms, end_ms, skill_name, skill_version,
+                skill_digest, skill_channel, skill_registry_version
+            ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 span.span_id,
                 span.trace_id,
@@ -128,6 +152,11 @@ def _persist(span: Span) -> None:
                 span.error,
                 span.start_ms,
                 span.end_ms,
+                span.skill_name,
+                span.skill_version,
+                span.skill_digest,
+                span.skill_channel,
+                span.skill_registry_version,
             ),
         )
         conn.commit()
@@ -146,7 +175,19 @@ def span(
             result = do_something()
             s.output = result
     """
-    sp = Span(name=name, kind=kind, trace_id=trace_id, parent_id=parent_id, input=input)
+    skill_fields: dict[str, str] = {}
+    if kind == "skill":
+        from .skills.registry import registered_skill_trace_fields
+
+        skill_fields = registered_skill_trace_fields(name, routing_key=trace_id) or {}
+    sp = Span(
+        name=name,
+        kind=kind,
+        trace_id=trace_id,
+        parent_id=parent_id,
+        input=input,
+        **skill_fields,
+    )
     try:
         yield sp
         if sp.status == "ok" and sp.end_ms == 0:
@@ -161,7 +202,11 @@ def query_trace(trace_id: str) -> list[dict]:
     conn = _connect()
     try:
         rows = conn.execute(
-            "SELECT * FROM spans WHERE trace_id=? ORDER BY start_ms", (trace_id,)
+            """SELECT span_id, trace_id, parent_id, name, kind, input_json, output_json,
+                      status, error, start_ms, end_ms, skill_name, skill_version,
+                      skill_digest, skill_channel, skill_registry_version
+               FROM spans WHERE trace_id=? ORDER BY start_ms""",
+            (trace_id,),
         ).fetchall()
     finally:
         conn.close()
@@ -177,6 +222,11 @@ def query_trace(trace_id: str) -> list[dict]:
         "error",
         "start_ms",
         "end_ms",
+        "skill_name",
+        "skill_version",
+        "skill_digest",
+        "skill_channel",
+        "skill_registry_version",
     ]
     return [dict(zip(cols, r, strict=True)) for r in rows]
 
@@ -191,7 +241,10 @@ def trace_summary(trace_id: str) -> str:
     for s in spans:
         dur = s["end_ms"] - s["start_ms"]
         mark = "✓" if s["status"] == "ok" else "✗"
-        lines.append(f"  {mark} {s['kind']:<6} {s['name']:<26} {dur:>5}ms")
+        identity = ""
+        if s["skill_version"] and s["skill_digest"]:
+            identity = f" @{s['skill_version']}#{s['skill_digest'][:12]}"
+        lines.append(f"  {mark} {s['kind']:<6} {s['name']:<26} {dur:>5}ms{identity}")
         if s["status"] == "error":
             lines.append(f"        └─ {s['error']}")
     return "\n".join(lines)

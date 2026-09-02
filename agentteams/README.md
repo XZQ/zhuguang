@@ -15,13 +15,14 @@ agentteams/
 packages/dianxun-worker/
   manifest.json
   config/{SOUL,AGENTS}.md
+  skills/{registry.json,LIFECYCLE.md}
   skills/<6 个 P0 Skill>/...
 packages/dianxun-mcp/Dockerfile
 dist/dianxun-worker.zip
 dist/dianxun-worker.provenance.json
 ```
 
-Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP。当前 SHA-256 为 `3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c`；`dist/dianxun-worker.provenance.json` 还记录每个 Skill 的版本与内容哈希。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为集群可访问的镜像。
+Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP。当前 SHA-256 为 `2f7e7d86ae7b115a966c5bcd57091ded7597df5939bb3031e91015e151979ffe`；`dist/dianxun-worker.provenance.json` 还记录 Registry、生命周期文档和每个 Skill 的版本与内容哈希。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为集群可访问的镜像。
 
 当前仓库只提交脱敏、可复现的配置。只有真实平台产生的 Team Room、委派消息、MCP 调用和资源状态才是动态证据；本地契约测试不能替代它们。
 
@@ -32,12 +33,13 @@ Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP。当前 SHA-25
 ```powershell
 uv sync --group dev
 uv run python scripts/build_worker_package.py
+uv run python -m unittest -v tests.test_skill_registry
 uv run python -m unittest -v tests.test_agentteams_artifacts
 ```
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内有 5 项 AgentTeams artifact 测试和 3 项动态证据校验器测试；全量发现 72 项测试，其中 70 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
+仓库内有 5 项 AgentTeams artifact 测试和 3 项动态证据校验器测试；全量发现 76 项测试，其中 74 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
 
 ## 2. 模型、凭证、费用与 Skill 类型
 
@@ -45,7 +47,7 @@ Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SH
 - 模型/API 凭证必须由 AgentTeams/Kubernetes 运行时通过 Secret、环境变量或外部密钥系统注入，不得写入 YAML、ZIP、日志、Trace 或视频。
 - 费用取决于实际提供商、输入/输出 Token、调用次数和集群资源；当前没有真实平台账单，动态验收时应保存脱敏用量/费用证据，无法取得则标记“未测量”。
 - 可换为 AgentTeams/QwenPaw 支持且满足结构化输出和工具调用要求的兼容模型；需修改 `spec.model`/提供商配置，并重跑工具调用、结构化回执、延迟、费用和安全回归。
-- 当前 Worker 包中的 6 个 P0 均为自定义可复用 Skill。复赛规则要求核心 Skill 可发现、可加载、可调用并形成 Trace，不要求指定云厂商 Skill；是否满足以目标 AgentTeams 运行证据为准。
+- 当前 Worker 包中的 6 个 P0 均为自定义可复用 Skill，并内置版本 Registry 与生命周期门禁。复赛规则要求核心 Skill 可发现、可加载、可调用并形成 Trace，不要求指定云厂商 Skill；是否满足以目标 AgentTeams 运行证据为准。
 
 ## 3. 构建和部署 MCP
 
@@ -177,9 +179,10 @@ kubectl -n dianxun get deployment,pod,service,pvc
 3. Worker 回执含 `incident_id`、phase、evidence refs、request ID；
 4. 至少一条 Worker 通过 `dianxun-mcp` 产生真实工具返回；
 5. Auditor 重新查询设备与商品状态，而非复述 Executor；
-6. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致。
-7. 记录实际 model/runtime、脱敏的凭证来源类型和可获得的 Token/费用数据；不得显示 Key。
-8. 验证 Worker Bearer → Actor 映射，并保留匿名/错误 Token 拒绝、越权 `FORBIDDEN` 和正确 Actor 审计的脱敏证据。
+6. 每次 Skill/工具调用记录的 Skill version/digest 与 Worker provenance 一致；
+7. 最终 Incident 状态、MCP 数据、报告和 Trace ID 一致；
+8. 记录实际 model/runtime、脱敏的凭证来源类型和可获得的 Token/费用数据；不得显示 Key；
+9. 验证 Worker Bearer → Actor 映射，并保留匿名/错误 Token 拒绝、越权 `FORBIDDEN` 和正确 Actor 审计的脱敏证据。
 
 建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/demo/Demo视频脚本与证据清单.md`](../docs/demo/Demo视频脚本与证据清单.md)。
 
@@ -191,7 +194,7 @@ kubectl -n dianxun get deployment,pod,service,pvc
 uv run dianxun agentteams-verify <evidence.json> --output <gate-report.json>
 ```
 
-校验器要求正确角色-阶段委派、四类 Worker 工具调用、人工审批、包/Skill provenance、安全正负向结果、唯一关联 ID 和非占位 Trace 哈希。它只校验提交的证据包，不能生成或替代真实平台证据。
+校验器使用证据 Schema `1.1`，要求正确角色-阶段委派、四类 Worker 工具调用、人工审批、包/Skill provenance、每次调用的 Skill version/digest、安全正负向结果、唯一关联 ID 和非占位 Trace 哈希。它只校验提交的证据包，不能生成或替代真实平台证据。
 
 ## 安全说明
 

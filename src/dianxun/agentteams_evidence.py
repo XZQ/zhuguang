@@ -96,6 +96,7 @@ def verify_agentteams_evidence(
     expected_hash = checksum_path.read_text(encoding="ascii").split()[0]
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     expected_versions = {item["name"]: item["version"] for item in provenance["skills"]}
+    expected_digests = {item["name"]: item["sha256"] for item in provenance["skills"]}
     checks["agentteams_version_pinned"] = bundle["agentteams_version"] == "v1.2.3"
     checks["package_hash_matches_repository"] = bundle["package_sha256"] == expected_hash
 
@@ -119,6 +120,7 @@ def verify_agentteams_evidence(
     checks["runtime_skills_loaded"] = loads == _SKILLS and all(
         item["package_sha256"] == expected_hash
         and item["version"] == expected_versions.get(item["skill"])
+        and item["skill_digest"] == expected_digests.get(item["skill"])
         and bool(item["loaded_at"])
         for item in bundle["skill_loads"]
     )
@@ -169,6 +171,8 @@ def verify_agentteams_evidence(
             and item["trace_id"] == run["trace_id"]
             and item["request_id"]
             and (item["worker"], item["skill"]) in _SKILLS
+            and item["skill_version"] == expected_versions.get(item["skill"])
+            and item["skill_digest"] == expected_digests.get(item["skill"])
             and bool(item["evidence_ref"])
             for item in run["tool_calls"]
         ) and len(request_ids) == len(set(request_ids))

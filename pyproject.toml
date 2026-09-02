@@ -44,6 +44,7 @@ package-dir = { "" = "src" }
 "share/dianxun/demo/state" = ["demo/state/seed.json"]
 "share/dianxun/demo/state/scenarios" = ["demo/state/scenarios/*.json"]
 "share/dianxun/schemas" = ["schemas/*.json"]
+"share/dianxun/skills" = ["skills/registry.json", "skills/LIFECYCLE.md"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
