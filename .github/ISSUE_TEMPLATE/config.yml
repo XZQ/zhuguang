@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 私密安全报告
+    url: https://github.com/XZQ/zhuguang/security/advisories/new
+    about: 不要公开提交漏洞、凭据或隐私数据。

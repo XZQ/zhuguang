@@ -1,0 +1,41 @@
+name: 缺陷报告
+description: 报告可复现的代码、文档或生成物问题
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 请勿提交漏洞利用细节、Token、真实身份或业务隐私；安全问题请按 SECURITY.md 私下报告。
+  - type: textarea
+    id: summary
+    attributes:
+      label: 问题摘要
+      description: 说明预期与实际行为。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 最小复现
+      description: 提供脱敏后的命令、输入和步骤。
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: 提交版本
+      placeholder: git rev-parse HEAD
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境
+      description: 操作系统、Python/uv 版本及相关可选后端。
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: 数据确认
+      options:
+        - label: 内容已脱敏，不含凭据、真实个人信息或未授权业务数据。
+          required: true

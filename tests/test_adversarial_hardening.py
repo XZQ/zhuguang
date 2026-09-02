@@ -5,6 +5,7 @@ import json
 import tempfile
 import threading
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -21,7 +22,13 @@ from dianxun.domain import (
 )
 from dianxun.mcp.iot import query_device_series
 from dianxun.mcp.p0 import DEFAULT_POLICY_PATH, MCPService
-from dianxun.mcp.server import MAX_REQUEST_BYTES, MCPHandler, _validate_server_auth, tool_call
+from dianxun.mcp.server import (
+    MAX_REQUEST_BYTES,
+    MCP_METRICS,
+    MCPHandler,
+    _validate_server_auth,
+    tool_call,
+)
 from dianxun.scenarios import ScenarioEngine
 from dianxun.state import StateStore
 
@@ -269,22 +276,69 @@ class AdversarialHardeningTests(unittest.TestCase):
         self.assertIn("stale", response["error"]["message"])
 
     def test_http_boundary_rejects_non_object_and_oversized_requests(self) -> None:
-        server = ThreadingHTTPServer(("127.0.0.1", 0), MCPHandler)
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
-        thread.start()
-        try:
-            status, body = self._post(server.server_port, b"[]")
-            self.assertEqual(400, status)
-            self.assertEqual(-32600, json.loads(body)["error"]["code"])
+        MCP_METRICS.reset()
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            results = list(executor.map(lambda _: tool_call("unregistered", {}), range(32)))
+        self.assertTrue(all(result["isError"] for result in results))
+        success = tool_call(
+            "query_device_context",
+            {"device_id": "FROST-S03", "request_id": "metrics-test"},
+            actor="Sentry",
+            service=self.service,
+        )
+        self.assertFalse(success["isError"])
 
-            oversized = b"x" * (MAX_REQUEST_BYTES + 1)
-            status, body = self._post(server.server_port, oversized)
-            self.assertEqual(400, status)
-            self.assertEqual(-32700, json.loads(body)["error"]["code"])
-        finally:
-            server.shutdown()
-            server.server_close()
-            thread.join(timeout=5)
+        with patch.dict(
+            "os.environ",
+            {"MCP_TOKEN": "metrics-secret", "MCP_ACTOR_TOKENS_JSON": ""},
+        ):
+            server = ThreadingHTTPServer(("127.0.0.1", 0), MCPHandler)
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                status, body = self._post(
+                    server.server_port,
+                    b"[]",
+                    token="metrics-secret",
+                )
+                self.assertEqual(400, status)
+                self.assertEqual(-32600, json.loads(body)["error"]["code"])
+
+                oversized = b"x" * (MAX_REQUEST_BYTES + 1)
+                status, body = self._post(
+                    server.server_port,
+                    oversized,
+                    token="metrics-secret",
+                )
+                self.assertEqual(400, status)
+                self.assertEqual(-32700, json.loads(body)["error"]["code"])
+
+                status, _ = self._post(server.server_port, b"{}", token="wrong-secret")
+                self.assertEqual(401, status)
+                status, metrics = self._get(server.server_port, "/metrics")
+                self.assertEqual(200, status)
+                status, health = self._get(server.server_port, "/health")
+                self.assertEqual(200, status)
+                self.assertEqual(12, json.loads(health)["p0_tools"])
+                self.assertIn(
+                    'dianxun_mcp_tool_calls_total{outcome="error",tool="unknown"} 32',
+                    metrics,
+                )
+                self.assertIn(
+                    'dianxun_mcp_tool_calls_total{outcome="success",tool="query_device_context"} 1',
+                    metrics,
+                )
+                self.assertIn(
+                    'dianxun_mcp_tool_duration_seconds_count{tool="unknown"} 32',
+                    metrics,
+                )
+                self.assertIn("dianxun_mcp_auth_failures_total 1", metrics)
+                self.assertNotIn("incident_id", metrics)
+                self.assertNotIn("request_id", metrics)
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=5)
 
     def test_shared_http_token_cannot_authorize_a_state_change(self) -> None:
         payload = json.dumps(
@@ -450,6 +504,16 @@ class AdversarialHardeningTests(unittest.TestCase):
                 body=payload,
                 headers=headers,
             )
+            response = connection.getresponse()
+            return response.status, response.read().decode("utf-8")
+        finally:
+            connection.close()
+
+    @staticmethod
+    def _get(port: int, path: str) -> tuple[int, str]:
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
+        try:
+            connection.request("GET", path)
             response = connection.getresponse()
             return response.status, response.read().decode("utf-8")
         finally:

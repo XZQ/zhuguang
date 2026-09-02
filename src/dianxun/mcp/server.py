@@ -7,9 +7,11 @@ import json
 import logging
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from time import perf_counter
 from typing import Any
 
 from .. import trace
+from ..metrics import MCPMetrics
 from ..validation import validate_json
 from .p0 import MCPService, default_service
 
@@ -355,6 +357,8 @@ _KNOWN_ACTORS = {
 for _definition in (*TOOLS.values(), *P1_TOOLS.values()):
     _definition["inputSchema"]["properties"]["runtime_trace_id"] = _STRING
 
+MCP_METRICS = MCPMetrics((*TOOLS, *P1_TOOLS))
+
 
 def enabled_tools() -> dict[str, dict[str, Any]]:
     if os.environ.get("DIANXUN_ENABLE_P1_TOOLS") == "1":
@@ -380,6 +384,29 @@ def tool_call(
     actor: str | None = None,
     service: MCPService | None = None,
 ) -> dict[str, Any]:
+    started = perf_counter()
+    result: dict[str, Any] | None = None
+    try:
+        result = _execute_tool_call(name, arguments, actor=actor, service=service)
+        return result
+    finally:
+        MCP_METRICS.observe_tool_call(
+            name,
+            success=bool(result) and not result.get("isError", True),
+            duration=perf_counter() - started,
+        )
+
+
+def _execute_tool_call(
+    name: str,
+    arguments: Any,
+    *,
+    actor: str | None = None,
+    service: MCPService | None = None,
+) -> dict[str, Any]:
+    if not isinstance(name, str):
+        result = _adapter_error("INVALID_ARGUMENT", "tool name must be a string")
+        return _tool_result(result)
     tool = enabled_tools().get(name)
     if tool is None:
         return {
@@ -484,6 +511,14 @@ class MCPHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _send_text(self, code: int, body: str, content_type: str) -> None:
+        data = body.encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def _authenticate(self) -> tuple[bool, str | None, str]:
         mapping_raw = os.environ.get("MCP_ACTOR_TOKENS_JSON", "")
         single_token = os.environ.get("MCP_TOKEN", "")
@@ -520,6 +555,7 @@ class MCPHandler(BaseHTTPRequestHandler):
             return
         authenticated, actor, auth_mode = self._authenticate()
         if not authenticated:
+            MCP_METRICS.record_auth_failure()
             self._send(
                 401,
                 {"jsonrpc": "2.0", "error": {"code": -32001, "message": "Unauthorized"}},
@@ -608,6 +644,13 @@ class MCPHandler(BaseHTTPRequestHandler):
         self._send(200, {"jsonrpc": "2.0", "id": request_id, "result": result})
 
     def do_GET(self) -> None:  # noqa: N802
+        if self.path == "/metrics":
+            self._send_text(
+                200,
+                MCP_METRICS.render_prometheus(),
+                "text/plain; version=0.0.4; charset=utf-8",
+            )
+            return
         if self.path != "/health":
             self._send(404, {"error": "Not found"})
             return
