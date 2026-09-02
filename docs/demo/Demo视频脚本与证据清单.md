@@ -4,10 +4,11 @@
 
 ## 1. 交付建议
 
-录制两段短视频，总时长控制在 8～10 分钟：
+录制一段不超过 8 分钟的视频，由正常闭环和失败分支两部分构成，目标成片 7 分 15 秒：
 
-1. 正常闭环：场景 A 压缩机故障，约 5～6 分钟；
-2. 失败分支：场景 F 工单查询 partial（可补场景 D 审批超时），约 3～4 分钟。
+1. 正常闭环：场景 A 压缩机故障，约 4 分 20 秒；
+2. 失败分支：场景 F 工单查询 partial（可补场景 D 审批超时），约 2 分 10 秒；
+3. 片头、转场和结尾总计不超过 45 秒。
 
 每段均保留屏幕时间、命令、incident_id、request_id 和关键业务状态。剪辑只能压缩等待时间，不能替换真实返回或补造平台消息。
 
@@ -39,7 +40,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 ## 3. 视频一：正常闭环（场景 A）
 
-### 镜头 1 - 任务与初始状态（30 秒）
+### 镜头 1 - 任务与初始状态（20 秒）
 
 展示：
 
@@ -52,7 +53,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 > 这不是把一条温度告警交给多个 Agent 复述。系统要关闭的是一个包含设备和商品批次的 Incident。
 
-### 镜头 2 - AgentTeams 动态委派（60 秒，外部环境必录）
+### 镜头 2 - AgentTeams 动态委派（50 秒，外部环境必录）
 
 在 Team Room 中提交固定任务并完整展示：
 
@@ -63,7 +64,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 不得用 YAML、PPT 动画或预制聊天截图替代这一镜头。若目标环境不可用，明确显示“本段未录制”，不要声称视频已完成。
 
-### 镜头 3 - 先遏制后诊断（60 秒）
+### 镜头 3 - 先遏制后诊断（50 秒）
 
 展示真实 MCP 返回：
 
@@ -80,7 +81,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 - 当前 Top-1 是压缩机故障，但其他假设仍保留；
 - 跨店正常不是确定根因。
 
-### 镜头 4 - 审批、维修与批次处置（90 秒）
+### 镜头 4 - 审批、维修与批次处置（60 秒）
 
 展示：
 
@@ -92,7 +93,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 不得把 ScenarioEngine 的本地决定说成真实企业审批。外部视频应使用可认证人员入口。
 
-### 镜头 5 - 两步放行与关闭（90 秒）
+### 镜头 5 - 两步放行与关闭（60 秒）
 
 展示：
 
@@ -106,7 +107,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 > 设备恢复不等于商品安全；Executor 的成功回执不等于 Auditor 的业务验证。
 
-### 镜头 6 - 证据与复盘（30 秒）
+### 镜头 6 - 证据与复盘（20 秒）
 
 展示：
 
@@ -115,17 +116,17 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 - review report 和 pending knowledge candidate；
 - 明确 P1 知识工具默认关闭；若展示命中，必须同时展示候选、独立审核、脱敏通过和来源引用。
 
-## 4. 视频二：失败分支（场景 F）
+## 4. 视频第二部分：失败分支（场景 F）
 
-### 镜头 1 - 注入 partial（30 秒）
+### 镜头 1 - 注入 partial（20 秒）
 
 展示场景定义中 `query_workorder` 的部分失败注入和预期终态。
 
-### 镜头 2 - Auditor 独立查询（60 秒）
+### 镜头 2 - Auditor 独立查询（40 秒）
 
 展示 Executor 已有工单动作记录，但 Auditor 查询得到 `status=partial`。强调动作 receipt 不能替代业务事实。
 
-### 镜头 3 - 阻断关闭（60 秒）
+### 镜头 3 - 阻断关闭（40 秒）
 
 展示：
 
@@ -135,7 +136,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 - work_status 为 `BLOCKED`；
 - 没有错误 `CLOSED`。
 
-### 镜头 4 - 可选审批超时对照（45 秒）
+### 镜头 4 - 可选审批超时对照（30 秒）
 
 运行场景 D，展示：
 
@@ -179,5 +180,5 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 - 不把请求带 Bearer Header 说成身份已验证；必须有服务端拒绝与正确 Actor 审计证据。
 - 不把本地 RAG/SQL 契约写成真实门店改善、PolarDB/OSS 已运行或生产可用；自动回滚仍不宣称实现。
 - 不把本地 M4 结果说成 `qwen3.5-plus` 模型效果；模型 Key 必须遮挡，费用无真实账单时明确“未测量”。
-- 当前 P0 为自定义 Skill；组委会口径未确认或官方 Skill 未真实调用前，不说“官方用云 Skill 已满足”。
+- 当前 P0 为自定义可复用 Skill；只展示真实调用、版本和 Trace，不以云产品或 Skill 数量替代运行证据。
 - 提交前由第二人对照本清单逐镜头复核。

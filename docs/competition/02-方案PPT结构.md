@@ -1,4 +1,4 @@
-# 逐光｜方案 PPT 结构（10 页）
+# 逐光｜方案 PPT 结构（12 页）
 
 > 目标受众：GOAI Agent Infra 赛道评委。
 > 演示目标：让评委确认逐光不是“多 Agent 名称拼接”，而是一个可运行、可审计、会在失败时保持安全的冷柜事件闭环。
@@ -73,7 +73,7 @@
 - 每个 P0 Skill 都有 `SKILL.md`、manifest、输入/输出 Schema、成功/失败样例和版本记录。
 - Worker ZIP 只包含 6 个 P0 Skill，避免把规划能力冒充已交付能力。
 - 当前 SHA-256：`3ee0f904974dda8b917693a1e73be3c16f77a50f23975c7de13621d8bbec2a0c`。
-- 当前 P0 均为自定义可复用 Skill；官网与手册 FAQ 对“阿里云官方用云 Skills”的措辞冲突，提交前需组委会确认，不能自行标记为完全满足。
+- 当前 P0 均为自定义可复用 Skill；复赛规则不要求指定云厂商 Skill，目标运行时的发现、加载、调用和 Trace 才是验收证据。
 
 ## P8 MCP 与安全：五查、七动作、四道闸
 
@@ -102,13 +102,13 @@
 - 已交付：代码、六场景、评测与消融报告、事故指挥台、6 个 P0 Skill 契约、12+3 MCP、Worker ZIP/provenance、AgentTeams/Kubernetes/PolarDB overlay、HTML 演示稿和 PDF。
 - 可复现命令：`uv run dianxun evaluate`。
 - 外部待验证：Team Room、Worker 委派、Kubernetes Running、Worker → MCP 身份绑定、同一任务的平台 MCP/Trace，以及托管 PolarDB、OSS 归档和真实知识基线。
-- 外部待确认：是否必须真实使用阿里云官方用云 Skill；若是，必须增加必要的真实调用、失败处理和证据，不能装饰性堆叠。
+- Skill 验收：必须展示目标 AgentTeams 运行时中的实际调用、版本、失败处理和 Trace，不能装饰性堆叠。
 - 结束句：不是让 Agent 更会“说已完成”，而是让事件只有在证据闭环后才能关闭。
 - 仓库：[github.com/XZQ/zhuguang](https://github.com/XZQ/zhuguang)
 
 ## 演示稿验收清单
 
-- [ ] HTML 与 PDF 均为 10 页，页码、标题和本文一致。
+- [ ] HTML 与 PDF 均为 12 页，页码、标题和本文一致。
 - [ ] 不出现“设备恢复即商品安全”“跨店正常即压缩机故障”。
 - [ ] 只把 RAG/PolarDB 写成“代码已实现、云上与真实基线待验证”，不写成已投产或已改善经营指标。
 - [ ] 所有评测数字能在 `evidence/m4/results.json` 追溯。
