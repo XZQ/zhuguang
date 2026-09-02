@@ -1189,7 +1189,7 @@
 
 <div id="deck">
 
-<!-- 逐光 · 店巡 Agent 复赛演示稿 - 10 页 - 所有数字来自仓库内可复现证据 -->
+<!-- 逐光 · 店巡 Agent 复赛演示稿 - 12 页 - 所有数字来自仓库内可复现证据 -->
 
 <section class="slide accent" data-animate="hero">
   <div class="canvas-card">
@@ -1218,15 +1218,22 @@
       <div class="l">01 · 场景价值</div>
       <div class="r">02 / 12 · FIRST PRINCIPLES</div>
     </div>
-    <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">THE UNIT OF VALUE</div>
-    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5vw,8.5vh);line-height:1.02;color:#fff;max-width:20ch">真正的交付单位是<br/><span style="color:var(--accent-bright)">安全关闭的事件</span></h2>
-    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1.1fr 1fr;gap:5vw;align-items:end">
-      <div style="font-family:var(--sans),var(--sans-zh);font-size:max(20px,1.3vw);line-height:1.6;color:rgba(255,255,255,.82);max-width:44ch">温度恢复 ≠ 商品可售<br/>维修完成 ≠ 事件关闭<br/>消息发送 ≠ 风险解除</div>
-      <div style="display:flex;flex-direction:column;gap:1.5vh">
-        <div style="border-top:2px solid var(--accent-bright);padding-top:1.2vh;font-size:max(19px,1.2vw);color:#fff">01 · 风险扩散先被阻断</div>
-        <div style="border-top:2px solid var(--accent-bright);padding-top:1.2vh;font-size:max(19px,1.2vw);color:#fff">02 · 诊断需表达不确定性</div>
-        <div style="border-top:2px solid var(--accent-bright);padding-top:1.2vh;font-size:max(19px,1.2vw);color:#fff">03 · 执行者不能自己验收</div>
-        <div style="border-top:2px solid var(--accent-bright);padding-top:1.2vh;font-size:max(19px,1.2vw);color:#fff">04 · 关闭必须可追溯</div>
+    <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">USER · PAIN · INPUT · OUTPUT · VALUE</div>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.8vw,6.5vh);line-height:1.04;color:#fff">总部运营要的不是告警，<span style="color:var(--accent-bright)">而是可安全放行的闭环</span></h2>
+    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1.05fr 1fr 1.2fr;gap:2.4vw;align-items:stretch;margin-top:2vh">
+      <div style="border-top:2px solid var(--accent-bright);padding-top:1.4vh">
+        <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">TARGET USER + CURRENT PAIN</div>
+        <div style="font-size:max(19px,1.15vw);line-height:1.5;color:#fff">总部运营负责人<br/>区域督导 · 门店店长</div>
+        <div style="font-size:max(16px,.92vw);line-height:1.5;color:rgba(255,255,255,.7);margin-top:1.4vh">告警 → 电话/群聊 → 工单 → 表格，设备、商品和审批事实分散；失败代价是误放行、错关与追责断链。</div>
+      </div>
+      <div style="border-top:2px solid var(--accent-bright);padding-top:1.4vh">
+        <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">INPUT</div>
+        <div style="font-size:max(17px,1vw);line-height:1.65;color:rgba(255,255,255,.82)">温度读数与数据质量<br/>设备与门店上下文<br/>库存批次与停售状态<br/>审批、工单、人工证据</div>
+      </div>
+      <div style="background:rgba(255,255,255,.07);padding:1.8vh 1.5vw">
+        <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">OUTPUT + DONE</div>
+        <div style="font-size:max(17px,1vw);line-height:1.55;color:#fff">先停售遏制风险；输出证据关联的 Top-K 诊断；经审批执行处置；Auditor 重新查询设备、逐批商品、停售与工单。</div>
+        <div style="border-top:1px solid rgba(255,255,255,.22);margin-top:1.3vh;padding-top:1.2vh;font-size:max(16px,.92vw);line-height:1.5;color:rgba(255,255,255,.76)"><strong style="color:#fff">完成条件：</strong>设备恢复 + 商品安全 + 停售状态一致 + 审计可追溯。价值是把人肉串联变成职责分离的证据链；真实收益待门店基线量化。</div>
       </div>
     </div>
   </div>
@@ -1382,7 +1389,7 @@
 <section class="slide" data-animate="grid-reveal">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">07 · Skill 工程</div>
+      <div class="l">06 · Skill 工程</div>
       <div class="r">07 / 12 · 6 P0 + 1 P1 + 2 P2</div>
     </div>
     <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">CONTRACTS · SCHEMAS · FAILURE EXAMPLES</div>
@@ -1408,24 +1415,32 @@
   <div class="canvas-card">
     <div class="split-half">
       <div class="half b-ink" style="padding:5vh 3.2vw;justify-content:flex-start">
-        <div class="chrome-min" style="color:rgba(255,255,255,.6);margin-bottom:2vh"><div class="l">08 · MCP</div><div class="r">08 / 12</div></div>
+        <div class="chrome-min" style="color:rgba(255,255,255,.6);margin-bottom:2vh"><div class="l">07 · MCP 与安全</div><div class="r">08 / 12</div></div>
         <div class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em;margin-bottom:1.5vh">5 P0 QUERIES</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4vw,6.8vh);line-height:1.04;color:#fff;margin-bottom:3vh">先重查事实<br/>再决定动作</h2>
-        <div style="font-family:var(--mono);font-size:max(17px,1vw);line-height:2;color:rgba(255,255,255,.82)">query_device_context<br/>query_inventory_batches<br/>query_sales_holds<br/>query_workorder<br/>query_approval</div>
-        <div class="t-meta" style="border-top:1px solid rgba(255,255,255,.25);margin-top:2vh;padding-top:1.4vh;color:rgba(255,255,255,.62)">P1 默认关闭 · search_knowledge 只返回已审核、已脱敏知识</div>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.6vw,6.2vh);line-height:1.04;color:#fff;margin-bottom:2.4vh">先重查事实<br/>再决定动作</h2>
+        <div style="font-family:var(--mono);font-size:max(16px,.95vw);line-height:1.85;color:rgba(255,255,255,.82)">query_device_context<br/>query_inventory_batches<br/>query_sales_holds<br/>query_workorder<br/>query_approval</div>
+        <div class="t-meta" style="border-top:1px solid rgba(255,255,255,.25);margin-top:1.8vh;padding-top:1.3vh;color:rgba(255,255,255,.62)">四道闸 · 角色权限 / Policy 与审批 / 幂等键 / 审计</div>
+        <div style="font-size:max(16px,.92vw);line-height:1.5;color:rgba(255,255,255,.72);margin-top:1vh">解除停售必须绑定 approved 审批与 Auditor verification；动作回执不能替代写后重查。</div>
       </div>
       <div class="half" style="padding:5vh 3.2vw;justify-content:flex-start">
-        <div class="chrome-min" style="margin-bottom:2vh"><div class="l">7 CONTROLLED ACTIONS</div><div class="r">12 P0 + 3 P1</div></div>
-        <div class="t-meta" style="color:var(--accent);letter-spacing:.2em;margin-bottom:1.5vh">FOUR GATES</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.7vw,6.2vh);line-height:1.04;color:var(--text-primary);margin-bottom:2.5vh">业务角色 · Policy/审批<br/>幂等 · 审计</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2vh 1.8vw;font-family:var(--mono);font-size:max(15px,.9vw);line-height:1.5;color:var(--text-secondary)">
-          <div>apply_sales_hold</div><div>release_sales_hold</div>
-          <div>apply_batch_disposition</div><div>create_workorder</div>
-          <div>create_approval</div><div>decide_approval*</div>
-          <div>record_manual_evidence*</div><div style="color:var(--accent)">payment = forbidden</div>
+        <div class="chrome-min" style="margin-bottom:1.6vh"><div class="l">ROLLBACK / COMPENSATION</div><div class="r">7 CONTROLLED ACTIONS</div></div>
+        <div class="t-meta" style="color:var(--accent);letter-spacing:.2em;margin-bottom:1.2vh">REVERSIBLE ≠ COMPENSATABLE ≠ IRREVERSIBLE</div>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.1vw,5.4vh);line-height:1.04;color:var(--text-primary);margin-bottom:1.8vh">失败时，不把“撤销”写成一个词</h2>
+        <div style="display:grid;grid-template-columns:1fr;gap:1.2vh">
+          <div style="border-top:2px solid var(--accent);padding-top:1vh;display:grid;grid-template-columns:.8fr 1.5fr;gap:1.2vw">
+            <div><div class="t-meta" style="color:var(--accent)">可逆动作</div><div style="font-size:max(16px,.9vw);margin-top:.5vh">解除停售</div></div>
+            <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">验证失败 → 事件 reopen → 重新停售；写入幂等键与补偿审计。当前原语可执行，同 Run 演练后验收。</div>
+          </div>
+          <div style="border-top:2px solid var(--ink);padding-top:1vh;display:grid;grid-template-columns:.8fr 1.5fr;gap:1.2vw">
+            <div><div class="t-meta">跨系统动作</div><div style="font-size:max(16px,.9vw);margin-top:.5vh">维修工单</div></div>
+            <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">不能物理回滚；取消或改派 + 写后对账才是补偿。当前记录 compensation metadata，执行路径待补。</div>
+          </div>
+          <div style="border-top:2px solid #b42318;padding-top:1vh;display:grid;grid-template-columns:.8fr 1.5fr;gap:1.2vw">
+            <div><div class="t-meta" style="color:#b42318">不可逆动作</div><div style="font-size:max(16px,.9vw);margin-top:.5vh">食品处置</div></div>
+            <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">执行前阻断：独立人工审批 + Policy；执行后只允许追踪与审计，不伪造回滚。</div>
+          </div>
         </div>
-        <div style="border-top:2px solid var(--accent);margin-top:2.4vh;padding-top:1.6vh;font-size:max(18px,1.05vw);line-height:1.55;color:var(--text-primary)">解除停售必须绑定 approved 审批和 Auditor verification；随后 Auditor 再查一次最终状态。</div>
-        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">* 仅 Human / ScenarioEngine；P1 candidate → 独立 Human/HQ 审核 → publish，Auditor 不可自审；Worker → MCP 身份绑定仍待动态验证</div>
+        <div class="t-meta" style="margin-top:1.3vh;color:var(--text-helper)">decide_approval / record_manual_evidence 仅 Human 或 ScenarioEngine；payment 对所有 Agent 禁止</div>
       </div>
     </div>
   </div>
@@ -1434,7 +1449,7 @@
 <section class="slide" data-animate="statement">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">09 · 评测证据</div>
+      <div class="l">08 · 评测证据</div>
       <div class="r">09 / 12 · LOCAL M4 GATE</div>
     </div>
     <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">REAL SQLITE/POLICY · STATEFUL LOCAL ADAPTER</div>
@@ -1452,161 +1467,93 @@
   </div>
 </section>
 
+<section class="slide" data-animate="grid-reveal">
+  <div class="canvas-card">
+    <div class="chrome-min">
+      <div class="l">09 · 初赛反馈落地</div>
+      <div class="r">10 / 12 · FEEDBACK → CHANGE → EVIDENCE</div>
+    </div>
+    <div data-anim="kicker" class="t-meta" style="color:#b42318;letter-spacing:.2em">RED = ADDED OR STRENGTHENED AFTER PRELIMINARY REVIEW</div>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.4vw,5.8vh);line-height:1.04;color:var(--text-primary)">反馈不写成口号，逐项落到可验证改造</h2>
+    <div data-anim="grid" style="flex:1;display:grid;grid-template-rows:auto repeat(3,1fr);margin-top:1.8vh;border-top:2px solid var(--ink)">
+      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1vh 0;border-bottom:1px solid var(--border-strong)">
+        <div class="t-meta">初赛反馈方向</div><div class="t-meta">改造前</div><div class="t-meta" style="color:#b42318">标红改造</div><div class="t-meta">验证证据</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.2vh 0;border-bottom:1px solid var(--border-subtle);align-items:start">
+        <div style="font-size:max(17px,1vw);font-weight:500">场景要聚焦，闭环要讲深</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">冷柜、缺货、价签平均展开；设备恢复容易被写成业务完成。</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:#b42318;font-weight:500">冷柜升级为唯一 P0 主线；设备与商品分别验收，停售必须经审批与 Auditor 二次重查后解除。</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">A-F 六场景<br/>45/45 Evidence<br/>26/26 Trace</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.2vh 0;border-bottom:1px solid var(--border-subtle);align-items:start">
+        <div style="font-size:max(17px,1vw);font-weight:500">多 Agent 要证明协作增益</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">本地类顺序调用；执行动作记录曾被当作验证结果。</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:#b42318;font-weight:500">职责分离为 5 个业务 Agent；Executor 不可自验，Auditor 独立查询；增加无 Auditor、单身份与纯规则诊断消融。</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">0 错误关闭<br/>5 个失败场景阻断<br/>6 次越权拒绝</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.2vh 0;align-items:start">
+        <div style="font-size:max(17px,1vw);font-weight:500">工程声明必须能复现</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">自动审批、强因果诊断与云上能力曾缺少对应运行证据。</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:#b42318;font-weight:500">加入 pending/timeout、Top-K + 证据缺口、制品 provenance；严格拆分“本地已验证”和“AgentTeams 外部待验证”。</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">72 项测试<br/>Worker checksum<br/>事实 JSON</div>
+      </div>
+    </div>
+    <div class="t-meta" style="border-top:1px solid var(--border-subtle);padding-top:1vh;color:var(--text-helper)">红色仅表示初赛后新增或强化，不表示尚未实跑的平台能力已经完成</div>
+  </div>
+</section>
+
+<!-- ========== 跨行业复制路径 ========== -->
+<section class="slide grey" data-animate="grid-reveal">
+  <div class="canvas-card">
+    <div class="chrome-min">
+      <div class="l">10 · 复制路径</div>
+      <div class="r">11 / 12 · REUSE THE CONTROL PLANE</div>
+    </div>
+    <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">KEEP THE CONTROL PLANE · REPLACE DOMAIN CONTRACTS</div>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.5vw,6vh);line-height:1.04;color:var(--text-primary)">复制的不是冷柜规则，而是“证据闭环控制面”</h2>
+    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:.9fr 1.1fr 1.1fr;gap:2.4vw;align-items:stretch;margin-top:2vh">
+      <div style="background:var(--ink);color:#fff;padding:2.2vh 1.6vw">
+        <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1.2vh">CORE · KEEP</div>
+        <div style="font-size:max(18px,1.08vw);line-height:1.6">Incident 状态机<br/>Manager + 职责分离<br/>Evidence / Context 契约<br/>Policy + HITL 门禁<br/>幂等、审计与独立验收</div>
+        <div style="border-top:1px solid rgba(255,255,255,.22);margin-top:1.5vh;padding-top:1.2vh;font-size:max(15px,.86vw);line-height:1.45;color:rgba(255,255,255,.68)">任何行业都保持：执行者不能自行宣布完成。</div>
+      </div>
+      <div style="border-top:3px solid var(--accent);padding:1.8vh 1.2vw">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:1vh">PATH A · 连锁餐饮冷链</div>
+        <div style="font-size:max(20px,1.22vw);font-weight:500;margin-bottom:1.2vh">门店冷柜 → 中央厨房与配送温控</div>
+        <div style="font-size:max(16px,.92vw);line-height:1.55;color:var(--text-secondary)"><strong style="color:var(--text-primary)">替换输入：</strong>仓温、车温、交接记录、供应批次<br/><strong style="color:var(--text-primary)">替换策略：</strong>暴露窗口、责任节点、放行审批人<br/><strong style="color:var(--text-primary)">替换工具：</strong>IoT/WMS/供应商工单 Adapter<br/><strong style="color:var(--text-primary)">复验：</strong>温控恢复 + 批次处置 + 交接审计</div>
+      </div>
+      <div style="border-top:3px solid var(--accent);padding:1.8vh 1.2vw">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:1vh">PATH B · 工业设备巡检</div>
+        <div style="font-size:max(20px,1.22vw);font-weight:500;margin-bottom:1.2vh">食品安全 → 设备安全与复产许可</div>
+        <div style="font-size:max(16px,.92vw);line-height:1.55;color:var(--text-secondary)"><strong style="color:var(--text-primary)">替换输入：</strong>振动、电流、告警、点检与备件<br/><strong style="color:var(--text-primary)">替换策略：</strong>停机阈值、检修等级、复产审批人<br/><strong style="color:var(--text-primary)">替换 Skill：</strong>诊断模型、维修计划、复产验证<br/><strong style="color:var(--text-primary)">复验：</strong>设备状态 + 安全检查 + 工单闭环</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.2vw;border-top:1px solid var(--border-strong);padding-top:1.2vh">
+      <div class="t-meta">1 · 映射实体与风险</div><div class="t-meta">2 · 替换契约与工具</div><div class="t-meta">3 · 重建正常/失败金标</div><div class="t-meta">4 · 平台 Trace 验收</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 交付与证据边界 ========== -->
 <section class="slide accent" data-animate="split-statement">
   <div class="canvas-card">
     <canvas class="ascii-bg" aria-hidden="true"></canvas>
     <div class="chrome-min">
-      <div class="l">10 · 交付与边界</div>
-      <div class="r">10 / 12 · CLOSE WITH EVIDENCE</div>
+      <div class="l">11 · 交付与边界</div>
+      <div class="r">12 / 12 · CLOSE WITH EVIDENCE</div>
     </div>
-    <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.72);letter-spacing:.2em">WHAT IS DONE · WHAT STILL NEEDS PROOF</div>
-    <div data-anim="hero" style="flex:1;display:grid;grid-template-columns:1.2fr 1fr;gap:6vw;align-items:center">
+    <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.72);letter-spacing:.2em">REPOSITORY PROOF ≠ PLATFORM PROOF</div>
+    <div data-anim="hero" style="flex:1;display:grid;grid-template-columns:1.05fr 1.15fr;gap:5vw;align-items:center">
       <div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.3vw,9vh);line-height:1.02;color:#fff">不是让 Agent 更会<br/>“说已完成”</h2>
-        <div style="font-family:var(--sans),var(--sans-zh);font-size:max(23px,1.5vw);line-height:1.55;color:rgba(255,255,255,.85);margin-top:2.5vh">而是让事件只有在证据闭环后才能关闭。</div>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.8vw,8vh);line-height:1.02;color:#fff">事件只有在<br/>证据闭环后<br/>才能关闭</h2>
+        <div style="font-family:var(--sans),var(--sans-zh);font-size:max(20px,1.25vw);line-height:1.5;color:rgba(255,255,255,.84);margin-top:2.4vh">温度恢复不等于商品安全；Agent 的完成声明不等于业务事实。</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:1.5vh">
-        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">REPOSITORY DELIVERED</div><div style="font-size:max(18px,1.05vw);line-height:1.5;color:#fff;margin-top:.6vh">业务核心 · 六场景 · 6 P0 Skill · 12 + 3 MCP · Worker ZIP/YAML · 72 项测试门禁 · 消融/指挥台 · HTML/PDF</div></div>
-        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">POLARDB ENGINEERING DELIVERED</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">PostgreSQL Store · pgvector · RLS · 月分区 · pg_cron 入队 · OSS 复制复核归档契约</div></div>
-        <div style="border-top:2px solid rgba(255,255,255,.45);padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">EXTERNAL EVIDENCE PENDING</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">Team Room / Worker 委派 / 动态 Trace · 托管 PolarDB 与 OSS 联调 · 真实门店基线和改善率 · 最终平台录屏 · 官方用云 Skill 口径确认</div></div>
-        <div style="border-top:1px solid rgba(255,255,255,.25);padding-top:1.5vh;font-family:var(--mono);font-size:max(16px,.92vw);color:rgba(255,255,255,.78)">github.com/XZQ/zhuguang</div>
+      <div style="display:flex;flex-direction:column;gap:1.4vh">
+        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">REPOSITORY · VERIFIED</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">有状态核心 · 六场景 · 6 P0 Skill · 12 + 3 MCP · Worker ZIP/provenance · 72 项测试 · 消融与指挥台 · HTML/PDF</div></div>
+        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">DEPLOYABLE · NOT CLAIMED AS RUNNING</div><div style="font-size:max(16px,.94vw);line-height:1.5;color:#fff;margin-top:.6vh">AgentTeams/Kubernetes 配置；PostgreSQL Store、pgvector、RLS、分区、pg_cron 与 OSS 复制复核归档契约。</div></div>
+        <div style="border-top:2px solid rgba(255,255,255,.45);padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">FINAL ACCEPTANCE · EXTERNAL</div><div style="font-size:max(16px,.94vw);line-height:1.5;color:#fff;margin-top:.6vh">同一事故中的 Team Room 委派、Skill Trace、Worker → MCP Actor 正负向鉴权、真实 HITL、正常/partial 分支与不超过 8 分钟成片。</div></div>
+        <div style="border-top:1px solid rgba(255,255,255,.25);padding-top:1.4vh;display:flex;justify-content:space-between;font-family:var(--mono);font-size:max(14px,.82vw);color:rgba(255,255,255,.78)"><span>github.com/XZQ/zhuguang</span><span>LOCAL METRICS ≠ PRODUCTION KPI</span></div>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- ========== 新增页：技术深度页 ========== -->
-<section class="slide grey" data-animate="split-statement">
-  <div class="canvas-card">
-    <canvas class="ascii-bg" aria-hidden="true"></canvas>
-    <div class="chrome-min">
-      <div class="l">11 · 技术深度</div>
-      <div class="r">11 / 12 · TECHNICAL DEPTH</div>
-    </div>
-    <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">STATE CONSISTENCY · RAG STRATEGY · TEST COVERAGE</div>
-    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:2.5vw;align-items:start;padding-top:2vh">
-      <!-- StateStore一致性 -->
-      <div style="background:var(--paper);border:1px solid var(--border-subtle);padding:2vh">
-        <div style="font-family:var(--mono);font-size:13px;letter-spacing:.15em;color:var(--accent);margin-bottom:1.5vh">STATE CONSISTENCY</div>
-        <h3 style="font-family:var(--sans);font-weight:300;font-size:max(20px,1.3vw);line-height:1.2;margin-bottom:1.5vh">StateStore 一致性保证</h3>
-        <div style="display:flex;flex-direction:column;gap:.8vh">
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">SQLite BEGIN IMMEDIATE 单写事务</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">幂等请求指纹 + 唯一约束</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">busy_timeout=10s</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--ink);flex-shrink:0"></div>
-            <div class="t-body-sm">PostgreSQL 适配器已实现，托管联调待验证</div>
-          </div>
-        </div>
-      </div>
-      <!-- RAG策略 -->
-      <div style="background:var(--paper);border:1px solid var(--border-subtle);padding:2vh">
-        <div style="font-family:var(--mono);font-size:13px;letter-spacing:.15em;color:var(--accent);margin-bottom:1.5vh">RAG STRATEGY</div>
-        <h3 style="font-family:var(--sans);font-weight:300;font-size:max(20px,1.3vw);line-height:1.2;margin-bottom:1.5vh">知识检索策略</h3>
-        <div style="display:flex;flex-direction:column;gap:.8vh">
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">Embedding 余弦相似度检索</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">本地确定性 Hash Embedding</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--ink);flex-shrink:0"></div>
-            <div class="t-body-sm">可选 OpenAI-compatible provider</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--ink);flex-shrink:0"></div>
-            <div class="t-body-sm">人工审核 + 脱敏后发布</div>
-          </div>
-        </div>
-      </div>
-      <!-- 测试覆盖 -->
-      <div style="background:var(--paper);border:1px solid var(--border-subtle);padding:2vh">
-        <div style="font-family:var(--mono);font-size:13px;letter-spacing:.15em;color:var(--accent);margin-bottom:1.5vh">TEST COVERAGE</div>
-        <h3 style="font-family:var(--sans);font-weight:300;font-size:max(20px,1.3vw);line-height:1.2;margin-bottom:1.5vh">P0 工具测试矩阵</h3>
-        <div style="display:flex;flex-direction:column;gap:.8vh">
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">12/12 P0 工具测试映射</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">72 discovered · 70 pass</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">2 PolarDB 条件跳过</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:1vw">
-            <div style="width:8px;height:8px;background:var(--ink);flex-shrink:0"></div>
-            <div class="t-body-sm">行/分支覆盖率尚未测量</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);padding-top:1.2vh">
-      <div class="t-meta" style="color:var(--text-helper)">详见: docs/分布式一致性方案.md · docs/Agent验证机制.md · docs/测试覆盖矩阵.md</div>
-    </div>
-  </div>
-</section>
-
-<!-- ========== 新增页：Q&A预判页 ========== -->
-<section class="slide dark" data-animate="split-statement">
-  <div class="canvas-card">
-    <canvas class="ascii-bg" aria-hidden="true"></canvas>
-    <div class="chrome-min">
-      <div class="l">12 · Q&A 预判</div>
-      <div class="r">12 / 12 · Q&A ANTICIPATION</div>
-    </div>
-    <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.6);letter-spacing:.2em">ANTICIPATED QUESTIONS FROM JUDGES</div>
-    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:repeat(2,1fr);gap:3vw;align-items:start;padding-top:2vh">
-      <!-- Q1 -->
-      <div style="border-top:2px solid var(--accent);padding-top:1.5vh">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--accent);margin-bottom:1vh">Q1 · AGENT 结果验证</div>
-        <div class="t-body" style="color:var(--paper);line-height:1.5">Agent 结果正确性如何保证？formal verification？</div>
-        <div style="border-left:2px solid rgba(255,255,255,.3);padding-left:1.5vw;margin-top:1vh">
-          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">六个 P0 Skill 运行时 Schema → 策略评估 → 业务规则 → 交叉验证 → 人工审批</div>
-        </div>
-      </div>
-      <!-- Q2 -->
-      <div style="border-top:2px solid var(--accent);padding-top:1.5vh">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--accent);margin-bottom:1vh">Q2 · STATESTORE 一致性</div>
-        <div class="t-body" style="color:var(--paper);line-height:1.5">当前如何处理并发写？需要 Raft/Paxos？</div>
-        <div style="border-left:2px solid rgba(255,255,255,.3);padding-left:1.5vw;margin-top:1vh">
-          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">单节点事务与约束门禁已验证；无 WAL/row_version；托管 PolarDB 联调待验证</div>
-        </div>
-      </div>
-      <!-- Q3 -->
-      <div style="border-top:2px solid var(--accent);padding-top:1.5vh">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--accent);margin-bottom:1vh">Q3 · MCP 延迟</div>
-        <div class="t-body" style="color:var(--paper);line-height:1.5">MCP Server 部署延迟多少？超时重试？</div>
-        <div style="border-left:2px solid rgba(255,255,255,.3);padding-left:1.5vw;margin-top:1vh">
-          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">当前独立 HTTP 服务；无 P99 实测；客户端重试/熔断待实现，写操作已有幂等键</div>
-        </div>
-      </div>
-      <!-- Q4 -->
-      <div style="border-top:2px solid var(--accent);padding-top:1.5vh">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--accent);margin-bottom:1vh">Q4 · 异常类型</div>
-        <div class="t-body" style="color:var(--paper);line-height:1.5">冷柜失温是已发生还是预防？</div>
-        <div style="border-left:2px solid rgba(255,255,255,.3);padding-left:1.5vw;margin-top:1vh">
-          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">确定性场景模拟已发生异常；真实 IoT 接入待验证 → 遏制 → 诊断 → 处置 → 验证</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.15);padding-top:1.2vh">
-      <div class="t-meta" style="color:rgba(255,255,255,.5)">详见: docs/复赛QA预案.md</div>
-      <div class="t-meta" style="color:rgba(255,255,255,.5)">github.com/XZQ/zhuguang</div>
     </div>
   </div>
 </section>
