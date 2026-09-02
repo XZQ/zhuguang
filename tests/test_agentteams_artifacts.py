@@ -65,9 +65,19 @@ class AgentTeamsArtifactTests(unittest.TestCase):
             for skill in REQUIRED_SKILLS:
                 text = archive.read(f"skills/{skill}/SKILL.md").decode("utf-8")
                 self.assertTrue(text.startswith(f"---\nname: {skill}\n"))
+            registry_bytes = archive.read("skills/registry.json")
+            registry = json.loads(registry_bytes)
+            self.assertEqual("1.0.0", registry["registry_version"])
+            self.assertEqual(set(REQUIRED_SKILLS), {item["name"] for item in registry["skills"]})
+            lifecycle = archive.read("skills/LIFECYCLE.md").decode("utf-8")
+            self.assertIn("skill_name`、`skill_version`、`skill_digest", lifecycle)
         provenance = json.loads(tracked_provenance.read_text(encoding="utf-8"))
         self.assertEqual(summary["sha256"], provenance["package_sha256"])
         self.assertEqual(set(REQUIRED_SKILLS), {item["name"] for item in provenance["skills"]})
+        self.assertEqual(
+            hashlib.sha256(registry_bytes.replace(b"\r\n", b"\n")).hexdigest(),
+            provenance["skill_registry"]["sha256"],
+        )
 
     def test_agentteams_worker_resources_match_roles_and_package(self) -> None:
         expected_skills = {

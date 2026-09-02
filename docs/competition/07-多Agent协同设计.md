@@ -11,7 +11,7 @@
 - 5 个业务 Agent，其中 Orchestrator 是 Team Leader，另外 4 个为领域 Worker；
 - 6 个 P0 Skill 进入确定性 Worker ZIP；
 - Worker 通过 `dianxun-mcp` 访问同一有状态业务世界。
-- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、72 项测试、M4 评测和消融对照不调用 LLM。
+- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、76 项测试、M4 评测和消融对照不调用 LLM。
 
 仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派、Worker → MCP 身份绑定和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
 
@@ -112,7 +112,7 @@ uv run dianxun evaluate
 - 场景、Top-1、Top-3 均 6/6；
 - Evidence 关键字段 45/45；
 - 适用阶段 Trace 26/26；
-- 全量发现 72 项自动化测试：70 项通过，2 项外部 PolarDB 条件测试跳过；
+- 全量发现 76 项自动化测试：74 项通过，2 项外部 PolarDB 条件测试跳过；
 - 四变体消融门禁通过：`no_auditor` 验证缺独立审计时安全阻断，`single_agent` 验证角色写入边界，`rule_only` 暴露诊断退化；
 - 事故指挥台将六场景交接链、设备/商品状态、审批、审计和 Auditor 判决同屏呈现；
 - 未授权写、未审批受控写、错误放行、错误关闭和重复副作用均为 0。

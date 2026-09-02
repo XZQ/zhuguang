@@ -47,6 +47,12 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertFalse(result["runs"][0]["tool_roles_authorized"])
 
+        wrong_skill_digest = self._bundle()
+        wrong_skill_digest["runs"][0]["tool_calls"][0]["skill_digest"] = "f" * 64
+        result = verify_agentteams_evidence(wrong_skill_digest)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["runs"][0]["correlation_complete"])
+
         incomplete_chain = self._bundle()
         incomplete_chain["runs"][0]["tool_calls"] = [
             item
@@ -72,6 +78,7 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
             (ROOT / "dist" / "dianxun-worker.provenance.json").read_text(encoding="utf-8")
         )
         versions = {item["name"]: item["version"] for item in provenance["skills"]}
+        digests = {item["name"]: item["sha256"] for item in provenance["skills"]}
         resources = {
             "manager": {
                 "name": "dianxun-manager",
@@ -93,6 +100,7 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
                 "worker": worker,
                 "skill": skill,
                 "version": versions[skill],
+                "skill_digest": digests[skill],
                 "package_sha256": package_hash,
                 "loaded_at": "2026-08-28T12:00:00+08:00",
             }
@@ -106,7 +114,7 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
             )
         ]
         return {
-            "schema_version": "1.0",
+            "schema_version": "1.1",
             "evidence_kind": "agentteams_runtime",
             "capture_status": "observed",
             "captured_at": "2026-08-28T12:10:00+08:00",
@@ -155,6 +163,11 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
     ) -> dict:
         incident_id = f"incident-{branch}"
         trace_id = f"trace-{branch}"
+        provenance = json.loads(
+            (ROOT / "dist" / "dianxun-worker.provenance.json").read_text(encoding="utf-8")
+        )
+        versions = {item["name"]: item["version"] for item in provenance["skills"]}
+        digests = {item["name"]: item["sha256"] for item in provenance["skills"]}
         phases = (
             ("manager", "orchestrator", "DETECT_CONTAIN"),
             ("orchestrator", "sentry", "DETECT_CONTAIN"),
@@ -197,6 +210,8 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
                 {
                     "worker": worker,
                     "skill": skill,
+                    "skill_version": versions[skill],
+                    "skill_digest": digests[skill],
                     "tool": tool,
                     "request_id": f"request-{branch}-{index}",
                     "incident_id": incident_id,

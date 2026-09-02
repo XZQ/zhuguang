@@ -1393,19 +1393,19 @@
       <div class="r">07 / 12 · 6 P0 + 1 P1 + 2 P2</div>
     </div>
     <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">CONTRACTS · SCHEMAS · FAILURE EXAMPLES</div>
-    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.5vw,6vh);line-height:1.05;color:var(--text-primary)">六个 P0 Skill 进入可校验 Worker ZIP</h2>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.5vw,6vh);line-height:1.05;color:var(--text-primary)">六个 P0 Skill 进入版本化 Registry 与 Worker ZIP</h2>
     <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1.2fr 1fr;gap:4vw;align-items:center">
       <div style="display:grid;grid-template-columns:1fr auto;row-gap:1.2vh;border-top:2px solid var(--accent);padding-top:1.5vh;font-size:max(17px,1.05vw)">
         <div style="font-family:var(--mono)">anomaly-detect</div><div class="t-meta" style="color:var(--accent)">Sentry · 1.0.0</div>
         <div style="font-family:var(--mono)">coldchain-risk-assess</div><div class="t-meta" style="color:var(--accent)">Diagnoser · 1.1.0</div>
-        <div style="font-family:var(--mono)">rootcause-drilldown</div><div class="t-meta" style="color:var(--accent)">Diagnoser · 1.1.0</div>
+        <div style="font-family:var(--mono)">rootcause-drilldown</div><div class="t-meta" style="color:var(--accent)">Diagnoser · 1.2.0</div>
         <div style="font-family:var(--mono)">work-order-dispatch</div><div class="t-meta" style="color:var(--accent)">Executor · 1.0.0</div>
         <div style="font-family:var(--mono)">outcome-verify</div><div class="t-meta" style="color:var(--accent)">Auditor · 1.1.0</div>
-        <div style="font-family:var(--mono)">review-report</div><div class="t-meta" style="color:var(--accent)">Auditor · 1.0.0</div>
+        <div style="font-family:var(--mono)">review-report</div><div class="t-meta" style="color:var(--accent)">Auditor · 1.1.0</div>
       </div>
       <div style="background:var(--grey-1);padding:2.5vh 2vw">
-        <div class="t-meta" style="color:var(--accent);margin-bottom:1.2vh">EVERY P0 PACKAGE</div>
-        <div style="font-size:max(17px,1vw);line-height:1.6;color:var(--text-primary)">SKILL.md<br/>manifest.json<br/>input / output Schema<br/>成功 + 失败样例<br/>权限与变更记录</div>
+        <div class="t-meta" style="color:var(--accent);margin-bottom:1.2vh">REGISTRY + PACKAGE</div>
+        <div style="font-size:max(16px,.94vw);line-height:1.55;color:var(--text-primary)">6 stable · 0 canary<br/>name + version + digest<br/>SemVer · 确定性灰度<br/>promotion / rollback / retirement<br/>SKILL.md · manifest · Schema · 样例<br/>Trace 固定 version / digest</div>
       </div>
     </div>
   </div>
@@ -1461,7 +1461,7 @@
       <div style="border-top:3px solid var(--ink);padding-top:2vh"><div style="font-family:var(--sans);font-weight:200;font-size:min(5.3vw,9vh);color:var(--ink)">0</div><div style="font-size:max(19px,1.15vw);color:var(--text-primary)">五类安全违规</div><div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">业务越权 · 未审批 · 错放 · 错关 · 重复</div></div>
     </div>
     <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);padding-top:1.6vh">
-      <div class="t-meta" style="color:var(--text-helper)">unittest · 72 discovered / 70 pass / 2 PolarDB skip</div>
+      <div class="t-meta" style="color:var(--text-helper)">unittest · 76 total / 74 pass / 2 PolarDB skip</div>
       <div class="t-meta" style="color:var(--text-helper)">Ablation · 无 Auditor: 5 blocked / 0 wrong close</div>
     </div>
   </div>
@@ -1495,7 +1495,7 @@
         <div style="font-size:max(17px,1vw);font-weight:500">工程声明必须能复现</div>
         <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">自动审批、强因果诊断与云上能力曾缺少对应运行证据。</div>
         <div style="font-size:max(15px,.86vw);line-height:1.45;color:#b42318;font-weight:500">加入 pending/timeout、Top-K + 证据缺口、制品 provenance；严格拆分“本地已验证”和“AgentTeams 外部待验证”。</div>
-        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">72 项测试<br/>Worker checksum<br/>事实 JSON</div>
+        <div style="font-size:max(15px,.86vw);line-height:1.45;color:var(--text-secondary)">76 项测试<br/>Worker checksum<br/>事实 JSON</div>
       </div>
     </div>
     <div class="t-meta" style="border-top:1px solid var(--border-subtle);padding-top:1vh;color:var(--text-helper)">红色仅表示初赛后新增或强化，不表示尚未实跑的平台能力已经完成</div>
@@ -1549,7 +1549,7 @@
         <div style="font-family:var(--sans),var(--sans-zh);font-size:max(20px,1.25vw);line-height:1.5;color:rgba(255,255,255,.84);margin-top:2.4vh">温度恢复不等于商品安全；Agent 的完成声明不等于业务事实。</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:1.4vh">
-        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">REPOSITORY · VERIFIED</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">有状态核心 · 六场景 · 6 P0 Skill · 12 + 3 MCP · Worker ZIP/provenance · 72 项测试 · 消融与指挥台 · HTML/PDF</div></div>
+        <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">REPOSITORY · VERIFIED</div><div style="font-size:max(17px,1vw);line-height:1.5;color:#fff;margin-top:.6vh">有状态核心 · 六场景 · 6 P0 Skill · 12 + 3 MCP · Worker ZIP/provenance · 76 项测试 · 消融与指挥台 · HTML/PDF</div></div>
         <div style="border-top:2px solid #fff;padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">DEPLOYABLE · NOT CLAIMED AS RUNNING</div><div style="font-size:max(16px,.94vw);line-height:1.5;color:#fff;margin-top:.6vh">AgentTeams/Kubernetes 配置；PostgreSQL Store、pgvector、RLS、分区、pg_cron 与 OSS 复制复核归档契约。</div></div>
         <div style="border-top:2px solid rgba(255,255,255,.45);padding-top:1.2vh"><div class="t-meta" style="color:rgba(255,255,255,.65)">FINAL ACCEPTANCE · EXTERNAL</div><div style="font-size:max(16px,.94vw);line-height:1.5;color:#fff;margin-top:.6vh">同一事故中的 Team Room 委派、Skill Trace、Worker → MCP Actor 正负向鉴权、真实 HITL、正常/partial 分支与不超过 8 分钟成片。</div></div>
         <div style="border-top:1px solid rgba(255,255,255,.25);padding-top:1.4vh;display:flex;justify-content:space-between;font-family:var(--mono);font-size:max(14px,.82vw);color:rgba(255,255,255,.78)"><span>github.com/XZQ/zhuguang</span><span>LOCAL METRICS ≠ PRODUCTION KPI</span></div>

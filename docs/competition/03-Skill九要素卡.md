@@ -8,10 +8,10 @@
 |---|---|---|---|---|
 | `anomaly-detect` | P0 | Sentry | 已实现，版本 1.0.0 | [`skills/anomaly-detect/`](../../skills/anomaly-detect/) |
 | `coldchain-risk-assess` | P0 | Diagnoser | 已实现，版本 1.1.0 | [`skills/coldchain-risk-assess/`](../../skills/coldchain-risk-assess/) |
-| `rootcause-drilldown` | P0 | Diagnoser | 已实现，版本 1.1.0 | [`skills/rootcause-drilldown/`](../../skills/rootcause-drilldown/) |
+| `rootcause-drilldown` | P0 | Diagnoser | 已实现，版本 1.2.0 | [`skills/rootcause-drilldown/`](../../skills/rootcause-drilldown/) |
 | `work-order-dispatch` | P0 | Executor | 已实现，版本 1.0.0 | [`skills/work-order-dispatch/`](../../skills/work-order-dispatch/) |
 | `outcome-verify` | P0 | Auditor | 已实现，版本 1.1.0 | [`skills/outcome-verify/`](../../skills/outcome-verify/) |
-| `review-report` | P0 | Auditor | 已实现，版本 1.0.0 | [`skills/review-report/`](../../skills/review-report/) |
+| `review-report` | P0 | Auditor | 已实现，版本 1.1.0 | [`skills/review-report/`](../../skills/review-report/) |
 | `cross-store-benchmark` | P1 | Diagnoser | 代码保留；未进入 P0 Worker/评测 | [`skills/planned/cross-store-benchmark.md`](../../skills/planned/cross-store-benchmark.md) |
 | `restock-order-gen` | P2 | Executor | 缺货补充入口使用；非冷柜 P0 | [`skills/planned/restock-order-gen.md`](../../skills/planned/restock-order-gen.md) |
 | `price-tag-check` | P2 | Sentry / Executor | 价签补充入口使用；非冷柜 P0 | [`skills/planned/price-tag-check.md`](../../skills/planned/price-tag-check.md) |
@@ -136,6 +136,19 @@ uv run python demo/run_supplementary.py price-tag
 
 ## 4. 工程与验证要求
 
+[`skills/registry.json`](../../skills/registry.json) 是 P0 发布事实源。当前登记 6 个
+`active/stable` release、0 个 canary；每个 release 以 `name + version + digest` 唯一标识。
+[`skills/LIFECYCLE.md`](../../skills/LIFECYCLE.md) 固定以下流程：
+
+- SemVer：patch 为兼容修复、minor 为兼容能力、破坏性契约变化必须升 major；
+- 发布：契约/样例 → 确定性 ZIP → 正常/失败回归 → 真实 AgentTeams Skill Trace → 零新增安全违规；
+- 灰度：按 `skill_name + incident/trace_id` 的 SHA-256 确定性分桶，比例最多 25%；
+- 回滚：stable 升级前保留 `rollback_target`，版本回滚与业务补偿分别记录；
+- 退役：先 deprecated 并停止新路由，再在留存窗口和恢复演练通过后 retired。
+
+本地 P0 Skill Span 和 AgentTeams 外部证据契约均记录/要求 `skill_name`、版本和内容 digest；
+仓库只证明本地 Trace 与 Schema 门禁，目标平台实际调用 Trace 仍须实跑。
+
 每个 P0 Skill 目录必须同时包含：
 
 - `SKILL.md`；
@@ -149,6 +162,7 @@ uv run python demo/run_supplementary.py price-tag
 
 ```powershell
 uv run --group dev python -m unittest -v tests.test_skill_contracts
+uv run --group dev python -m unittest -v tests.test_skill_registry
 uv run python scripts/build_worker_package.py
 uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 ```

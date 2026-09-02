@@ -1,6 +1,6 @@
 # 逐光｜Worker 包 Skill 清单
 
-本目录镜像仓库根目录 [`skills/`](../../../skills/) 中的 6 个 P0 Skill，供 AgentTeams `v1.2.3` QwenPaw Worker 加载。
+本目录镜像仓库根目录 [`skills/`](../../../skills/) 中的 6 个 P0 Skill、版本 Registry 和生命周期规则，供 AgentTeams `v1.2.3` QwenPaw Worker 加载。
 
 | Skill | Agent | 主要权限 |
 |---|---|---|
@@ -11,12 +11,13 @@
 | `outcome-verify` | Auditor | 独立重查与验证证据记录 |
 | `review-report` | Auditor | 事故复盘与 pending 知识候选；无审核发布权限 |
 
-每个目录包含 AgentTeams 可识别的 `SKILL.md` frontmatter、实际 MCP 调用步骤，以及 manifest、输入/输出 Schema 和成功/失败样例。代码实现仍在 `src/dianxun/skills/`；领域阶段由 `IncidentService` 聚合，工具状态与写操作统一进入远端 `dianxun-mcp` 的 StateStore/Policy 事实层。
+每个目录包含 AgentTeams 可识别的 `SKILL.md` frontmatter、实际 MCP 调用步骤，以及 manifest、输入/输出 Schema 和成功/失败样例。`registry.json` 提供 stable/canary 版本与 digest，`LIFECYCLE.md` 提供发布、灰度、回滚和退役门禁。代码实现仍在 `src/dianxun/skills/`；领域阶段由 `IncidentService` 聚合，工具状态与写操作统一进入远端 `dianxun-mcp` 的 StateStore/Policy 事实层。
 
 不要直接编辑这里的 Skill 副本。修改根目录的规范后同步，并运行：
 
 ```powershell
 python scripts/build_worker_package.py
+uv run --group dev python -m unittest -v tests.test_skill_registry
 uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 ```
 

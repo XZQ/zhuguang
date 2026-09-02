@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dianxun P0 Skill registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "registry_version", "lifecycle_policy", "skills"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "registry_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "lifecycle_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "versioning",
+        "channels",
+        "max_canary_percent",
+        "promotion_gates",
+        "rollback_triggers",
+        "retirement_gates"
+      ],
+      "properties": {
+        "versioning": { "const": "semver" },
+        "channels": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": ["stable", "canary"] }
+        },
+        "max_canary_percent": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "promotion_gates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "rollback_triggers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "retirement_gates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/skill" }
+    }
+  },
+  "$defs": {
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "digest", "channel", "artifact"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "channel": { "const": "stable" },
+        "artifact": { "type": "string", "minLength": 1 }
+      }
+    },
+    "release_ref": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["version", "digest"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "canary_release": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["version", "digest", "channel", "artifact", "rollout_percent"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "channel": { "const": "canary" },
+        "artifact": { "type": "string", "minLength": 1 },
+        "rollout_percent": { "type": "integer", "minimum": 1, "maximum": 50 }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_schema_major", "output_schema_major", "minimum_worker_manifest"],
+      "properties": {
+        "input_schema_major": { "type": "integer", "minimum": 1 },
+        "output_schema_major": { "type": "integer", "minimum": 1 },
+        "minimum_worker_manifest": { "type": "string", "minLength": 1 }
+      }
+    },
+    "retirement": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["announced_at", "stop_new_routing_at", "replacement"],
+      "properties": {
+        "announced_at": { "type": "string", "minLength": 1 },
+        "stop_new_routing_at": { "type": "string", "minLength": 1 },
+        "replacement": { "type": "string", "minLength": 1 }
+      }
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "owner",
+        "status",
+        "stable",
+        "canary",
+        "rollback_target",
+        "compatibility",
+        "retirement"
+      ],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "owner": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["active", "deprecated", "retired"] },
+        "stable": { "$ref": "#/$defs/release" },
+        "canary": { "$ref": "#/$defs/canary_release" },
+        "rollback_target": { "$ref": "#/$defs/release_ref" },
+        "compatibility": { "$ref": "#/$defs/compatibility" },
+        "retirement": { "$ref": "#/$defs/retirement" }
+      }
+    }
+  }
+}
