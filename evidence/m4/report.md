@@ -1,7 +1,8 @@
 # 逐光｜M4 六场景确定性评测报告
 
 > 本地 M4 门禁：通过
-> 证据边界：仅证明本地有状态 Mock 与确定性评测；不证明外部 AgentTeams 动态运行。
+> 证据边界：仅证明真实临时 SQLite/PolicyEngine 与有状态本地 Adapter/ScenarioEngine
+> 下的确定性评测；不证明外部 AgentTeams 动态运行。
 
 ## 场景结果
 

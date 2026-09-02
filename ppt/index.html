@@ -1437,7 +1437,7 @@
       <div class="l">09 · 评测证据</div>
       <div class="r">09 / 12 · LOCAL M4 GATE</div>
     </div>
-    <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">REPRODUCIBLE · ISOLATED · STATEFUL MOCK</div>
+    <div data-anim="kicker" class="t-meta" style="color:var(--accent);letter-spacing:.2em">REAL SQLITE/POLICY · STATEFUL LOCAL ADAPTER</div>
     <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.7vw,6.2vh);line-height:1.05;color:var(--text-primary)">所有本地 P0 门禁通过，口径可追溯</h2>
     <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:2.2vw;align-items:center">
       <div style="border-top:3px solid var(--accent);padding-top:2vh"><div style="font-family:var(--sans);font-weight:200;font-size:min(5.3vw,9vh);color:var(--accent)">6/6</div><div style="font-size:max(19px,1.15vw);color:var(--text-primary)">场景通过</div><div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">Top-1 / Top-3 亦为 6/6</div></div>
@@ -1447,7 +1447,7 @@
     </div>
     <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);padding-top:1.6vh">
       <div class="t-meta" style="color:var(--text-helper)">unittest · 72 discovered / 70 pass / 2 PolarDB skip</div>
-      <div class="t-meta" style="color:var(--text-helper)">Ablation · 4 variants · gate passed</div>
+      <div class="t-meta" style="color:var(--text-helper)">Ablation · 无 Auditor: 5 blocked / 0 wrong close</div>
     </div>
   </div>
 </section>
@@ -1492,11 +1492,11 @@
         <div style="display:flex;flex-direction:column;gap:.8vh">
           <div style="display:flex;align-items:center;gap:1vw">
             <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">SQLite WAL + 乐观锁</div>
+            <div class="t-body-sm">SQLite BEGIN IMMEDIATE 单写事务</div>
           </div>
           <div style="display:flex;align-items:center;gap:1vw">
             <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
-            <div class="t-body-sm">BEGIN IMMEDIATE 事务</div>
+            <div class="t-body-sm">幂等请求指纹 + 唯一约束</div>
           </div>
           <div style="display:flex;align-items:center;gap:1vw">
             <div style="width:8px;height:8px;background:var(--accent);flex-shrink:0"></div>
@@ -1576,15 +1576,15 @@
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--accent);margin-bottom:1vh">Q1 · AGENT 结果验证</div>
         <div class="t-body" style="color:var(--paper);line-height:1.5">Agent 结果正确性如何保证？formal verification？</div>
         <div style="border-left:2px solid rgba(255,255,255,.3);padding-left:1.5vw;margin-top:1vh">
-          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">五层验证体系：结构化校验 → 策略评估 → 业务规则 → 交叉验证 → 人工审批</div>
+          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">六个 P0 Skill 运行时 Schema → 策略评估 → 业务规则 → 交叉验证 → 人工审批</div>
         </div>
       </div>
       <!-- Q2 -->
       <div style="border-top:2px solid var(--accent);padding-top:1.5vh">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:.15em;color:var(--accent);margin-bottom:1vh">Q2 · STATESTORE 一致性</div>
-        <div class="t-body" style="color:var(--paper);line-height:1.5">乐观锁够不够？需要 Raft/Paxos？</div>
+        <div class="t-body" style="color:var(--paper);line-height:1.5">当前如何处理并发写？需要 Raft/Paxos？</div>
         <div style="border-left:2px solid rgba(255,255,255,.3);padding-left:1.5vw;margin-top:1vh">
-          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">单节点 WAL 已验证；PostgreSQL 适配器已实现，托管 PolarDB 联调待验证</div>
+          <div class="t-body-sm" style="color:rgba(255,255,255,.75);line-height:1.5">单节点事务与约束门禁已验证；无 WAL/row_version；托管 PolarDB 联调待验证</div>
         </div>
       </div>
       <!-- Q3 -->

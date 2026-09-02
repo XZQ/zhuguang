@@ -39,42 +39,60 @@
 
 ## 2. 核心验证代码
 
-### 2.1 策略合规检查
+### 2.1 Skill 运行时输出契约
+
+`src/dianxun/skills/contracts.py` 提供 `enforce_output_contract()` 装饰器。主线 Skill
+函数返回后，装饰器把 dataclass、Enum、tuple 等转换为 JSON-compatible 视图，并按各
+`skills/<name>/output.schema.json` 校验；缺字段、类型错误或额外字段会抛出
+`SkillOutputContractError`，不会把漂移结构继续传入下一阶段。
+
+当前已装饰六个 P0 入口：
+
+- `detect_coldchain_event`
+- `coldchain_risk_assess`
+- `diagnose_coldchain_hypotheses`
+- `dispatch_stateful_workorder`
+- `outcome_verify`
+- `review_incident`
+
+`tests/test_skill_contracts.py` 同时校验成功/失败静态样例和运行时反例；这解决的是结构
+契约，不证明 LLM 语义正确性。
+
+### 2.2 策略合规检查
 
 ```python
 # src/dianxun/domain/policy.py
-class PolicyEngine:
-    """策略引擎：评估操作是否合规"""
+key = f"{action_type}:{disposition}" if disposition else action_type
+rule = policy["actions"].get(key)
+if rule is None:
+    return PolicyDecision(allowed=False, risk_level="L3", ...)
 
-    def evaluate(
-        self,
-        actor: str,
-        action_type: str,
-        amount: float | None = None,
-        disposition: str | None = None,
-    ) -> PolicyDecision:
-        """
-        评估结果包含：
-        - allowed: 是否允许执行
-        - risk_level: 风险等级 (L1-L5)
-        - approval_required: 是否需要审批
-        - approvers: 审批人列表
-        - reason: 决策原因
-        """
+if actor not in rule["allowed_actors"]:
+    return PolicyDecision(
+        allowed=False,
+        risk_level=rule["risk_level"],
+        approval_required=False,
+        ...
+    )
 
-        # L1: 低风险，自动放行
-        if risk_level <= 1:
-            return PolicyDecision(allowed=True, ...)
+approval_required = rule.get("approval_required", False)
+threshold = rule.get("approval_required_above_amount")
+if threshold is not None and amount is not None:
+    approval_required = amount > threshold
 
-        # L2-L3: 中风险，需要审批
-        if risk_level <= 3:
-            return PolicyDecision(allowed=True, approval_required=True, ...)
-
-        # L4-L5: 高风险，审批或拒绝
-        return PolicyDecision(allowed=False, reason="高风险操作需人工介入")
+return PolicyDecision(
+    allowed=True,
+    risk_level=rule["risk_level"],  # 当前策略使用 L1-L3
+    approval_required=approval_required,
+    approvers=rule["approvers"] if approval_required else (),
+    ...
+)
 ```
 
-### 2.2 事件边界约束
+PolicyEngine 不按虚构的 L1-L5 数值区间自动推断；它按版本化策略中的 action、
+`allowed_actors`、风险等级和审批条件逐项判断。
+
+### 2.3 事件边界约束
 
 ```python
 # src/dianxun/mcp/p0.py
@@ -101,7 +119,7 @@ def _require_incident_scope(
     # 实现细节见 p0.py:_require_incident_scope
 ```
 
-### 2.3 交叉验证（Auditor 独立验证）
+### 2.4 交叉验证（Auditor 独立验证）
 
 ```python
 # src/dianxun/mcp/p0.py - release_sales_hold
@@ -164,7 +182,7 @@ Auditor 独立验证
 
 **A**: 通过五层验证体系：
 
-1. **结构化输出**：JSON Schema 校验输入输出格式
+1. **结构化输出**：六个 P0 主线 Skill 在实际返回路径校验 output JSON Schema
 2. **策略合规**：PolicyEngine 评估风险等级和审批需求
 3. **业务规则**：事件边界约束防止越界操作
 4. **交叉验证**：Auditor 独立验证 Executor 的处置结果
@@ -205,9 +223,14 @@ if previous:
 
 ```bash
 # 验证相关测试
-tests/test_stateful_core.py        # 结构化验证
-tests/test_coldchain_workflow.py   # 端到端验证链
-tests/test_knowledge_flywheel.py    # 知识验证链
+tests/test_skill_contracts.py       # 六个 Skill 静态与运行时输出契约
+tests/test_stateful_core.py         # SQLite/Policy/MCP 状态与聚合门
+tests/test_adversarial_hardening.py # scope/审批/release guard/HTTP 边界
+tests/test_coldchain_workflow.py    # 六场景端到端验证链
+tests/test_knowledge_flywheel.py    # 知识人工发布边界
 ```
 
-所有关键验证点都有对应的单元测试和集成测试覆盖。
+当前全量门禁发现 72 项，其中 70 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
+六个 P0 Skill 运行时输出契约、12 个 P0 MCP registry/调用路径、六场景闭环和主要安全
+边界均有自动化证据。仓库尚未生成正式行/分支覆盖率，也没有多线程/多进程争用压测或
+真实 AgentTeams/PolarDB 运行证据，不能表述为“所有关键点 100% 覆盖”。

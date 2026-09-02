@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from dianxun.command_center import _SCENARIO_META, build_command_center
+from dianxun.command_center import _SCENARIO_META, _temperature_svg, build_command_center
 
 
 class CommandCenterTests(unittest.TestCase):
@@ -43,6 +43,21 @@ class CommandCenterTests(unittest.TestCase):
 
     def test_temperature_svg_per_scenario(self) -> None:
         self.assertEqual(6, self.html.count("<svg"))
+        svg = _temperature_svg(
+            [
+                {"observed_at": "2026-09-01T09:00:00+08:00", "temp_c": 4.0, "quality": "good"},
+                {"observed_at": "2026-09-01T09:01:00+08:00", "temp_c": 4.2, "quality": "good"},
+                {
+                    "observed_at": "2026-09-01T09:02:00+08:00",
+                    "temp_c": 12.0,
+                    "quality": "suspect",
+                },
+                {"observed_at": "2026-09-01T09:03:00+08:00", "temp_c": 4.1, "quality": "good"},
+                {"observed_at": "2026-09-01T09:04:00+08:00", "temp_c": 4.0, "quality": "good"},
+            ]
+        )
+        self.assertEqual(2, svg.count("<polyline"))
+        self.assertIn('fill="#f59e0b"', svg)
 
     def test_kpis_match_the_m4_gate(self) -> None:
         for fragment in (

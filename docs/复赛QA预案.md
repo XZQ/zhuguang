@@ -18,7 +18,7 @@
 1. **我们采用的是工程化验证体系，而非 formal verification**
 
 2. **五层验证机制**:
-   - Layer 1: JSON Schema 结构校验
+   - Layer 1: 六个 P0 主线 Skill 在实际函数返回时执行 output JSON Schema 校验
    - Layer 2: PolicyEngine 策略评估
    - Layer 3: 业务规则校验（事件边界、幂等性）
    - Layer 4: Auditor 交叉验证
@@ -31,22 +31,29 @@
 
 4. **关键证据**:
    - 详见 `docs/Agent验证机制.md`
+   - 运行时装饰器见 `src/dianxun/skills/contracts.py`
+   - 契约正反例见 `tests/test_skill_contracts.py`
    - 全量发现 72 项测试：70 通过，2 条 PolarDB 条件集成测试跳过
 
 ---
 
-#### Q2: StateStore 一致性 - 乐观锁够不够？
+#### Q2: StateStore 一致性 - 当前单写事务够不够？
 
-**问题**: 你们用乐观锁，分布式场景下够用吗？需要 Raft/Paxos 吗？
+**问题**: 你们当前如何处理并发写？分布式场景是否需要 Raft/Paxos？
 
 **回答要点**:
 
-1. **当前方案**: SQLite WAL + 乐观锁
+1. **当前方案**: SQLite 单写事务 + 唯一约束/幂等
    - `BEGIN IMMEDIATE` 事务获取写锁
    - `busy_timeout=10000ms` 处理锁等待
-   - 幂等键防止重复执行
+   - 幂等键 + 请求指纹防止同键异请求和重复副作用
+   - action 唯一索引、有效冻结部分唯一索引、条件 UPDATE + rowcount 检查
+   - 当前没有设置 WAL，也没有 `row_version` 乐观锁
 
-2. **单节点够用**: 评测环境是单节点，WAL 模式完全满足需求
+2. **证据边界**:
+   - 足够支撑仓库内已验证的单节点确定性评测
+   - 新库实测 `journal_mode=delete`
+   - 尚无多线程/多进程争用压测，不能外推生产吞吐
 
 3. **分布式方案**: PolarDB PostgreSQL
    - 仓库已有 `PostgresStateStore` 和 SQL profile
@@ -54,9 +61,10 @@
    - 托管实例尚未联调，不能说成只改连接串或零改动
 
 4. **为什么不用 Raft/Paxos**:
-   - 实现复杂度高
-   - 需要应用层改造
-   - 托管数据库降低数据库运维成本，但 SLA 与一致性能力仍需按实例验收
+   - 当前不在应用层自行实现共识协议
+   - 分布式目标路径依赖 PostgreSQL/PolarDB 事务与业务约束
+   - 是否需要额外共识层取决于跨库、多主和容灾目标
+   - 托管数据库的 SLA、一致性和冲突行为仍需按真实实例验收
 
 5. **关键证据**:
    - 详见 `docs/分布式一致性方案.md`
@@ -83,8 +91,9 @@
    - 仓库尚未提供统一客户端重试/熔断器，由调用方负责超时和安全重放
 
 4. **幂等性保证**:
-   - 所有写操作支持 idempotency_key
-   - 重试安全，不产生副作用
+   - 7 个 P0 状态动作要求 `idempotency_key`
+   - 同键同请求可安全重放；同键异请求明确拒绝
+   - P1 知识动作有自己的去重和人工发布边界，不能与 P0 口径混写
 
 5. **关键证据**:
    - 详见 `docs/MCP延迟与可靠性.md`
@@ -138,19 +147,21 @@
    - 尚未生成行/分支/函数覆盖率报告
 
 2. **Mock 策略**:
-   - 数据库: Mock StateStore Protocol
-   - 策略: Mock PolicyEngine
-   - 时间: 可控虚拟时间
-   - 网络: 标准库 HTTP 测试服务与本地适配器
+   - 数据库: 隔离的临时真实 SQLite
+   - 策略: 真实版本化 PolicyEngine
+   - 时间: 可控虚拟时钟
+   - 外部系统: 有状态 LocalDemoAdapter/ScenarioEngine 替身
+   - HTTP: 标准库本地测试服务
 
 3. **测试类型**:
-   - 单元测试: 单工具功能
-   - 集成测试: 多工具协作
-   - 端到端: 完整冷链场景
+   - 契约测试: 12 个 P0 工具 registry/runtime schema、六个 Skill output schema
+   - 集成测试: 真实 SQLite、真实 Policy、多工具协作
+   - 端到端: 六个完整冷链场景与失败闭环
 
 4. **关键证据**:
    - 详见 `docs/测试覆盖矩阵.md`
    - `tests/test_adversarial_hardening.py`、`tests/test_stateful_core.py` 与六场景评测
+   - 仓库没有 `tests/conftest.py` 或 `tests/test_concurrent_state.py`
 
 ---
 

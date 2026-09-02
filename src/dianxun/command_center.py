@@ -5,8 +5,9 @@ puts agent handoffs, the device state chain, the batch state chain, evidence,
 approvals, audits and the Auditor verdict on a single screen. The page has no
 external dependencies (inline CSS/JS/SVG) so judges can open it offline.
 
-Boundary: all data comes from stateful mocks and a fixed seed; the page demonstrates
-repository-internal deterministic behavior, not a live deployment.
+Boundary: all data comes from real temporary SQLite/PolicyEngine plus stateful local
+adapters and a fixed seed; the page demonstrates repository-internal deterministic
+behavior, not a live deployment.
 """
 
 from __future__ import annotations
@@ -338,7 +339,7 @@ def _render(
 <section class="kpis">{kpi_html}</section>
 <nav class="tabs">{"".join(tabs)}</nav>
 {"".join(panels)}
-<footer class="foot">数据来自有状态 Mock 与固定 seed,仅证明仓库内确定性行为;不代表真实门店收益或生产可用性。</footer>
+<footer class="foot">数据来自真实临时 SQLite/PolicyEngine、有状态本地 Adapter/ScenarioEngine 与固定 seed;仅证明仓库内确定性行为。</footer>
 <script>{_JS}</script>
 </body></html>
 """
@@ -434,7 +435,7 @@ def _render_device(device: dict[str, Any]) -> str:
     {_badge("门 " + str(health.get("door_state", "-")), "info")}
   </div>
   {svg}
-  <div class="legend">蓝点=可信读数 · 橙点=suspect 读数(被排除) · 红虚线=8°C 告警阈值</div>
+  <div class="legend">蓝线/蓝点=可信读数 · 橙点=suspect 读数(不参与主折线) · 红虚线=8°C 告警阈值</div>
 </div>"""
 
 
@@ -455,7 +456,24 @@ def _temperature_svg(series: list[dict[str, Any]]) -> str:
     def y(temp: float) -> float:
         return height - pad - (temp - lo) / (hi - lo) * (height - 2 * pad)
 
-    points = " ".join(f"{x(at):.1f},{y(temp):.1f}" for at, temp in zip(times, temps, strict=True))
+    trusted_segments: list[list[tuple[datetime, float]]] = []
+    current_segment: list[tuple[datetime, float]] = []
+    for at, temp, item in zip(times, temps, series, strict=True):
+        if str(item.get("quality", "good")).lower() == "good":
+            current_segment.append((at, temp))
+        else:
+            if current_segment:
+                trusted_segments.append(current_segment)
+                current_segment = []
+    if current_segment:
+        trusted_segments.append(current_segment)
+    polylines = "".join(
+        '<polyline points="{}" fill="none" stroke="#2563eb" stroke-width="2"/>'.format(
+            " ".join(f"{x(at):.1f},{y(temp):.1f}" for at, temp in segment)
+        )
+        for segment in trusted_segments
+        if len(segment) >= 2
+    )
     dots = []
     for at, temp, item in zip(times, temps, series, strict=True):
         color = "#f59e0b" if str(item.get("quality", "good")).lower() != "good" else "#2563eb"
@@ -466,7 +484,7 @@ def _temperature_svg(series: list[dict[str, Any]]) -> str:
     threshold_y = y(8.0)
     return f"""<svg viewBox="0 0 {width} {height}" class="temp-svg" role="img" aria-label="温度曲线">
 <line x1="{pad}" y1="{threshold_y:.1f}" x2="{width - pad}" y2="{threshold_y:.1f}" stroke="#dc2626" stroke-dasharray="5 4" stroke-width="1.5"/>
-<polyline points="{points}" fill="none" stroke="#2563eb" stroke-width="2"/>
+{polylines}
 {"".join(dots)}
 <text x="{width - pad + 2}" y="{threshold_y + 4:.1f}" class="t-th">8°C</text>
 </svg>"""

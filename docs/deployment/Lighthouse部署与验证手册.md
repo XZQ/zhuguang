@@ -124,29 +124,39 @@ uv run python -m unittest discover -s tests -v
 这是刻意设计，不要用"改代码绕过"的方式解决。
 
 `MCP_ACTOR_TOKENS_JSON` 的 actor 必须落在工具声明白名单内，否则启动即报错。
-当前合法 actor：
+P0 常驻服务需要的业务 actor：
 
 ```
-Sentry  Diagnoser  Auditor  Executor  AuthenticatedClient  Human  ScenarioEngine
+Sentry  Diagnoser  Auditor  Executor  Human  AuthenticatedClient
 ```
 
-写类工具（7 个受控动作）只允许 `Executor` 身份调用，共享 `MCP_TOKEN` 调不动 —— 这是
-「执行者不能自证成功」这条设计约束在鉴权层的落实。
+`ScenarioEngine` 只用于确定性测试，不应作为生产人员身份。启用 P1 知识工具后还可配置
+`food_safety_owner`、`hq_reviewer`、`knowledge_reviewer`，用于独立人工审核。
+
+7 个 P0 状态动作中，`apply_sales_hold`、`release_sales_hold`、`apply_batch_disposition`、
+`create_workorder`、`create_approval` 只允许 `Executor`；`decide_approval` 与
+`record_manual_evidence` 只允许 `Human`（测试环境也允许 `ScenarioEngine`）。共享
+`MCP_TOKEN` 不能调用任何状态动作。`release_sales_hold` 还要求新鲜的 Auditor
+`release_guard` 验证，因此 Executor 不能自证放行。
 
 ### 5.2 启动
 
 ```bash
-export HOST=0.0.0.0
+export HOST=127.0.0.1
 export PORT=8080
-export MCP_ACTOR_TOKENS_JSON='{"tk_exec":"Executor","tk_audit":"Auditor","tk_read":"AuthenticatedClient"}'
+export MCP_ACTOR_TOKENS_JSON="$(uv run python -c 'import json,secrets; actors=("Sentry","Diagnoser","Auditor","Executor","Human","AuthenticatedClient"); print(json.dumps({secrets.token_urlsafe(32): actor for actor in actors}, separators=(",",":")))')"
 uv run dianxun-mcp
-# Dianxun MCP listening on http://0.0.0.0:8080 with 12 tools
+# Dianxun MCP listening on http://127.0.0.1:8080 with 12 tools
 ```
 
-健康检查（根路径）：
+上面的 Token 每次启动随机生成，只适合本机烟测；不要输出到日志或录屏。常驻环境应由 Secret
+Manager、Kubernetes Secret 或权限为 600 的 root-owned `EnvironmentFile` 注入，并通过安全渠道
+把各角色 Token 分发给对应调用方。
+
+健康检查：
 
 ```bash
-curl -s http://127.0.0.1:8080/
+curl -s http://127.0.0.1:8080/health
 # {"service":"dianxun-mcp","version":"0.2.0","tools":12,"p0_tools":12,"p1_knowledge_enabled":false}
 ```
 
@@ -168,11 +178,18 @@ curl -s http://127.0.0.1:8080/
 
 ```bash
 sudo install -d -m 700 /etc/dianxun
-sudo tee /etc/dianxun/mcp.env >/dev/null <<'EOF'
-HOST=127.0.0.1
-PORT=8080
-MCP_ACTOR_TOKENS_JSON={"tk_exec":"Executor","tk_audit":"Auditor","tk_read":"AuthenticatedClient"}
-EOF
+sudo python3 - <<'PY'
+import json
+import os
+import secrets
+from pathlib import Path
+
+actors = ("Sentry", "Diagnoser", "Auditor", "Executor", "Human", "AuthenticatedClient")
+mapping = {secrets.token_urlsafe(32): actor for actor in actors}
+content = "HOST=127.0.0.1\nPORT=8080\nMCP_ACTOR_TOKENS_JSON=" + json.dumps(mapping, separators=(",", ":")) + "\n"
+os.umask(0o077)
+Path("/etc/dianxun/mcp.env").write_text(content, encoding="utf-8")
+PY
 sudo chmod 600 /etc/dianxun/mcp.env
 ```
 
@@ -245,9 +262,10 @@ journalctl -u dianxun-mcp -f
 - [ ] `dianxun ablation` → `gate.passed=true`，四变体结果与 Markdown 报告已重新生成
 - [ ] `dianxun command-center` → `evidence/m4/command-center.html` 已重新生成
 - [ ] 72 项测试完成（70 通过 + 2 条 PolarDB 条件跳过）
-- [ ] `curl /` 健康检查返回 `tools: 12`
+- [ ] `curl /health` 健康检查返回 `tools: 12`
 - [ ] 非回环 + 空 token → 进程拒绝启动（反例留证）
 - [ ] 共享 `MCP_TOKEN` 调写工具 → 被拒（反例留证）
+- [ ] Executor 可创建审批但不能决定审批；Human 可决定审批与记录人工证据
 - [ ] systemd 重启后服务自恢复
 - [ ] 防火墙未对 8080 放行 `0.0.0.0/0`
 - [ ] `/etc/dianxun/mcp.env` 权限 600，未进 Git

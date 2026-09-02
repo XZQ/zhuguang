@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-09-01",
+  "updated_at": "2026-09-02",
   "owner": "XZQ",
   "project_name": "逐光",
   "display_name": "逐光｜店巡 Agent",
@@ -183,8 +183,12 @@
         "gate_passed": true,
         "headline": {
           "no_auditor": {
-            "erroneous_closures": 5,
-            "release_denials": 5,
+            "acceptance_passed": 1,
+            "verification_blocked": 5,
+            "self_declared_closures": 0,
+            "erroneous_closures": 0,
+            "release_attempts": 0,
+            "release_denials": 0,
             "release_executed": 0,
             "dangerous_release_batches": 0
           },
