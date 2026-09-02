@@ -68,10 +68,25 @@
 
 旧 Trace 数据库通过向后兼容的 `ALTER TABLE ADD COLUMN` 自动迁移；历史行保持空值，不伪造
 版本身份。canary 按 Skill 名和 trace/incident ID 的 SHA-256 固定分桶，重试不会漂移。
-AgentTeams 证据 Schema `1.1` 同时要求 Skill load 和每次工具调用携带 version/digest，校验器
+AgentTeams 证据 Schema `1.2` 同时要求 Skill load 和每次工具调用携带 version/digest，校验器
 会与当前 Worker provenance 逐项比对。真实平台是否产生这些字段仍以导出 Trace 为准。
 
-### 2.3 策略合规检查
+### 2.3 协调 Context 一致性
+
+`ContextBus` 将 tenant 固定在仓储实例，SQLite 以 `(tenant_id, task_id)` 为主键并实际启用
+WAL。每次提交使用 `expected_version` 条件更新；版本不一致抛出
+`ContextVersionConflict`，不得覆盖较新的 assignment 或 checkpoint。
+
+`ContextCoordinator` 对每个 Worker assignment 保存 attempt、lease、heartbeat 和 predecessor。
+有效 lease 禁止重派；超时后由乐观锁保证并发调用只留下一个 successor。Worker 完成状态与
+phase checkpoint 在同一次版本提交中持久化，重启后只返回未完成阶段。Context 的完成状态
+不是业务关闭信号，`IncidentService` 仍是业务事实唯一入口。
+
+Schema 1.2 会拒绝缺少 tenant/version/lease/checkpoint、非法 predecessor、没有 timeout
+successor 或没有 checkpoint 恢复证据的外部运行包。本地 10 项 lifecycle 测试不替代真实
+AgentTeams heartbeat 与重启 Trace。
+
+### 2.4 策略合规检查
 
 ```python
 # src/dianxun/domain/policy.py
@@ -105,7 +120,7 @@ return PolicyDecision(
 PolicyEngine 不按虚构的 L1-L5 数值区间自动推断；它按版本化策略中的 action、
 `allowed_actors`、风险等级和审批条件逐项判断。
 
-### 2.4 事件边界约束
+### 2.5 事件边界约束
 
 ```python
 # src/dianxun/mcp/p0.py
@@ -132,7 +147,7 @@ def _require_incident_scope(
     # 实现细节见 p0.py:_require_incident_scope
 ```
 
-### 2.5 交叉验证（Auditor 独立验证）
+### 2.6 交叉验证（Auditor 独立验证）
 
 ```python
 # src/dianxun/mcp/p0.py - release_sales_hold
@@ -244,7 +259,7 @@ tests/test_coldchain_workflow.py    # 六场景端到端验证链
 tests/test_knowledge_flywheel.py    # 知识人工发布边界
 ```
 
-当前全量门禁发现 76 项，其中 74 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
+当前全量门禁发现 87 项，其中 85 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
 六个 P0 Skill 运行时输出契约、12 个 P0 MCP registry/调用路径、六场景闭环和主要安全
-边界均有自动化证据。仓库尚未生成正式行/分支覆盖率，也没有多线程/多进程争用压测或
+边界均有自动化证据。仓库尚未生成正式行/分支覆盖率，也没有多进程/高争用压测或
 真实 AgentTeams/PolarDB 运行证据，不能表述为“所有关键点 100% 覆盖”。

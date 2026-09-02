@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +24,15 @@ _SKILLS = {
     ("auditor", "outcome-verify"),
     ("auditor", "review-report"),
 }
-_PHASES = {"DETECT_CONTAIN", "DIAGNOSE_DECIDE", "EXECUTE", "VERIFY", "LEARN"}
+_PHASE_ORDER = ("DETECT_CONTAIN", "DIAGNOSE_DECIDE", "EXECUTE", "VERIFY", "LEARN")
+_PHASES = set(_PHASE_ORDER)
+_PHASE_WORKERS = {
+    "DETECT_CONTAIN": "sentry",
+    "DIAGNOSE_DECIDE": "diagnoser",
+    "EXECUTE": "executor",
+    "VERIFY": "auditor",
+    "LEARN": "auditor",
+}
 _REQUIRED_DELEGATIONS = {
     ("manager", "orchestrator", "DETECT_CONTAIN"),
     ("orchestrator", "sentry", "DETECT_CONTAIN"),
@@ -156,6 +165,9 @@ def verify_agentteams_evidence(
         and len({run["incident_id"] for run in bundle["runs"]}) == len(bundle["runs"])
         and len({run["trace_id"] for run in bundle["runs"]}) == len(bundle["runs"])
     )
+    checks["coordination_tenant_consistent"] = (
+        len({run["coordination"]["tenant_id"] for run in bundle["runs"]}) == 1
+    )
     run_checks = []
     for run in bundle["runs"]:
         phases = {item["phase"] for item in run["handoffs"]}
@@ -191,6 +203,7 @@ def verify_agentteams_evidence(
             and bool(run["approval"]["decision_id"])
             and bool(run["approval"]["evidence_ref"])
         )
+        coordination_integrity = _coordination_integrity(run["coordination"])
         if run["branch"] == "success":
             business_chain = (
                 _BASE_BUSINESS_CHAIN | {"release_sales_hold", "query_sales_holds"}
@@ -225,6 +238,7 @@ def verify_agentteams_evidence(
                 "business_chain_complete": business_chain,
                 "state_changes_audited": audited_state_changes,
                 "human_approval": human_approval,
+                "coordination_integrity": coordination_integrity,
                 "safe_outcome": outcome,
                 "trace_artifact_redacted": (
                     run["trace_artifact"]["redacted"] is True and bool(run["trace_artifact"]["uri"])
@@ -232,6 +246,13 @@ def verify_agentteams_evidence(
                 "trace_digest_non_placeholder": run["trace_artifact"]["sha256"] != "0" * 64,
             }
         )
+    checks["timeout_reassignment_observed"] = any(
+        any(item.get("predecessor_assignment_id") for item in run["coordination"]["assignments"])
+        for run in bundle["runs"]
+    )
+    checks["checkpoint_resume_observed"] = any(
+        run["coordination"]["resumed_from_checkpoint"] for run in bundle["runs"]
+    )
     checks["runs_pass_runtime_gate"] = all(
         all(value for key, value in item.items() if key not in {"scenario_id", "branch"})
         for item in run_checks
@@ -248,6 +269,108 @@ def verify_agentteams_evidence(
             "it does not create or substitute AgentTeams runtime evidence."
         ),
     }
+
+
+def _coordination_integrity(coordination: dict[str, Any]) -> bool:
+    assignments = coordination["assignments"]
+    checkpoints = coordination["checkpoints"]
+    assignment_by_id = {item["assignment_id"]: item for item in assignments}
+    if len(assignment_by_id) != len(assignments):
+        return False
+    checkpoint_by_phase = {item["phase"]: item for item in checkpoints}
+    if set(checkpoint_by_phase) != _PHASES or len(checkpoint_by_phase) != len(checkpoints):
+        return False
+    if [item["phase"] for item in checkpoints] != list(_PHASE_ORDER):
+        return False
+    context_version = coordination["context_version"]
+    checkpoint_versions = [item["context_version"] for item in checkpoints]
+    if (
+        checkpoint_versions != sorted(checkpoint_versions)
+        or len(checkpoint_versions) != len(set(checkpoint_versions))
+        or any(version > context_version for version in checkpoint_versions)
+    ):
+        return False
+    if not _is_timestamp(coordination["expires_at"]):
+        return False
+    resumed = coordination["resumed_from_checkpoint"]
+    resume_ref = coordination["resume_evidence_ref"]
+    if (resumed and not resume_ref) or (not resumed and resume_ref is not None):
+        return False
+
+    successor_counts: dict[str, int] = {}
+    for assignment in assignments:
+        lease_expires_at = _parse_timestamp(assignment["lease_expires_at"])
+        heartbeat_at = _parse_timestamp(assignment["heartbeat_at"])
+        if (
+            assignment["phase"] not in _PHASES
+            or assignment["worker"] != _PHASE_WORKERS[assignment["phase"]]
+            or lease_expires_at is None
+            or heartbeat_at is None
+            or heartbeat_at > lease_expires_at
+        ):
+            return False
+        predecessor_id = assignment.get("predecessor_assignment_id")
+        if predecessor_id is None:
+            if assignment["attempt"] != 1:
+                return False
+            continue
+        predecessor = assignment_by_id.get(predecessor_id)
+        if (
+            predecessor is None
+            or predecessor["status"] != "expired"
+            or predecessor["phase"] != assignment["phase"]
+            or assignment["attempt"] != predecessor["attempt"] + 1
+        ):
+            return False
+        successor_counts[predecessor_id] = successor_counts.get(predecessor_id, 0) + 1
+    expired_ids = {
+        assignment["assignment_id"]
+        for assignment in assignments
+        if assignment["status"] == "expired"
+    }
+    if any(successor_counts.get(assignment_id) != 1 for assignment_id in expired_ids):
+        return False
+
+    initial_counts = {
+        phase: sum(
+            assignment["phase"] == phase and assignment.get("predecessor_assignment_id") is None
+            for assignment in assignments
+        )
+        for phase in _PHASE_ORDER
+    }
+    if any(count != 1 for count in initial_counts.values()):
+        return False
+
+    for phase, checkpoint in checkpoint_by_phase.items():
+        assignment = assignment_by_id.get(checkpoint["assignment_id"])
+        if (
+            assignment is None
+            or assignment["phase"] != phase
+            or assignment["status"] != "succeeded"
+            or not checkpoint["evidence_refs"]
+        ):
+            return False
+    if {
+        assignment["assignment_id"]
+        for assignment in assignments
+        if assignment["status"] == "succeeded"
+    } != {checkpoint["assignment_id"] for checkpoint in checkpoints}:
+        return False
+    return True
+
+
+def _is_timestamp(value: str) -> bool:
+    return _parse_timestamp(value) is not None
+
+
+def _parse_timestamp(value: str) -> datetime | None:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    return parsed
 
 
 def _secret_errors(value: Any, path: str = "$") -> list[str]:

@@ -11,7 +11,7 @@
 - 5 个业务 Agent，其中 Orchestrator 是 Team Leader，另外 4 个为领域 Worker；
 - 6 个 P0 Skill 进入确定性 Worker ZIP；
 - Worker 通过 `dianxun-mcp` 访问同一有状态业务世界。
-- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、76 项测试、M4 评测和消融对照不调用 LLM。
+- Manager/Worker YAML 声明 `qwenpaw + qwen3.5-plus`；本地确定性 Demo、87 项测试、M4 评测和消融对照不调用 LLM。
 
 仓库已完成 YAML、Worker ZIP、MCP Deployment 和本地兼容烟测。真实 Team Room、Worker 委派、Worker → MCP 身份绑定和平台 Trace 仍是外部待验证，所以下文分别标注“仓库内证据”和“平台待取证”。
 
@@ -21,9 +21,9 @@
 |---|---|---|---|
 | 角色编排 | Manager → Team Leader → Sentry/Diagnoser/Executor/Auditor | `agentteams/*.yaml`、Identity/Skill/MCP 声明 | 资源实际 Running、Room 成员 |
 | 任务拆解 | Orchestrator 按五阶段分派结构化子任务 | Worker 行为契约、LocalDemo 阶段输出 | Orchestrator 的真实 @委派消息 |
-| 上下文传递 | 传 incident_id、phase、Evidence refs、request_id，不复制大原始数据 | IncidentCase/Evidence Schema、MCP Envelope | 同一任务跨 Worker 的消息链 |
+| 上下文传递 | 传 incident_id、phase、Evidence refs、request_id、context_version 和 assignment，不复制大原始数据 | IncidentCase/Evidence Schema、tenant-bound ContextBus、MCP Envelope | 同一任务跨 Worker 的消息链与 checkpoint 恢复 |
 | 协同执行 | 读、诊断、写、验证职责分离；人工审批可等待/超时 | Policy、ScenarioEngine、六场景测试 | Worker 调 MCP 和人工节点的同一平台 Trace |
-| 状态追踪 | phase + incident_status + work_status + 批次/审批/工单实体状态 | StateStore、IncidentService、Trace | 平台任务状态与业务状态关联截图/导出 |
+| 状态追踪 | 业务状态与 assignment/lease/checkpoint 两层分离 | StateStore、IncidentService、WAL Context、乐观版本和并发重派测试 | 平台任务状态、heartbeat、timeout successor 与业务状态关联导出 |
 
 ## 3. 五阶段业务闭环
 
@@ -112,7 +112,7 @@ uv run dianxun evaluate
 - 场景、Top-1、Top-3 均 6/6；
 - Evidence 关键字段 45/45；
 - 适用阶段 Trace 26/26；
-- 全量发现 76 项自动化测试：74 项通过，2 项外部 PolarDB 条件测试跳过；
+- 全量发现 87 项自动化测试：85 项通过，2 项外部 PolarDB 条件测试跳过；
 - 四变体消融门禁通过：`no_auditor` 验证缺独立审计时安全阻断，`single_agent` 验证角色写入边界，`rule_only` 暴露诊断退化；
 - 事故指挥台将六场景交接链、设备/商品状态、审批、审计和 Auditor 判决同屏呈现；
 - 未授权写、未审批受控写、错误放行、错误关闭和重复副作用均为 0。
@@ -169,6 +169,19 @@ Agent 之间只传递最小必要引用：
 
 照片和原始附件只保存 URI、哈希和脱敏摘要，不进入仓库证据。
 
+### 7.1 Context 生命周期与恢复
+
+协调 Context 与业务 Incident 是两层状态：
+
+- `ContextBus(tenant_id=..., database_path=...)` 将 tenant 固定在仓储实例上，复合主键和所有查询都包含 tenant；跨租户读取返回不存在，跨租户提交明确拒绝。
+- Context 带 `version/updated_at/expires_at`。SQLite 持久化实际启用 WAL，提交使用 `WHERE version = expected_version`；stale writer 不能覆盖新 checkpoint。
+- assignment 保存 phase、worker、attempt、lease、heartbeat、状态和 predecessor。有效 lease 期间禁止重派；超时后并发 Orchestrator 通过版本冲突收敛到唯一 successor。
+- Worker 成功与 phase checkpoint 在同一次 Context 版本提交中完成。重启后 `resume_plan` 只返回未完成阶段，避免重复外部副作用。
+- active Context 过期后默认拒绝读取但不自动删除；清理默认只删除终态过期记录。强制清理 active 需要显式参数。
+- `coordination_status=completed` 只说明委派与交接完成，不能直接设置 Incident 的 `RESOLVED/CLOSED`；后者仍由 `IncidentService` 聚合业务事实。
+
+上述能力由本地 SQLite 和并发测试验证。真实 AgentTeams Worker heartbeat、超时改路和重启恢复仍必须在目标平台生成 Schema 1.2 运行证据。
+
 ## 8. 动态 AgentTeams 验收
 
 在目标环境中，只有同一 incident 同时具备以下证据，才可把 M3 从“外部待验证”改为“已实现”：
@@ -181,7 +194,9 @@ Agent 之间只传递最小必要引用：
 6. Auditor 独立查询，而非复述 Executor；
 7. AgentTeams 资源和 MCP Kubernetes 资源为实际 Running；
 8. Worker 的动态 Bearer 身份由可信网关或 MCP 映射为正确 Actor，并验证匿名、错误 Token 和越权角色均被拒绝；
-9. 平台消息、业务状态、MCP 返回和 Trace 可关联到同一 incident。
+9. 平台消息、业务状态、MCP 返回和 Trace 可关联到同一 incident；
+10. assignment heartbeat、lease 到期、唯一 successor 和 context version 连续可见；
+11. 至少一次重启从 checkpoint 恢复，且没有重做已完成副作用。
 
 静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足这 9 项。尤其不能把 AgentTeams 自动发送 Bearer Header 等同于 MCP 已验证该身份；必须取得服务端拒绝证据和审计 Actor 证据。
 

@@ -101,6 +101,10 @@ class AgentTeamsArtifactTests(unittest.TestCase):
                 self.assertEqual(skills, set(spec.get("skills", [])))
                 if name == "orchestrator":
                     self.assertNotIn("mcpServers", spec)
+                    self.assertIn("context_version", spec["agents"])
+                    self.assertIn("lease_expires_at", spec["agents"])
+                    self.assertIn("checkpoint", spec["agents"])
+                    self.assertIn("IncidentService", spec["agents"])
                 else:
                     self.assertEqual(
                         [{"name": "dianxun-mcp", "url": MCP_URL, "transport": "http"}],
