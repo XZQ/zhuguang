@@ -121,7 +121,11 @@ def _skill_provenance() -> list[dict[str, str]]:
         root = CANONICAL_SKILLS_ROOT / skill
         manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
         digest = hashlib.sha256()
-        for path in sorted(item for item in root.rglob("*") if item.is_file()):
+        files = sorted(
+            (item for item in root.rglob("*") if item.is_file()),
+            key=lambda item: _portable_path_key(item.relative_to(root)),
+        )
+        for path in files:
             relative = path.relative_to(root).as_posix()
             digest.update(relative.encode("utf-8"))
             digest.update(b"\0")
@@ -135,6 +139,12 @@ def _skill_provenance() -> list[dict[str, str]]:
             }
         )
     return result
+
+
+def _portable_path_key(path: Path) -> tuple[str, str]:
+    """Keep provenance ordering identical on Windows and Linux."""
+    relative = path.as_posix()
+    return relative.casefold(), relative
 
 
 def build_worker_package(output: Path = DEFAULT_OUTPUT) -> dict[str, object]:

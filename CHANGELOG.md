@@ -16,6 +16,10 @@
 - 指标不使用 tenant、incident、request、trace、actor 或凭据等高基数/敏感标签。
 - 继续保持共享 Token 只读、Actor 绑定写权限和目标平台证据边界。
 
+### Fixed
+
+- Skill Registry/provenance 使用显式可移植路径排序，避免 Windows 与 Linux 对大小写排序不同而产生摘要漂移。
+
 ## 0.2.0.dev0 - 2026-09-02
 
 ### Added
