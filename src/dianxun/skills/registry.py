@@ -56,7 +56,10 @@ def compute_skill_digest(skill_root: Path) -> str:
     if not skill_root.is_dir():
         raise SkillRegistryError(f"Skill directory does not exist: {skill_root}")
     digest = hashlib.sha256()
-    files = sorted(item for item in skill_root.rglob("*") if item.is_file())
+    files = sorted(
+        (item for item in skill_root.rglob("*") if item.is_file()),
+        key=lambda item: _portable_path_key(item.relative_to(skill_root)),
+    )
     if not files:
         raise SkillRegistryError(f"Skill directory is empty: {skill_root}")
     for path in files:
@@ -66,6 +69,12 @@ def compute_skill_digest(skill_root: Path) -> str:
         digest.update(_normalized_bytes(path))
         digest.update(b"\0")
     return digest.hexdigest()
+
+
+def _portable_path_key(path: Path) -> tuple[str, str]:
+    """Keep digest ordering identical on case-insensitive and case-sensitive hosts."""
+    relative = path.as_posix()
+    return relative.casefold(), relative
 
 
 def classify_version_change(previous: str, current: str) -> str:
