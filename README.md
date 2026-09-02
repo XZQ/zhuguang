@@ -1,5 +1,7 @@
 # 逐光｜店巡 Agent
 
+[![CI](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml/badge.svg)](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml)
+
 > 让连锁门店异常从“告警已读”走到“证据完备、责任清晰、安全关闭”。
 
 **逐光**是面向连锁便利店的多 Agent 异常闭环基础设施，也是 [GOAI Agent Infra 赛道](https://www.goaihz.com/tracks?track=infra)参赛项目。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
@@ -52,6 +54,8 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 | 事故指挥台 | 六场景同屏只读 HTML（交接链、温度曲线、批次处置、审批、审计、判决） | [`evidence/m4/command-center.html`](evidence/m4/command-center.html) |
 | 自动化测试 | 87 项发现：85 通过、2 个 PolarDB 条件集成测试因无外部实例跳过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
 | 协调上下文生命周期 | 租户隔离、TTL、WAL、乐观版本、lease/heartbeat、唯一超时重派和 checkpoint 重启恢复已通过本地并发测试 | `src/dianxun/context_bus.py`、`src/dianxun/coordination.py`、`tests/test_context_lifecycle.py` |
+| 运行可观测性 | `/metrics` 提供低基数工具调用量、结果、耗时 histogram 和鉴权失败计数 | `src/dianxun/metrics.py`、`tests/test_adversarial_hardening.py` |
+| 协调恢复演练 | 本地 SQLite 的 WAL、stale writer、lease、唯一 successor、checkpoint 重启恢复和五阶段完成全部通过 | [`evidence/operations/recovery-drill.json`](evidence/operations/recovery-drill.json) |
 | PolarDB PostgreSQL 后端 | 代码与 SQL 契约已实现，外部待验证 | `src/dianxun/state/postgres.py`、`src/dianxun/state/sql/` |
 | 知识飞轮 | 候选、人工审核、发布、检索及 Recall@K/MRR 已实现；真实门店改善率未验证 | `tests/test_knowledge_flywheel.py` |
 | AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
@@ -155,6 +159,8 @@ uv run dianxun-mcp
 
 默认 Streamable HTTP / JSON-RPC Adapter 监听 `127.0.0.1:8080`。运行时数据库为 `demo/state/runtime.db`，已被 Git 忽略。
 
+健康与 Prometheus 指标分别位于 `GET /health`、`GET /metrics`。指标只使用固定 `tool/outcome` 标签，不包含租户、事故、请求、Trace、Actor 或 Token；完整 SLO 与恢复口径见 [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md)。
+
 默认未配置 Token 的模式只允许回环地址上的本地 Demo；非回环绑定会直接拒绝启动。`MCP_TOKEN` 是共享请求认证，只允许只读工具；所有状态写必须由 `MCP_ACTOR_TOKENS_JSON` 或可信网关完成 Token → Actor 映射。不要把工具默认 Actor 当作网络身份。
 
 ### 使用 PolarDB PostgreSQL 与知识飞轮
@@ -178,6 +184,9 @@ Linux/macOS 只需去掉 PowerShell 的反引号续行；其余命令相同。
 ```powershell
 # 模拟数据完整性
 uv run python scripts/generate_demo_data.py --check
+
+# 确定性协调恢复演练
+uv run python scripts/recovery_drill.py --check
 
 # 全量测试
 uv run --group dev python -W error::ResourceWarning -m unittest discover -v
@@ -221,11 +230,14 @@ scripts/                   数据生成和确定性制品构建脚本
 dist/                      Worker ZIP 与 SHA-256
 tests/                     单元、集成、契约与评测门禁
 evidence/m4/               脱敏、可复现的本地评测结果
+evidence/operations/       确定性本地恢复演练证据
+.github/                   CI、Pull Request 与 Issue 模板
 ppt/                       HTML 演示稿源文件与导出 PDF
 docs/
   competition/             连续的 01～08 比赛材料及符合性矩阵
   assessments/             实现状态、真实门店差距与演进门禁
   demo/                    Demo 视频脚本与证据清单
+  operations/              Metrics、SLO 与恢复演练
 ```
 
 完整文档导航见 [`docs/README.md`](docs/README.md)，交付包与业务源码的边界见 [`packages/README.md`](packages/README.md)。
@@ -246,6 +258,9 @@ docs/
 | [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md) | 仓库事实、里程碑状态和证据边界 |
 | [`docs/assessments/真实门店差距与演进路线.md`](docs/assessments/真实门店差距与演进路线.md) | 与真实门店、HACCP、人员和企业系统的差距及灰度路线 |
 | [`docs/demo/Demo视频脚本与证据清单.md`](docs/demo/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
+| [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md) | Prometheus 指标、目标 SLO、恢复演练和生产验收边界 |
+
+协作与维护入口见 [`CONTRIBUTING.md`](CONTRIBUTING.md)、[`SECURITY.md`](SECURITY.md)、[`CHANGELOG.md`](CHANGELOG.md) 和 [GitHub Actions CI](.github/workflows/ci.yml)。
 
 模拟数据可执行入口为 [`scripts/generate_demo_data.py`](scripts/generate_demo_data.py)，不与 01～08 文档混放。
 

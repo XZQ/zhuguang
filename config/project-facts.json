@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-09-02",
+  "updated_at": "2026-09-03",
   "owner": "XZQ",
   "project_name": "逐光",
   "display_name": "逐光｜店巡 Agent",
@@ -243,6 +243,31 @@
       },
       "command_center_html": "evidence/m4/command-center.html"
     },
+    "operations_hardening": {
+      "status": "implemented_local_pending_production_measurement",
+      "metrics": {
+        "endpoint": "/metrics",
+        "format": "prometheus_text_0.0.4",
+        "series": [
+          "dianxun_mcp_tool_calls_total",
+          "dianxun_mcp_tool_duration_seconds",
+          "dianxun_mcp_auth_failures_total"
+        ],
+        "labels": ["tool", "outcome"],
+        "forbidden_labels": ["tenant", "incident", "request", "trace", "actor", "token"]
+      },
+      "recovery_drill": {
+        "script": "scripts/recovery_drill.py",
+        "evidence": "evidence/operations/recovery-drill.json",
+        "checks": 6,
+        "backend": "sqlite",
+        "status": "verified_local"
+      },
+      "ci": ".github/workflows/ci.yml",
+      "governance": ["CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"],
+      "slo": "targets_defined_production_measurement_pending",
+      "claim_boundary": "local_metrics_and_recovery_drill_not_production_slo_or_cloud_dr"
+    },
     "m5_materials": {
       "documents": "implemented",
       "presentation_source": "implemented",
@@ -250,6 +275,7 @@
       "competition_compliance_matrix": "implemented",
       "real_store_gap_analysis": "implemented",
       "video_script": "implemented",
+      "open_source_governance": "implemented",
       "recorded_video": "pending_external_agentteams_runtime"
     },
     "agentteams_runtime_evidence": "pending_external_validation"

@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "drill_id": "local-sqlite-coordination-recovery-v1",
+  "virtual_anchor_time": "2026-09-03T00:00:00Z",
+  "environment": {
+    "backend": "sqlite",
+    "clock": "deterministic_virtual_time",
+    "journal_mode": "wal"
+  },
+  "checks": {
+    "sqlite_wal": true,
+    "stale_writer_denied": true,
+    "valid_lease_reassignment_denied": true,
+    "expired_assignment_has_one_successor": true,
+    "checkpoint_recovered_after_restart": true,
+    "five_stage_completion": true
+  },
+  "recovery": {
+    "predecessor_assignment_id": "ef00e847f6b7534082ad00f03ca271ba",
+    "successor_assignment_id": "5877ab5145a75f4785757c13a908f6fb",
+    "successor_attempt": 2,
+    "resume_plan_after_restart": [
+      "DIAGNOSE_DECIDE",
+      "EXECUTE",
+      "VERIFY",
+      "LEARN"
+    ]
+  },
+  "final": {
+    "coordination_status": "completed",
+    "context_version": 13,
+    "checkpoint_order": [
+      "DETECT_CONTAIN",
+      "DIAGNOSE_DECIDE",
+      "EXECUTE",
+      "VERIFY",
+      "LEARN"
+    ],
+    "checkpoint_versions": {
+      "DETECT_CONTAIN": 5,
+      "DIAGNOSE_DECIDE": 7,
+      "EXECUTE": 9,
+      "VERIFY": 11,
+      "LEARN": 13
+    },
+    "assignment_statuses": [
+      "expired",
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded",
+      "succeeded"
+    ]
+  },
+  "claim_boundary": "Deterministic local SQLite control-plane drill only; not evidence of AgentTeams, managed PolarDB, OSS disaster recovery, or production SLO attainment."
+}

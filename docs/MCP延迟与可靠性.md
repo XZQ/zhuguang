@@ -1,8 +1,15 @@
 # MCP 服务延迟与可靠性
 
 > 状态说明：仓库当前实现是 `ThreadingHTTPServer` 独立 HTTP 服务，默认绑定 `127.0.0.1`；
-> 尚未提供同进程嵌入客户端、自动重试、熔断器或正式性能基准。本文中的延迟数值、重试客户端和
-> 基准代码均为设计目标/示例，不能作为已实测 SLA。已落地事实以 `src/dianxun/mcp/server.py` 和测试为准。
+> 已提供低基数 Prometheus 工具调用/结果/延迟和鉴权失败指标，但尚未提供同进程嵌入客户端、
+> 自动重试、熔断器或正式性能基准。本文中的延迟数值、重试客户端和基准代码均为设计目标/示例，
+> 不能作为已实测 SLA。目标、探针和生产实测口径见 [`operations/SLO与恢复演练.md`](operations/SLO与恢复演练.md)。
+
+### 1.3 当前 Metrics
+
+`GET /metrics` 输出 `dianxun_mcp_tool_calls_total`、`dianxun_mcp_tool_duration_seconds`
+和 `dianxun_mcp_auth_failures_total`。标签只允许固定工具名和 success/error；不使用 tenant、incident、
+request、trace、actor 或 Token。该端点证明指标可被抓取，不代表已经部署 Prometheus、告警或达到 SLO。
 
 ## 1. 部署架构
 

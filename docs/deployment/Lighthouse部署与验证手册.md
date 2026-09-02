@@ -160,6 +160,17 @@ curl -s http://127.0.0.1:8080/health
 # {"service":"dianxun-mcp","version":"0.2.0","tools":12,"p0_tools":12,"p1_knowledge_enabled":false}
 ```
 
+Prometheus 指标：
+
+```bash
+curl -s http://127.0.0.1:8080/metrics
+```
+
+指标只含固定工具名、success/error 和进程内累计值，不含 tenant、incident、request、trace、Actor
+或 Token。`/metrics` 默认不要求 Bearer Token，因此必须只允许本机/监控网抓取，或在反向代理中
+单独限制；不要直接暴露公网。目标 SLO、PromQL 和恢复演练见
+[`../operations/SLO与恢复演练.md`](../operations/SLO与恢复演练.md)。
+
 ### 5.3 传输安全（重要）
 
 服务是标准库 `ThreadingHTTPServer`，**明文 HTTP，无 TLS**。
@@ -263,6 +274,8 @@ journalctl -u dianxun-mcp -f
 - [ ] `dianxun command-center` → `evidence/m4/command-center.html` 已重新生成
 - [ ] 87 项测试完成（85 通过 + 2 条 PolarDB 条件跳过）
 - [ ] `curl /health` 健康检查返回 `tools: 12`
+- [ ] `curl /metrics` 返回低基数 Counter/Histogram，且端点未暴露公网
+- [ ] `python scripts/recovery_drill.py --check` 通过
 - [ ] 非回环 + 空 token → 进程拒绝启动（反例留证）
 - [ ] 共享 `MCP_TOKEN` 调写工具 → 被拒（反例留证）
 - [ ] Executor 可创建审批但不能决定审批；Human 可决定审批与记录人工证据
