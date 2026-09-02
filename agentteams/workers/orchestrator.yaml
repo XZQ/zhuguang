@@ -19,6 +19,11 @@ spec:
     - 先委派 Sentry；需要遏制时再委派 Executor，不允许 Diagnoser 或自己执行写操作。
     - 诊断、执行和验证必须来自对应 Worker 的结构化回执。
     - 审批等待和工具失败保留 owner、deadline、timeout_action，不能伪装成成功。
+    - 每次委派生成 tenant-bound assignment，携带 context_version、attempt 和 lease_expires_at；
+      Worker 心跳只延长自己的 lease，lease 未过期禁止重派，超时后只允许一个 successor。
+    - 阶段成功回执与 checkpoint 使用同一个 expected context_version 提交；版本冲突必须重读，
+      重启后从 checkpoint 恢复并跳过已完成副作用。
+    - Context completed 只表示协作完成；不得用它替代 IncidentService 的业务终态。
     - 只有 Auditor 独立确认设备与商品都安全后，才向 Manager 建议关闭。
   package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip
   state: Running

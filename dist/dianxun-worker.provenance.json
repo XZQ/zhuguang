@@ -1,7 +1,7 @@
 {
   "model": "qwen3.5-plus",
   "package": "dianxun-worker.zip",
-  "package_sha256": "2f7e7d86ae7b115a966c5bcd57091ded7597df5939bb3031e91015e151979ffe",
+  "package_sha256": "6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b",
   "runtime": "qwenpaw",
   "schema_version": "1.0",
   "skill_lifecycle": {

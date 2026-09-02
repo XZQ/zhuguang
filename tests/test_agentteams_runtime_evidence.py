@@ -69,6 +69,40 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertTrue(any("does not match pattern" in error for error in result["errors"]))
 
+    def test_bundle_requires_restart_checkpoint_and_single_timeout_successor(self) -> None:
+        no_resume = self._bundle()
+        for run in no_resume["runs"]:
+            run["coordination"]["resumed_from_checkpoint"] = False
+            run["coordination"]["resume_evidence_ref"] = None
+        result = verify_agentteams_evidence(no_resume)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["checks"]["checkpoint_resume_observed"])
+
+        invalid_successor = self._bundle()
+        successor = next(
+            item
+            for item in invalid_successor["runs"][1]["coordination"]["assignments"]
+            if item["predecessor_assignment_id"] is not None
+        )
+        successor["attempt"] = 3
+        result = verify_agentteams_evidence(invalid_successor)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["runs"][1]["coordination_integrity"])
+
+        out_of_order = self._bundle()
+        checkpoints = out_of_order["runs"][0]["coordination"]["checkpoints"]
+        checkpoints[0], checkpoints[1] = checkpoints[1], checkpoints[0]
+        result = verify_agentteams_evidence(out_of_order)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["runs"][0]["coordination_integrity"])
+
+        orphaned_timeout = self._bundle()
+        assignments = orphaned_timeout["runs"][1]["coordination"]["assignments"]
+        assignments[:] = [item for item in assignments if item["predecessor_assignment_id"] is None]
+        result = verify_agentteams_evidence(orphaned_timeout)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["runs"][1]["coordination_integrity"])
+
     @staticmethod
     def _bundle() -> dict:
         package_hash = (
@@ -114,7 +148,7 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
             )
         ]
         return {
-            "schema_version": "1.1",
+            "schema_version": "1.2",
             "evidence_kind": "agentteams_runtime",
             "capture_status": "observed",
             "captured_at": "2026-08-28T12:10:00+08:00",
@@ -191,11 +225,76 @@ class AgentTeamsRuntimeEvidenceTests(unittest.TestCase):
                     ("auditor", "outcome-verify", "query_sales_holds"),
                 ]
             )
+        phase_workers = {
+            "DETECT_CONTAIN": "sentry",
+            "DIAGNOSE_DECIDE": "diagnoser",
+            "EXECUTE": "executor",
+            "VERIFY": "auditor",
+            "LEARN": "auditor",
+        }
+        successful_assignment_ids = {
+            phase: f"assignment-{branch}-{phase.lower()}" for phase in phase_workers
+        }
+        assignments = [
+            {
+                "assignment_id": successful_assignment_ids[phase],
+                "phase": phase,
+                "worker": worker,
+                "attempt": 1,
+                "status": "succeeded",
+                "lease_expires_at": "2026-08-28T12:05:00+08:00",
+                "heartbeat_at": "2026-08-28T12:01:00+08:00",
+                "predecessor_assignment_id": None,
+                "evidence_ref": f"artifact:assignment-{branch}-{phase.lower()}",
+            }
+            for phase, worker in phase_workers.items()
+        ]
+        if branch == "failure":
+            expired_id = "assignment-failure-verify-expired"
+            assignments.insert(
+                -1,
+                {
+                    "assignment_id": expired_id,
+                    "phase": "VERIFY",
+                    "worker": "auditor",
+                    "attempt": 1,
+                    "status": "expired",
+                    "lease_expires_at": "2026-08-28T12:02:00+08:00",
+                    "heartbeat_at": "2026-08-28T12:01:00+08:00",
+                    "predecessor_assignment_id": None,
+                    "evidence_ref": "artifact:assignment-failure-verify-expired",
+                },
+            )
+            verify_successor = next(
+                item for item in assignments if item["assignment_id"].endswith("verify")
+            )
+            verify_successor["attempt"] = 2
+            verify_successor["predecessor_assignment_id"] = expired_id
+
         return {
             "scenario_id": f"scenario-{branch}",
             "branch": branch,
             "incident_id": incident_id,
             "trace_id": trace_id,
+            "coordination": {
+                "tenant_id": "demo",
+                "context_version": 13 if branch == "failure" else 12,
+                "expires_at": "2026-08-28T13:00:00+08:00",
+                "resumed_from_checkpoint": branch == "success",
+                "resume_evidence_ref": (
+                    "artifact:context-restart-success" if branch == "success" else None
+                ),
+                "assignments": assignments,
+                "checkpoints": [
+                    {
+                        "phase": phase,
+                        "assignment_id": successful_assignment_ids[phase],
+                        "context_version": 3 + index * 2,
+                        "evidence_refs": [f"artifact:checkpoint-{branch}-{phase.lower()}"],
+                    }
+                    for index, phase in enumerate(phase_workers)
+                ],
+            },
             "handoffs": [
                 {
                     "from": source,

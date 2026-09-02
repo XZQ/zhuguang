@@ -18,7 +18,17 @@
 
 ## 结构化交接
 
-每次回复至少包含：`incident_id`、`phase`、`status`、`summary`、`evidence_refs`、`next_owner`、`blocking_reason`。调用 MCP 时保留返回的 `request_id` 与 `audit_ref`。
+每次回复至少包含：`incident_id`、`phase`、`status`、`summary`、`evidence_refs`、`next_owner`、`blocking_reason`、`context_version`、`assignment_id`、`attempt`、`lease_expires_at` 和 `checkpoint_ref`。调用 MCP 时保留返回的 `request_id` 与 `audit_ref`。
+
+## 协调生命周期
+
+- Orchestrator 按租户创建有 TTL 的 Context；Context 只保存协调元数据、assignment、checkpoint 和 Evidence 引用，不得直接写业务终态。
+- Worker 领取 assignment 后必须回传心跳；心跳只能延长自己的有效 lease，过期后不得继续提交结果。
+- lease 未过期时禁止重派；超时重派必须记录旧 assignment 为 `expired`，新 assignment 的 `attempt + 1` 并引用唯一 predecessor。
+- 每个阶段成功回执与 checkpoint 必须在同一个 `context_version` 条件提交中完成；版本冲突时重新读取，不覆盖较新的结果。
+- Worker 或 Orchestrator 重启后，从持久化 checkpoint 计算下一阶段，禁止重做已完成的外部副作用。
+- Context 过期后拒绝活跃读写；清理默认只删除终态过期记录。任何自动清理 active Context 都必须显式授权并有审计。
+- Context 的 `completed` 只表示协调阶段完成；业务 `RESOLVED/CLOSED` 仍只能由 `IncidentService` 聚合。
 
 ## MCP
 

@@ -33,10 +33,10 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 - 工作区无非预期改动；
 - 六场景 6/6；
-- 全量测试 76 项发现：74 项通过、2 项 PolarDB 条件集成测试跳过；
+- 全量测试 87 项发现：85 项通过、2 项 PolarDB 条件集成测试跳过；
 - 四变体消融门禁通过，`evidence/m4/command-center.html` 已确定性生成；
 - Ruff、格式、模拟数据和确定性 Worker 构建均通过；
-- ZIP SHA-256 为 `2f7e7d86ae7b115a966c5bcd57091ded7597df5939bb3031e91015e151979ffe`。
+- ZIP SHA-256 为 `6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b`。
 
 ## 3. 视频一：正常闭环（场景 A）
 
@@ -59,8 +59,9 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 1. Manager 只委派 Orchestrator；
 2. Orchestrator 委派 Sentry；
-3. Sentry 回执带 incident_id、phase、Evidence refs；
-4. Orchestrator 再按阶段委派 Diagnoser、Executor、Auditor。
+3. Sentry 回执带 incident_id、phase、Evidence refs、context_version、assignment_id 和 lease；
+4. Orchestrator 再按阶段委派 Diagnoser、Executor、Auditor；
+5. 展示一次 heartbeat、lease timeout 后唯一 successor，以及重启后从 checkpoint 继续且不重复副作用。
 
 不得用 YAML、PPT 动画或预制聊天截图替代这一镜头。若目标环境不可用，明确显示“本段未录制”，不要声称视频已完成。
 
@@ -167,6 +168,8 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 | 设备与批次分别验证 | 必须 | 必须 | Auditor 查询 |
 | 解除停售前后两次验证 | 必须 | 不适用 | verification attempts |
 | partial/timeout 保持遏制 | 不适用 | 必须 | 业务状态 |
+| context version / lease / heartbeat / checkpoint | 必须 | 必须 | AgentTeams 消息、协调存储与 Schema 1.2 gate |
+| timeout 唯一 successor 与重启恢复 | 可与正常分支合并 | 必须 | assignment/predecessor 与恢复前后 Trace |
 | 最终状态与 Scenario 预期一致 | 必须 | 必须 | IncidentCase |
 | 模型/runtime 与用量披露 | 必须 | 必须 | 平台配置/账单；Key 必须遮挡，无法取得账单则标记未测量 |
 | 敏感信息脱敏 | 必须 | 必须 | 成片复核 |
@@ -178,6 +181,7 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 - 不把本地 ScenarioEngine 审批说成真实人工审批。
 - 不把 YAML `state: Running` 说成集群实际 Running。
 - 不把请求带 Bearer Header 说成身份已验证；必须有服务端拒绝与正确 Actor 审计证据。
+- 不把本地 Context lifecycle 测试说成 AgentTeams 已经完成动态重派或重启恢复；必须有平台 assignment/checkpoint Trace。
 - 不把本地 RAG/SQL 契约写成真实门店改善、PolarDB/OSS 已运行或生产可用；自动回滚仍不宣称实现。
 - 不把本地 M4 结果说成 `qwen3.5-plus` 模型效果；模型 Key 必须遮挡，费用无真实账单时明确“未测量”。
 - 当前 P0 为自定义可复用 Skill；只展示真实调用、版本和 Trace，不以云产品或 Skill 数量替代运行证据。
