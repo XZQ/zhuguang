@@ -68,7 +68,7 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 - 状态后端：SQLite 保留为零依赖确定性评测底座；PolarDB PostgreSQL 是托管部署底座，业务层通过同一 StateStore 协议访问。
 - 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
 - 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、72 项测试和 M4 评测不调用 LLM。
-- Skill：当前 6 个 P0 均为自定义可复用 Skill；官网与参赛手册 FAQ 对“阿里云官方用云 Skills”的措辞存在差异，状态为“待组委会确认”。
+- Skill：当前 6 个 P0 均为自定义可复用 Skill，满足复赛规则的清单与工程契约要求；目标 AgentTeams 中的发现、加载、调用和 Trace 仍待动态验收，规则不要求指定云厂商 Skill。
 - 鉴权：非回环监听未配置认证时拒绝启动；共享 `MCP_TOKEN` 只能调用只读工具，状态写必须使用 `MCP_ACTOR_TOKENS_JSON` 或可信网关绑定 Actor。部署清单引用 Secret，但动态 Worker 身份映射仍需外部验收。
 
 机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md)。
@@ -233,7 +233,7 @@ docs/
 | 文档 | 内容 |
 |---|---|
 | [`docs/competition/01-作品简介-500字.md`](docs/competition/01-作品简介-500字.md) | 500 字以内作品简介 |
-| [`docs/competition/02-方案PPT结构.md`](docs/competition/02-方案PPT结构.md) | 10 页答辩叙事与证据来源 |
+| [`docs/competition/02-方案PPT结构.md`](docs/competition/02-方案PPT结构.md) | 答辩叙事、规则必备内容与证据来源 |
 | [`docs/competition/03-Skill九要素卡.md`](docs/competition/03-Skill九要素卡.md) | 9 个目标 Skill 与 6 个 P0 工程契约 |
 | [`docs/competition/04-模拟数据与场景说明.md`](docs/competition/04-模拟数据与场景说明.md) | 确定性 Seed、Scenario 与数据边界 |
 | [`docs/competition/05-MCP工具契约.md`](docs/competition/05-MCP工具契约.md) | 12 个 P0 MCP 函数、安全和失败语义 |
@@ -255,7 +255,7 @@ docs/
 - 自动回滚、Nacos、Higress、RocketMQ 和 LoongSuite 仍属于规划或生产替换方向。
 - AgentTeams YAML、Worker ZIP 和本地 MCP 兼容烟测不等于真实多 Agent 动态协同。
 - 当前 Deployment 只强制声明 Actor Secret 引用，仓库不含真实动态 Worker 映射值；取得匿名/错误 Token 拒绝、工具级越权 `FORBIDDEN` 和正确 Actor 审计证据前，不声明部署鉴权闭环。
-- 当前 P0 仅使用自定义 Skill；“官方用云 Skills”是否为硬门槛仍需组委会书面确认。
+- 当前 P0 使用自定义可复用 Skill；复赛规则不要求指定云厂商 Skill，不把云产品数量作为完成度证据。
 - 不提交 API Key、真实审批身份、顾客数据、照片原件、运行时数据库或含敏感内容的 Trace。
 
 ## License
