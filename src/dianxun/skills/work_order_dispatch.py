@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from .. import mcp, trace
+from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
     from ..mcp.p0 import MCPService
@@ -88,6 +89,7 @@ def work_order_dispatch(
         return result
 
 
+@enforce_output_contract("work-order-dispatch")
 def dispatch_stateful_workorder(
     *,
     service: MCPService,

@@ -6,12 +6,14 @@ from typing import TYPE_CHECKING, Any
 
 from .. import trace
 from ..domain import Verification, VerificationResult
+from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
     from ..domain import IncidentService
     from ..mcp.p0 import MCPService
 
 
+@enforce_output_contract("outcome-verify")
 def outcome_verify(
     *,
     incidents: IncidentService,

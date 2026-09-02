@@ -4,6 +4,8 @@ import json
 import unittest
 from pathlib import Path
 
+from dianxun.skills.contracts import SkillOutputContractError, validate_skill_output
+
 try:
     from jsonschema.validators import validator_for
 except ImportError:  # pragma: no cover - exercised in the explicit contract gate
@@ -49,6 +51,15 @@ class SkillContractTests(unittest.TestCase):
                 for branch in ("success", "failure"):
                     input_validator(input_schema).validate(examples[branch]["input"])
                     output_validator(output_schema).validate(examples[branch]["output"])
+                    self.assertIs(
+                        examples[branch]["output"],
+                        validate_skill_output(name, examples[branch]["output"]),
+                    )
+
+                invalid_output = dict(examples["success"]["output"])
+                invalid_output.pop(output_schema["required"][0])
+                with self.assertRaisesRegex(SkillOutputContractError, "missing required property"):
+                    validate_skill_output(name, invalid_output)
 
     @staticmethod
     def _json(path: Path) -> dict:

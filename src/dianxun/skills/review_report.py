@@ -19,6 +19,7 @@ import uuid
 from typing import TYPE_CHECKING
 
 from .. import trace
+from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
     from ..knowledge import KnowledgeService
@@ -162,6 +163,7 @@ def _skill_update_suggestions(ctx: dict, validation: dict) -> list[dict]:
     return suggestions
 
 
+@enforce_output_contract("review-report")
 def review_incident(
     *,
     incident: dict,

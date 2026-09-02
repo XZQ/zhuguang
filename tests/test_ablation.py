@@ -14,7 +14,7 @@ from dianxun.ablation import (
 
 
 class AblationSuiteTests(unittest.TestCase):
-    """Each variant must damage exactly the layer it removes."""
+    """Each variant changes one declared layer and preserves the remaining guards."""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -46,19 +46,21 @@ class AblationSuiteTests(unittest.TestCase):
         ):
             self.assertEqual(0, full[key], key)
 
-    def test_no_auditor_self_closes_without_independent_verification(self) -> None:
+    def test_no_auditor_stops_before_independent_verification(self) -> None:
         variant = self.summary["no_auditor"]
-        self.assertEqual(5, variant["erroneous_closures"])
-        self.assertEqual(5, variant["self_declared_closures"])
+        self.assertEqual(0, variant["erroneous_closures"])
+        self.assertEqual(0, variant["self_declared_closures"])
+        self.assertEqual(0, variant["closed"])
+        self.assertEqual(5, variant["verification_blocked"])
         self.assertEqual(1, variant["acceptance_passed"])  # only the timeout branch matches
-        self.assertEqual(1, variant["trace_fully_covered"])  # auditor span absent
+        self.assertEqual(6, variant["trace_fully_covered"])  # VERIFY phase is still traced
 
-    def test_no_auditor_unsafe_release_attempt_is_blocked_by_guards(self) -> None:
+    def test_no_auditor_never_enters_the_release_path(self) -> None:
         variant = self.summary["no_auditor"]
-        self.assertEqual(5, variant["release_attempts"])
-        self.assertEqual(5, variant["release_denials"])
+        self.assertEqual(0, variant["release_attempts"])
+        self.assertEqual(0, variant["release_denials"])
         self.assertEqual(0, variant["release_executed"])
-        self.assertEqual(2, variant["attempted_unsafe_release_batches"])
+        self.assertEqual(0, variant["attempted_unsafe_release_batches"])
         self.assertEqual(0, variant["dangerous_release_batches"])
         scenario_e = next(
             run
@@ -66,10 +68,12 @@ class AblationSuiteTests(unittest.TestCase):
             if run["variant"] == "no_auditor"
             and run["scenario_id"] == "coldchain-device-recovered-goods-unsafe"
         )
-        self.assertTrue(scenario_e["release"]["attempted"])
-        self.assertEqual("denied", scenario_e["release"]["result"])
-        self.assertEqual(2, scenario_e["release"]["attempted_unsafe_batches"])
-        self.assertTrue(scenario_e["closed"])
+        self.assertFalse(scenario_e["release"]["attempted"])
+        self.assertEqual(0, scenario_e["release"]["attempted_unsafe_batches"])
+        self.assertFalse(scenario_e["closed"])
+        self.assertTrue(scenario_e["verification_blocked"])
+        self.assertEqual("VERIFY", scenario_e["final_state"]["phase"])
+        self.assertEqual("BLOCKED", scenario_e["final_state"]["work_status"])
 
     def test_single_agent_is_denied_at_the_policy_layer(self) -> None:
         variant = self.summary["single_agent"]

@@ -47,9 +47,21 @@ def validate_json(
         for key in required:
             if key not in value:
                 errors.append(f"{path}: missing required property {key!r}")
-        if schema.get("additionalProperties") is False:
-            for key in sorted(set(value) - set(properties)):
+        additional = schema.get("additionalProperties")
+        extra_keys = sorted(set(value) - set(properties))
+        if additional is False:
+            for key in extra_keys:
                 errors.append(f"{path}: unexpected property {key!r}")
+        elif isinstance(additional, dict):
+            for key in extra_keys:
+                errors.extend(
+                    validate_json(
+                        value[key],
+                        additional,
+                        path=f"{path}.{key}",
+                        _root_schema=root_schema,
+                    )
+                )
         for key, child_schema in properties.items():
             if key in value:
                 errors.extend(
@@ -102,7 +114,9 @@ def validate_json(
     return errors
 
 
-def _matches_type(value: Any, expected: str) -> bool:
+def _matches_type(value: Any, expected: str | list[str]) -> bool:
+    if isinstance(expected, list):
+        return any(_matches_type(value, item) for item in expected)
     if expected == "object":
         return isinstance(value, dict)
     if expected == "array":

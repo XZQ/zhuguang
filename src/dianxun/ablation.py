@@ -4,15 +4,14 @@ Variants
 --------
 - ``full``: baseline five-role pipeline (Orchestrator/Sentry/Diagnoser/Executor/Auditor)
   with the IncidentService aggregate gate and MCP guards. Expected: 6/6 acceptance.
-- ``no_auditor``: roles stay, but VERIFY is replaced by Executor self-certification
-  and the incident is self-declared CLOSED, bypassing the aggregate gate. Expected:
-  erroneous closures on 5/6 scenarios; physical unsafe release still blocked by the
-  MCP ``release_guard`` (verifier must be Auditor) and approval layer.
-- ``single_agent``: one identity performs every step. Policy allow-lists reject all
-  controlled writes, so containment never happens (fail-safe by refusal).
-- ``rule_only``: static base-rate prior replaces evidence-linked diagnosis. Expected:
-  Top-1 drops to 4/6 and two misrouted workorders (scenarios B and C), while the
-  downstream containment/approval/verification layers keep outcomes safe.
+- ``no_auditor``: the baseline path is unchanged through execution, but no independent
+  verification is available. Repaired branches stop at VERIFY/BLOCKED; no actor may
+  self-certify, release holds, or bypass the IncidentService aggregate gate.
+- ``single_agent``: one role-less identity reaches the first controlled write. Policy
+  allow-lists reject containment, so the pipeline stops immediately (fail-safe by refusal).
+- ``rule_only``: a static base-rate prior replaces only root-cause ranking. Batch risk
+  assessment remains evidence based; downstream containment/approval/verification layers
+  keep outcomes safe while diagnosis quality degrades.
 
 Everything runs on the same deterministic virtual clock as the M4 suite. No LLM is
 called; latency/token/cost deltas require the external AgentTeams runtime and are
@@ -29,19 +28,7 @@ from typing import Any
 
 from . import trace
 from .adapters.local_demo import LocalDemoAdapter
-from .domain import (
-    Action,
-    ActionStatus,
-    Hypothesis,
-    IncidentCase,
-    IncidentStatus,
-    IncidentType,
-    Phase,
-    Severity,
-    Verification,
-    VerificationResult,
-    WorkStatus,
-)
+from .domain import Hypothesis, IncidentCase, IncidentType, Phase, Severity, WorkStatus
 from .evaluation import (
     BUSINESS_WRITE_TOOLS,
     DEFAULT_EVIDENCE_DIR,
@@ -73,10 +60,6 @@ _SAFETY_KEYS = (
     "erroneous_closures",
     "duplicate_side_effects",
 )
-
-# Batches whose disposition is terminal; releasing holds on any other batch means
-# releasing goods whose disposition has not been closed out (the scenario E danger).
-_TERMINAL_DISPOSITIONS = ("transferred", "released", "disposed")
 
 
 class AblationAdapter(LocalDemoAdapter):
@@ -192,7 +175,7 @@ class AblationAdapter(LocalDemoAdapter):
             return result
 
     # ------------------------------------------------------------------
-    # no_auditor: Executor self-certifies and self-declares closure
+    # no_auditor: execution completes, but independent verification is unavailable
     # ------------------------------------------------------------------
     def _run_no_auditor(self) -> dict[str, Any]:
         self.scenario.reset()
@@ -303,7 +286,11 @@ class AblationAdapter(LocalDemoAdapter):
                     review=None,
                     case=final_case,
                 )
-                result["ablation"] = {"variant": self.variant, "self_declared_closure": False}
+                result["ablation"] = {
+                    "variant": self.variant,
+                    "self_declared_closure": False,
+                    "verification_blocked": False,
+                }
                 root.output = {"result": result["result"], "acceptance": result["acceptance"]}
                 return result
 
@@ -322,217 +309,28 @@ class AblationAdapter(LocalDemoAdapter):
                 incident_id,
                 Phase.VERIFY,
                 actor="Orchestrator",
-                reason="executor self-certification replaces independent verification",
+                reason="execution complete; independent Auditor verification is required",
             )
-            verification = self._self_certify(incident_id, trace_id, repair=repair)
-            phase_outputs["VERIFY"] = verification
-
-            release = self._execute_naive_release(
+            final_case = self.incidents.set_work_status(
                 incident_id=incident_id,
-                trace_id=trace_id,
-                workflow=workflow,
+                status=WorkStatus.BLOCKED,
+                owner="Auditor",
+                next_wakeup_at=None,
+                reason="independent Auditor verification is unavailable",
             )
-            phase_outputs["EXECUTE"]["naive_release"] = release
-
-            final_case = self._self_declare_closed(incident_id)
             result = self._result(
                 phase_outputs=phase_outputs,
-                verification=verification,
+                verification=None,
                 review=None,
                 case=final_case,
             )
             result["ablation"] = {
                 "variant": self.variant,
-                "self_declared_closure": True,
-                "release": release,
+                "self_declared_closure": False,
+                "verification_blocked": True,
             }
             root.output = {"result": result["result"], "acceptance": result["acceptance"]}
             return result
-
-    def _self_certify(
-        self,
-        incident_id: str,
-        trace_id: str,
-        *,
-        repair: dict[str, Any],
-    ) -> dict[str, Any]:
-        """Executor certifies success from its own receipts; no independent requery."""
-        with trace.span(
-            "executor-self-certify",
-            "agent",
-            trace_id,
-            input={"incident_id": incident_id},
-        ) as sp:
-            receipts_ok = repair["result"] == "executed"
-            for subject in ("device", "release_guard"):
-                self.incidents.record_verification(
-                    incident_id,
-                    Verification(
-                        verification_id=f"{incident_id}:verify:{subject}",
-                        subject=subject,
-                        method="executor_own_receipts",
-                        expected_condition={"repair_receipt": "executed"},
-                        observed_value={"repair_result": repair["result"]},
-                        evidence_ids=[],
-                        result=(
-                            VerificationResult.PASSED if receipts_ok else VerificationResult.FAILED
-                        ),
-                        verifier="Executor",
-                        verified_at=self.store.now(),
-                    ),
-                )
-            result = {
-                "incident_id": incident_id,
-                "result": "self_certified" if receipts_ok else "self_check_failed",
-                "checks": {
-                    "executor_receipts": {
-                        "passed": receipts_ok,
-                        "expected": {"repair_result": "executed"},
-                        "observed": {"repair_result": repair["result"]},
-                    }
-                },
-                "failed_conditions": [] if receipts_ok else ["executor_receipts"],
-                "evidence_refs": [],
-                "next_actions": [],
-                "partial_tools": [],
-                "evidence": [],
-                "attempts": [
-                    {
-                        "result": "self_certified" if receipts_ok else "self_check_failed",
-                        "failed_conditions": [] if receipts_ok else ["executor_receipts"],
-                        "partial_tools": [],
-                    }
-                ],
-                "self_declared": True,
-                "verifier": "Executor",
-            }
-            sp.output = {"result": result["result"]}
-            return result
-
-    def _execute_naive_release(
-        self,
-        *,
-        incident_id: str,
-        trace_id: str,
-        workflow: dict[str, Any],
-    ) -> dict[str, Any]:
-        """Monolith tries to release every active hold once the device looks fine."""
-        holds = self.store.list_sales_holds(incident_id=incident_id, status="active")
-        if not holds:
-            return {"attempted": False, "result": "no_active_holds", "batches": []}
-        batch_ids = sorted({item["batch_id"] for item in holds})
-        batch_rows = {row["batch_id"]: row for row in self.store.list_batches(batch_ids=batch_ids)}
-        batches = [
-            {
-                "batch_id": batch_id,
-                "disposition": batch_rows[batch_id]["disposition"],
-                "disposition_closed": batch_rows[batch_id]["disposition"] in _TERMINAL_DISPOSITIONS,
-            }
-            for batch_id in batch_ids
-        ]
-        action_id = f"{incident_id}:release-holds"
-        approval_response = self.mcp.create_approval(
-            incident_id=incident_id,
-            action_id=action_id,
-            subject=f"release sales holds for {incident_id}",
-            requested_action_type="release_sales_hold",
-            timeout_minutes=int(workflow.get("release_approval_timeout_minutes", 30)),
-            idempotency_key=f"{action_id}:approval:v1",
-            actor="Executor",
-        )
-        if not approval_response["ok"]:
-            return {
-                "attempted": True,
-                "result": "denied",
-                "stage": "create_approval",
-                "error": approval_response.get("error"),
-                "batches": batches,
-            }
-        approval = approval_response["data"]
-        self.incidents.append_action(
-            incident_id,
-            Action(
-                action_id=action_id,
-                action_type="release_sales_hold",
-                tool_name="release_sales_hold",
-                target=incident_id,
-                idempotency_key=f"{action_id}:execute:v1",
-                approval_id=approval["approval_id"],
-                status=ActionStatus.PENDING,
-                request={"hold_ids": [item["hold_id"] for item in holds]},
-                response=approval_response,
-                rollback_or_compensation={"type": "reapply_sales_hold"},
-                started_at=self.store.now(),
-            ),
-        )
-        decision_minute = workflow.get("release_approval_decision_minute")
-        if decision_minute is not None:
-            self._advance_to(int(decision_minute))
-        queried = self.mcp.query_approval(
-            approval_id=approval["approval_id"],
-            incident_id=incident_id,
-            action_id=action_id,
-            actor="Orchestrator",
-        )
-        row = queried["data"]["approvals"][0]
-        if row["status"] != "approved":
-            return {
-                "attempted": True,
-                "result": "denied",
-                "stage": "approval",
-                "approval_status": row["status"],
-                "batches": batches,
-            }
-        self.incidents.update_action(
-            incident_id,
-            action_id,
-            status=ActionStatus.APPROVED,
-            response=queried,
-        )
-        with trace.span(
-            "release_sales_hold",
-            "mcp",
-            trace_id,
-            input={"incident_id": incident_id, "hold_count": len(holds)},
-        ) as tool_span:
-            response = self.mcp.release_sales_hold(
-                incident_id=incident_id,
-                action_id=action_id,
-                hold_ids=[item["hold_id"] for item in holds],
-                approval_id=approval["approval_id"],
-                verification_id=f"{incident_id}:verify:release_guard",
-                idempotency_key=f"{action_id}:execute:v1",
-                actor="Executor",
-            )
-            tool_span.output = {"ok": response["ok"], "error": response.get("error")}
-        self.incidents.update_action(
-            incident_id,
-            action_id,
-            status=ActionStatus.COMPLETED if response["ok"] else ActionStatus.FAILED,
-            response=response,
-        )
-        if not response["ok"]:
-            return {
-                "attempted": True,
-                "result": "denied",
-                "stage": "release_guard",
-                "error": response.get("error"),
-                "batches": batches,
-            }
-        return {"attempted": True, "result": "executed", "batches": batches}
-
-    def _self_declare_closed(self, incident_id: str) -> IncidentCase:
-        """Self-declared closure; deliberately bypasses IncidentService invariants.
-
-        This models a monolithic architecture without the aggregate gate: the
-        executing agent marks its own incident CLOSED. The baseline IncidentService
-        makes this state unreachable (CLOSED requires LEARN + derived RESOLVED).
-        """
-        case = self.incidents.get(incident_id)
-        case.phase = Phase.LEARN
-        case.incident_status = IncidentStatus.CLOSED
-        case.work_status = WorkStatus.COMPLETED
-        return self.incidents.save(case)
 
     # ------------------------------------------------------------------
     # single_agent: one identity for every step; policy rejects its writes
@@ -682,6 +480,7 @@ def _evaluate_run(
         "contained": "apply_sales_hold" in successful_tools,
         "closed": str(case["incident_status"]) == "CLOSED",
         "self_declared_closure": bool(ablation.get("self_declared_closure")),
+        "verification_blocked": bool(ablation.get("verification_blocked")),
         "safety": safety,
         "denied_write_attempts": len(denied_writes),
         "release": {
@@ -757,6 +556,7 @@ def _summarize(runs: list[dict[str, Any]], variant: str) -> dict[str, Any]:
         "contained": sum(row["contained"] for row in rows),
         "closed": sum(row["closed"] for row in rows),
         "self_declared_closures": sum(row["self_declared_closure"] for row in rows),
+        "verification_blocked": sum(row["verification_blocked"] for row in rows),
         "denied_write_attempts": sum(row["denied_write_attempts"] for row in rows),
         "release_attempts": sum(row["release"]["attempted"] for row in rows),
         "release_denials": sum(row["release"]["result"] == "denied" for row in rows),
@@ -784,21 +584,17 @@ def _findings(summaries: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
     return [
         {
             "variant": "no_auditor",
-            "title": "移除 Auditor 独立验证:执行者自证成功",
+            "title": "移除 Auditor 独立验证:安全拒动而非自证关闭",
             "observed": (
-                f"{no_auditor['self_declared_closures']}/6 场景被自我宣告关闭"
-                f"(基线错误关闭 {full['erroneous_closures']} 起);"
-                f"场景 E 在设备恢复但商品处置未闭环时,尝试放行 "
-                f"{no_auditor['attempted_unsafe_release_batches']} 个未闭环批次,"
-                f"{no_auditor['release_attempts']} 次放行全部被审批层或 "
-                f"MCP release_guard(verifier 必须是 Auditor)拦截,"
-                f"不安全批次实际放行 {no_auditor['dangerous_release_batches']} 起;"
-                f"场景 B 出现 {no_auditor['unsafe_releases']} 起"
-                "放行/停售状态不一致(商品已准放行但停售未解除,过度遏制)。"
+                f"{no_auditor['verification_blocked']}/6 场景在执行后停于 VERIFY/BLOCKED;"
+                f"自我宣告关闭 {no_auditor['self_declared_closures']} 起,"
+                f"放行尝试 {no_auditor['release_attempts']} 次,"
+                f"错误关闭 {no_auditor['erroneous_closures']} 起,"
+                f"不安全批次实际放行 {no_auditor['dangerous_release_batches']} 起。"
             ),
             "interpretation": (
-                "独立验证是事件管理层的安全前提;没有它,关闭决定与事实脱钩。"
-                "MCP 工具层的 release_guard 构成第二道防线,即使管线退化也不放行实物。"
+                "独立验证是进入关闭/放行路径的必要能力;当 Auditor 不可用时,"
+                "系统保持遏制并阻断在验证阶段,不会让 Executor 自证或绕过聚合门。"
             ),
         },
         {
@@ -839,20 +635,24 @@ def _gate_failures(summaries: dict[str, dict[str, Any]]) -> list[str]:
     failures: list[str] = []
     if full["acceptance_passed"] != 6 or any(full[key] != 0 for key in _SAFETY_KEYS):
         failures.append("baseline must pass 6/6 with zero safety violations")
-    if no_auditor["erroneous_closures"] != 5:
-        failures.append("no_auditor must self-close erroneously on 5/6 scenarios")
-    if no_auditor["dangerous_release_batches"] != 0:
-        failures.append("no_auditor must not physically release any unsafe batch")
-    if no_auditor["attempted_unsafe_release_batches"] != 2:
-        failures.append("no_auditor must attempt releasing 2 unclosed batches in scenario E")
-    if no_auditor["release_denials"] != 5:
-        failures.append("no_auditor release attempts must all be denied (5/5)")
+    if (
+        no_auditor["closed"] != 0
+        or no_auditor["self_declared_closures"] != 0
+        or no_auditor["erroneous_closures"] != 0
+    ):
+        failures.append("no_auditor must never close or self-certify an incident")
+    if no_auditor["release_attempts"] != 0 or no_auditor["dangerous_release_batches"] != 0:
+        failures.append("no_auditor must never enter the sales-hold release path")
+    if no_auditor["verification_blocked"] <= 0:
+        failures.append("no_auditor must block repaired branches at independent verification")
+    if no_auditor["acceptance_passed"] >= full["acceptance_passed"]:
+        failures.append("no_auditor must degrade acceptance relative to the full baseline")
     if single["contained"] != 0 or single["denied_write_attempts"] != 6:
         failures.append("single_agent must be denied on all 6 containment writes")
     if single["closed"] != 0:
         failures.append("single_agent must not close any incident")
-    if rule["top1_hits"] != 4 or rule["misrouted_workorders"] != 2:
-        failures.append("rule_only must hit Top-1 4/6 with 2 misrouted workorders")
+    if rule["top1_hits"] >= full["top1_hits"] or rule["misrouted_workorders"] <= 0:
+        failures.append("rule_only must degrade diagnosis relative to the evidence-linked baseline")
     if any(rule[key] != 0 for key in _SAFETY_KEYS):
         failures.append("rule_only must keep zero safety violations (downstream layers hold)")
     return failures
@@ -895,9 +695,9 @@ def render_ablation_markdown(ablation: dict[str, Any]) -> str:
         "| 变体 | 移除的层 | 其余部分 |",
         "|---|---|---|",
         "| full(基线) | 无 | 五角色 + IncidentService 聚合门 + Policy/MCP 防线 |",
-        "| no_auditor | Auditor 独立验证与聚合门 | 角色保留,Executor 自证并自我宣告关闭 |",
-        "| single_agent | 角色身份分离 | 单一身份执行全部步骤 |",
-        "| rule_only | 证据关联诊断 | 静态先验诊断,下游遏制/审批/验证保留 |",
+        "| no_auditor | Auditor 独立验证 | 执行路径不变,完成后停于 VERIFY/BLOCKED |",
+        "| single_agent | 角色身份分离 | 单一身份在首个受控写处被拒 |",
+        "| rule_only | 证据关联的根因排序 | 静态先验排序,证据化批次风险与下游防线保留 |",
         "",
         "## 关键指标对照",
         "",
@@ -910,6 +710,7 @@ def render_ablation_markdown(ablation: dict[str, Any]) -> str:
         ("完成遏制", "contained"),
         ("错误关闭事件", "erroneous_closures"),
         ("自我宣告关闭", "self_declared_closures"),
+        ("缺独立验证而阻断", "verification_blocked"),
         ("必需动作缺失", "required_actions_failed"),
         ("放行尝试被拦截", "release_denials"),
         ("试图放行未闭环批次", "attempted_unsafe_release_batches"),
@@ -946,10 +747,11 @@ def render_ablation_markdown(ablation: dict[str, Any]) -> str:
         [
             "## 边界",
             "",
-            "- 消融结果来自有状态 Mock 与固定 seed,证明架构各层的相对贡献,",
+            "- 消融结果来自真实临时 SQLite/PolicyEngine、有状态本地 Adapter/ScenarioEngine",
+            "  与固定 seed,证明架构各层的相对贡献,",
             "  不代表真实门店收益;LLM 延迟/Token/成本对照需真实 AgentTeams 运行时。",
-            "- `no_auditor` 的自我宣告关闭是对单体式架构的建模:真实单 Agent 系统没有",
-            "  IncidentService 聚合门,关闭决定同样由执行者自己作出。",
+            "- `no_auditor` 只移除独立验证能力,不改变执行计划、放行策略或聚合门;",
+            "  因此结果体现的是系统在验证者不可用时的安全拒动,不是人为构造的错误关闭。",
             "",
         ]
     )

@@ -20,6 +20,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from .. import mcp, trace
+from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
     from ..mcp.p0 import MCPService
@@ -235,6 +236,7 @@ def _check_price(store_id: str, cfg: dict, tid: str) -> list[dict] | None:
     return out
 
 
+@enforce_output_contract("anomaly-detect")
 def detect_coldchain_event(
     *,
     service: MCPService,

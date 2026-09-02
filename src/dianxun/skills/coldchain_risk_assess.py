@@ -10,8 +10,10 @@ from datetime import datetime
 from typing import Any
 
 from .. import trace
+from .contracts import enforce_output_contract
 
 
+@enforce_output_contract("coldchain-risk-assess")
 def coldchain_risk_assess(
     *,
     incident_id: str,

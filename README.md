@@ -36,7 +36,7 @@ uv run dianxun ablation        # 消融对照:full / no_auditor / single_agent /
 uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故指挥台
 ```
 
-消融对照在同样六个场景上逐层拆除架构（去 Auditor、单一身份、纯规则诊断），确定性重写 `evidence/m4/ablation.json` 和 `evidence/m4/ablation.md`；事故指挥台把六个场景的 Agent 交接链、设备状态链、商品批次处置、审批、审计与 Auditor 判决渲染成同屏只读 HTML。
+消融对照在同样六个场景上分别改变一个声明变量（移除 Auditor 独立验证、合并为单一身份、替换为纯规则根因排序），确定性重写 `evidence/m4/ablation.json` 和 `evidence/m4/ablation.md`；事故指挥台把六个场景的 Agent 交接链、设备状态链、商品批次处置、审批、审计与 Auditor 判决渲染成同屏只读 HTML。
 
 ## 当前可验证结论
 
@@ -47,7 +47,7 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 | Evidence 关键字段完整率 | 45/45 | 同上 |
 | 适用阶段 Trace 覆盖率 | 26/26 | 同上 |
 | 未授权写、未审批受控写、错误放行、错误关闭、重复副作用 | 均为 0 | 同上 |
-| 消融对照：无 Auditor | 5 起错误关闭、5 次自我宣告关闭、5 次朴素放行全部被 MCP/审批层拦截、实际危险放行 0 | [`evidence/m4/ablation.md`](evidence/m4/ablation.md) |
+| 消融对照：无 Auditor | 5 个需修复场景安全阻断于 VERIFY/BLOCKED；自证关闭、放行尝试、错误关闭、危险放行均为 0 | [`evidence/m4/ablation.md`](evidence/m4/ablation.md) |
 | 消融对照：单一身份 / 纯规则 | 单一身份 6 次受控写全被 Policy 拒绝（保持 OPEN）；纯规则 Top-1 降至 4/6、2 张错派工单、安全违规 0 | 同上 |
 | 事故指挥台 | 六场景同屏只读 HTML（交接链、温度曲线、批次处置、审批、审计、判决） | [`evidence/m4/command-center.html`](evidence/m4/command-center.html) |
 | 自动化测试 | 72 项发现：70 通过、2 个 PolarDB 条件集成测试因无外部实例跳过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
@@ -56,7 +56,7 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 | AgentTeams 动态协同 | 外部待验证 | [`agentteams/README.md`](agentteams/README.md) |
 | AgentTeams → MCP 身份绑定 | 外部待验证 | Adapter 已强制 Token → Actor 和工具级角色白名单；Deployment 仅声明 Secret 引用，尚无动态 Worker 映射实跑证据 |
 
-上述指标来自固定 seed 和有状态 Mock，只证明仓库内确定性行为，不代表真实门店收益、监管合规或生产可用性。
+上述指标来自固定 seed、隔离的真实 SQLite/PolicyEngine 和有状态本地 Adapter/ScenarioEngine，只证明仓库内确定性行为，不代表真实门店收益、监管合规或生产可用性。
 
 ## 唯一事实口径
 

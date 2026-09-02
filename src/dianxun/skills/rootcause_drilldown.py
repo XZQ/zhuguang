@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
 
 from .. import mcp, trace
 from ..domain import Hypothesis
+from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
     from ..knowledge import KnowledgeService
@@ -205,6 +206,7 @@ def _drill_generic(anomaly: dict, bench: dict | None, tid: str) -> dict:
     }
 
 
+@enforce_output_contract("rootcause-drilldown")
 def diagnose_coldchain_hypotheses(
     *,
     service: MCPService,

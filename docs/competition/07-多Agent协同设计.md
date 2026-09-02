@@ -113,7 +113,7 @@ uv run dianxun evaluate
 - Evidence 关键字段 45/45；
 - 适用阶段 Trace 26/26；
 - 全量发现 72 项自动化测试：70 项通过，2 项外部 PolarDB 条件测试跳过；
-- 四变体消融门禁通过：`no_auditor` 暴露错误关闭，`single_agent` 验证角色写入边界，`rule_only` 暴露诊断退化；
+- 四变体消融门禁通过：`no_auditor` 验证缺独立审计时安全阻断，`single_agent` 验证角色写入边界，`rule_only` 暴露诊断退化；
 - 事故指挥台将六场景交接链、设备/商品状态、审批、审计和 Auditor 判决同屏呈现；
 - 未授权写、未审批受控写、错误放行、错误关闭和重复副作用均为 0。
 
