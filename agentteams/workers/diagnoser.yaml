@@ -23,7 +23,7 @@ spec:
   skills:
     - coldchain-risk-assess
     - rootcause-drilldown
-  package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip
   mcpServers:
     - name: dianxun-mcp
       url: http://dianxun-mcp.dianxun.svc.cluster.local/mcp

@@ -166,6 +166,8 @@
     "m3_repository_artifacts": {
       "status": "implemented_static_external_runtime_pending",
       "worker_package": "dist/dianxun-worker.zip",
+      "worker_package_source_commit": "ac0bc213dd0a4108deba4474761a575c39cc2a94",
+      "worker_package_url": "https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip",
       "worker_package_sha256": "6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b",
       "worker_package_files": 35,
       "artifact_contract_tests": 5,

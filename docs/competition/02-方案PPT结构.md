@@ -73,6 +73,7 @@
 - 生命周期覆盖 SemVer、确定性灰度、promotion、兼容升级、rollback target 和 retirement；本地 Span 自动记录 version/digest。
 - Worker ZIP 只包含 6 个 P0 Skill 及 Registry/生命周期文件，避免把规划能力冒充已交付能力。
 - 当前 SHA-256：`6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b`。
+- 5 个 Worker 的下载 URL 固定到已完成双平台复现的不可变 commit `ac0bc21`，不使用会漂移的 `main`。
 - 当前 P0 均为自定义可复用 Skill；复赛规则不要求指定云厂商 Skill，目标运行时的发现、加载、调用和 Trace 才是验收证据。
 
 ## P8 MCP 与安全：五查、七动作、四道闸

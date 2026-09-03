@@ -19,6 +19,7 @@
 ### Fixed
 
 - Skill Registry/provenance 使用显式可移植路径排序，避免 Windows 与 Linux 对大小写排序不同而产生摘要漂移。
+- AgentTeams Worker 包下载地址固定到已复现的不可变 commit，并由契约测试拒绝可漂移的分支 URL。
 
 ## 0.2.0.dev0 - 2026-09-02
 

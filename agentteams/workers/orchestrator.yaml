@@ -25,7 +25,7 @@ spec:
       重启后从 checkpoint 恢复并跳过已完成副作用。
     - Context completed 只表示协作完成；不得用它替代 IncidentService 的业务终态。
     - 只有 Auditor 独立确认设备与商品都安全后，才向 Manager 建议关闭。
-  package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip
   state: Running
   resources:
     requests:

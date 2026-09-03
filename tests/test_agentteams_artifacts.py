@@ -13,7 +13,11 @@ from scripts.build_worker_package import REQUIRED_SKILLS, build_worker_package, 
 
 ROOT = Path(__file__).resolve().parents[1]
 AGENTTEAMS = ROOT / "agentteams"
-PACKAGE_URL = "https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip"
+PACKAGE_SOURCE_COMMIT = "ac0bc213dd0a4108deba4474761a575c39cc2a94"
+PACKAGE_URL = (
+    "https://raw.githubusercontent.com/XZQ/zhuguang/"
+    f"{PACKAGE_SOURCE_COMMIT}/dist/dianxun-worker.zip"
+)
 MCP_URL = "http://dianxun-mcp.dianxun.svc.cluster.local/mcp"
 
 
@@ -98,6 +102,11 @@ class AgentTeamsArtifactTests(unittest.TestCase):
                 self.assertEqual("qwen3.5-plus", spec["model"])
                 self.assertEqual("Running", spec["state"])
                 self.assertEqual(PACKAGE_URL, spec["package"])
+                self.assertRegex(
+                    spec["package"],
+                    r"^https://raw\.githubusercontent\.com/XZQ/zhuguang/[0-9a-f]{40}/",
+                )
+                self.assertNotIn("/main/", spec["package"])
                 self.assertEqual(skills, set(spec.get("skills", [])))
                 if name == "orchestrator":
                     self.assertNotIn("mcpServers", spec)
