@@ -21,6 +21,7 @@
 - Skill Registry/provenance 使用显式可移植路径排序，避免 Windows 与 Linux 对大小写排序不同而产生摘要漂移。
 - AgentTeams Worker 包下载地址固定到已复现的不可变 commit，并由契约测试拒绝可漂移的分支 URL。
 - 运行时 JSON Schema 校验补齐 `maxItems`、组合条件和带时区 `date-time`，避免静态契约强于实际执行路径。
+- AgentTeams 动态证据 Schema 升级到 1.3，绑定平台关联 ID、Worker → MCP Actor、事件因果顺序、最终状态来源和放行前后独立复查。
 
 ## 0.2.0.dev0 - 2026-09-02
 

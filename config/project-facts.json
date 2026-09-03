@@ -172,7 +172,7 @@
       "worker_package_files": 35,
       "artifact_contract_tests": 5,
       "runtime_evidence_contract_tests": 4,
-      "runtime_evidence_schema_version": "1.2",
+      "runtime_evidence_schema_version": "1.3",
       "coordination_lifecycle_tests": 10,
       "skill_registry_contract_tests": 4,
       "provenance": "dist/dianxun-worker.provenance.json",

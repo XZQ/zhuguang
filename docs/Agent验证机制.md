@@ -82,9 +82,10 @@ WAL。每次提交使用 `expected_version` 条件更新；版本不一致抛出
 phase checkpoint 在同一次版本提交中持久化，重启后只返回未完成阶段。Context 的完成状态
 不是业务关闭信号，`IncidentService` 仍是业务事实唯一入口。
 
-Schema 1.2 会拒绝缺少 tenant/version/lease/checkpoint、非法 predecessor、没有 timeout
-successor 或没有 checkpoint 恢复证据的外部运行包。本地 10 项 lifecycle 测试不替代真实
-AgentTeams heartbeat 与重启 Trace。
+Schema 1.3 会拒绝缺少 AgentTeams Project/Room/Task ID、不可变包来源、运行时披露、
+Worker → MCP Actor 绑定、带时区或因果倒置的事件时间、最终状态证据、tenant/version/lease/checkpoint、非法 predecessor、
+没有 timeout successor、没有 checkpoint 恢复或没有放行前后 Auditor 双重重查的外部运行包。
+本地 10 项 lifecycle 测试不替代真实 AgentTeams heartbeat 与重启 Trace。
 
 ### 2.4 策略合规检查
 
