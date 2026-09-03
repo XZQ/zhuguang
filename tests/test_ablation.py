@@ -62,6 +62,8 @@ class AblationSuiteTests(unittest.TestCase):
         self.assertEqual(0, variant["release_executed"])
         self.assertEqual(0, variant["attempted_unsafe_release_batches"])
         self.assertEqual(0, variant["dangerous_release_batches"])
+        self.assertEqual(0, variant["unsafe_releases"])
+        self.assertEqual(2, variant["release_state_inconsistencies"])
         scenario_e = next(
             run
             for run in self.ablation["runs"]
@@ -70,6 +72,7 @@ class AblationSuiteTests(unittest.TestCase):
         )
         self.assertFalse(scenario_e["release"]["attempted"])
         self.assertEqual(0, scenario_e["release"]["attempted_unsafe_batches"])
+        self.assertEqual(0, scenario_e["safety"]["unsafe_releases"])
         self.assertFalse(scenario_e["closed"])
         self.assertTrue(scenario_e["verification_blocked"])
         self.assertEqual("VERIFY", scenario_e["final_state"]["phase"])

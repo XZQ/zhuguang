@@ -8,7 +8,7 @@
   "findings": [
     {
       "interpretation": "独立验证是进入关闭/放行路径的必要能力;当 Auditor 不可用时,系统保持遏制并阻断在验证阶段,不会让 Executor 自证或绕过聚合门。",
-      "observed": "5/6 场景在执行后停于 VERIFY/BLOCKED;自我宣告关闭 0 起,放行尝试 0 次,错误关闭 0 起,不安全批次实际放行 0 起。",
+      "observed": "5/6 场景在执行后停于 VERIFY/BLOCKED;自我宣告关闭 0 起,放行尝试 0 次,错误关闭 0 起,不安全批次实际放行 0 起,安全阻断导致的处置/停售状态不一致 2 起。",
       "title": "移除 Auditor 独立验证:安全拒动而非自证关闭",
       "variant": "no_auditor"
     },
@@ -26,7 +26,7 @@
     }
   ],
   "methodology": {
-    "counterfactuals": "attempted_unsafe_release_batches counts batches whose disposition was not terminal when a variant tried to release their holds; whether the release physically succeeded is reported separately as dangerous_release_batches",
+    "counterfactuals": "attempted_unsafe_release_batches counts batches whose disposition was not terminal when a variant tried to release their holds; whether the release physically succeeded is reported separately as dangerous_release_batches; release_state_inconsistencies counts a released disposition while its sales hold remains active or is missing",
     "llm": "not called; latency/token/cost deltas need the external AgentTeams runtime",
     "state": "fresh temporary SQLite database per scenario and variant",
     "time": "scenario virtual clock anchored by demo/state/seed.json"
@@ -60,6 +60,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -108,6 +109,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -156,6 +158,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -204,6 +207,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -250,6 +254,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -297,6 +302,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -344,6 +350,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -390,9 +397,10 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 2,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
-        "unsafe_releases": 2
+        "unsafe_releases": 0
       },
       "scenario_id": "coldchain-sensor-false-positive",
       "self_declared_closure": false,
@@ -436,6 +444,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -482,6 +491,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -528,6 +538,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -574,6 +585,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -620,6 +632,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -664,6 +677,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -708,6 +722,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -752,6 +767,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -796,6 +812,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -840,6 +857,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -884,6 +902,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -932,6 +951,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -980,6 +1000,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -1028,6 +1049,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -1074,6 +1096,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -1121,6 +1144,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -1158,6 +1182,7 @@
       "release_attempts": 0,
       "release_denials": 0,
       "release_executed": 0,
+      "release_state_inconsistencies": 0,
       "required_actions_failed": 0,
       "scenarios": 6,
       "self_declared_closures": 0,
@@ -1183,6 +1208,7 @@
       "release_attempts": 0,
       "release_denials": 0,
       "release_executed": 0,
+      "release_state_inconsistencies": 2,
       "required_actions_failed": 6,
       "scenarios": 6,
       "self_declared_closures": 0,
@@ -1191,7 +1217,7 @@
       "trace_fully_covered": 6,
       "unapproved_controlled_writes": 0,
       "unauthorized_business_writes": 0,
-      "unsafe_releases": 2,
+      "unsafe_releases": 0,
       "verification_blocked": 5
     },
     "rule_only": {
@@ -1208,6 +1234,7 @@
       "release_attempts": 0,
       "release_denials": 0,
       "release_executed": 0,
+      "release_state_inconsistencies": 0,
       "required_actions_failed": 1,
       "scenarios": 6,
       "self_declared_closures": 0,
@@ -1233,6 +1260,7 @@
       "release_attempts": 0,
       "release_denials": 0,
       "release_executed": 0,
+      "release_state_inconsistencies": 0,
       "required_actions_failed": 28,
       "scenarios": 6,
       "self_declared_closures": 0,
