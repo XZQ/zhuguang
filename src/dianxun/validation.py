@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from datetime import datetime
 from typing import Any
 
 
@@ -40,6 +41,30 @@ def validate_json(
     if expected_type and not _matches_type(value, expected_type):
         errors.append(f"{path}: expected {expected_type}, got {type(value).__name__}")
         return errors
+
+    for subschema in schema.get("allOf", []):
+        errors.extend(validate_json(value, subschema, path=path, _root_schema=root_schema))
+
+    one_of = schema.get("oneOf")
+    if one_of is not None:
+        matches = sum(
+            not validate_json(value, subschema, path=path, _root_schema=root_schema)
+            for subschema in one_of
+        )
+        if matches != 1:
+            errors.append(f"{path}: expected exactly one oneOf schema to match, got {matches}")
+
+    condition = schema.get("if")
+    if condition is not None:
+        condition_matches = not validate_json(
+            value,
+            condition,
+            path=path,
+            _root_schema=root_schema,
+        )
+        branch = schema.get("then" if condition_matches else "else")
+        if branch is not None:
+            errors.extend(validate_json(value, branch, path=path, _root_schema=root_schema))
 
     if isinstance(value, dict):
         properties = schema.get("properties", {})
@@ -77,6 +102,9 @@ def validate_json(
         minimum_items = schema.get("minItems")
         if minimum_items is not None and len(value) < int(minimum_items):
             errors.append(f"{path}: expected at least {minimum_items} items")
+        maximum_items = schema.get("maxItems")
+        if maximum_items is not None and len(value) > int(maximum_items):
+            errors.append(f"{path}: expected at most {maximum_items} items")
         if schema.get("uniqueItems"):
             canonical = [
                 json.dumps(item, ensure_ascii=False, sort_keys=True, default=str) for item in value
@@ -102,6 +130,8 @@ def validate_json(
         pattern = schema.get("pattern")
         if pattern and re.search(pattern, value) is None:
             errors.append(f"{path}: does not match pattern {pattern!r}")
+        if schema.get("format") == "date-time" and not _is_datetime(value):
+            errors.append(f"{path}: expected RFC 3339 date-time with timezone")
 
     if _is_number(value):
         minimum = schema.get("minimum")
@@ -136,6 +166,14 @@ def _matches_type(value: Any, expected: str | list[str]) -> bool:
 
 def _is_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def _is_datetime(value: str) -> bool:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None and parsed.utcoffset() is not None
 
 
 def _resolve_local_reference(root: dict[str, Any], reference: str) -> dict[str, Any]:

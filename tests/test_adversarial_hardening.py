@@ -31,6 +31,7 @@ from dianxun.mcp.server import (
 )
 from dianxun.scenarios import ScenarioEngine
 from dianxun.state import StateStore
+from dianxun.validation import validate_json
 
 ROOT = Path(__file__).resolve().parents[1]
 SEED_PATH = ROOT / "demo" / "state" / "seed.json"
@@ -391,7 +392,7 @@ class AdversarialHardeningTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, "declared actors"):
                 _validate_server_auth("0.0.0.0")
 
-    def test_runtime_tool_schema_rejects_missing_and_non_object_arguments(self) -> None:
+    def test_runtime_schema_and_tool_boundary_reject_invalid_inputs(self) -> None:
         missing = tool_call(
             "apply_sales_hold",
             {"incident_id": self.case.incident_id},
@@ -412,6 +413,37 @@ class AdversarialHardeningTests(unittest.TestCase):
         self.assertTrue(wrong_role["isError"])
         result = json.loads(wrong_role["content"][0]["text"])
         self.assertEqual("FORBIDDEN", result["error"]["code"])
+
+        array_schema = {"type": "array", "maxItems": 1, "items": {"type": "integer"}}
+        self.assertEqual([], validate_json([1], array_schema))
+        self.assertTrue(
+            any(
+                "expected at most 1 items" in error for error in validate_json([1, 2], array_schema)
+            )
+        )
+
+        envelope_schema = {
+            "type": "object",
+            "required": ["ok", "error"],
+            "properties": {
+                "ok": {"type": "boolean"},
+                "error": {"oneOf": [{"type": "null"}, {"type": "object"}]},
+            },
+            "allOf": [
+                {
+                    "if": {"properties": {"ok": {"const": True}}, "required": ["ok"]},
+                    "then": {"properties": {"error": {"type": "null"}}},
+                    "else": {"properties": {"error": {"type": "object"}}},
+                }
+            ],
+        }
+        self.assertEqual([], validate_json({"ok": True, "error": None}, envelope_schema))
+        self.assertTrue(validate_json({"ok": True, "error": {"code": "bad"}}, envelope_schema))
+        self.assertTrue(validate_json({"ok": False, "error": None}, envelope_schema))
+
+        timestamp_schema = {"type": "string", "format": "date-time"}
+        self.assertEqual([], validate_json("2026-09-03T12:00:00+08:00", timestamp_schema))
+        self.assertTrue(validate_json("2026-09-03T12:00:00", timestamp_schema))
 
     def test_scenario_schema_and_seed_path_are_enforced_at_runtime(self) -> None:
         definition = json.loads(SCENARIO_PATH.read_text(encoding="utf-8"))
