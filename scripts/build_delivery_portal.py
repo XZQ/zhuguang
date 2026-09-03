@@ -37,7 +37,7 @@ def build_portal():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>店巡 Agent · 逐光 | 2026 GOAI Agent Infra 复赛官方评审与演示指挥中心</title>
+<title>店巡 Agent | 逐光队 · 2026 GOAI Agent Infra 复赛官方评审与演示指挥中心</title>
 <meta name="description" content="2026 世界人工智能开源大赛 (GOAI) 赛道一 Agent Infra 复赛作品：店巡 Agent（逐光）官方评审与演示指挥中心。基于 AgentTeams v1.2.3 框架构建连锁便利店冷柜失温异常安全闭环。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -823,7 +823,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
     <div class="brand-group">
       <div class="brand-badge">GOAI 2026</div>
       <div class="brand-titles">
-        <h1>店巡 Agent · 逐光 <span style="font-size:14px; font-weight:400; color:var(--cyan);">(赛道一 Agent Infra)</span></h1>
+        <h1>店巡 Agent <span style="font-size:14px; font-weight:400; color:var(--cyan);">(逐光队 · 赛道一 Agent Infra)</span></h1>
         <div class="sub">基于 AgentTeams v1.2.3 的连锁便利店异常安全闭环基础设施</div>
       </div>
     </div>
@@ -846,7 +846,8 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
   <!-- Match Context Banner -->
   <div class="match-banner">
     <div class="match-info">
-      <div class="match-tag">复赛排期：<b>第 3 组｜第 13 队 店巡 Agent</b></div>
+      <div class="match-tag">参赛队伍：<b>逐光（第 3 组｜第 13 队）</b></div>
+      <div class="match-tag">作品名称：<b>店巡 Agent</b></div>
       <div class="match-tag">答辩时间：<b>2026-09-04 14:08—14:16</b> (候场 13:58 前)</div>
       <div class="match-tag">时长：<b>8 分钟</b> (陈述3m + Demo1m + 问答3m + 评分1m)</div>
     </div>
@@ -1383,7 +1384,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
 
   <!-- Footer -->
   <footer class="portal-footer">
-    <div>2026 世界人工智能开源大赛 (GOAI) · 赛道一 Agent Infra · 第 3 组｜第 13 队 店巡 Agent</div>
+    <div>2026 世界人工智能开源大赛 (GOAI) · 赛道一 Agent Infra · 参赛队伍：逐光（第 3 组｜第 13 队）· 作品：店巡 Agent</div>
     <div>代码开源：<a href="https://github.com/XZQ/zhuguang" target="_blank">XZQ/zhuguang</a> · Commit <code>116bd19</code></div>
   </footer>
 </div>

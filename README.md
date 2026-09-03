@@ -1,17 +1,18 @@
-# 逐光｜店巡 Agent
+# 逐光队｜店巡 Agent
 
 [![CI](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml/badge.svg)](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml)
 
 > 让连锁门店异常从“告警已读”走到“证据完备、责任清晰、安全关闭”。
 
-**逐光**是面向连锁便利店的多 Agent 异常闭环基础设施，也是 [GOAI Agent Infra 赛道](https://www.goaihz.com/tracks?track=infra)参赛项目。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
+**逐光**是参赛队伍名称；**店巡 Agent**是面向连锁便利店的多 Agent 异常闭环基础设施，也是 [GOAI Agent Infra 赛道](https://www.goaihz.com/tracks?track=infra)参赛作品。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
 
-作品名统一为**逐光**；**店巡 Agent**用于说明产品能力，`dianxun` 保持为工程包、命令与资源前缀，仓库地址保持 `zhuguang`。
+队名统一为**逐光**；作品名与产品能力统一为**店巡 Agent**，`dianxun` 保持为工程包、命令与资源前缀，仓库地址保持 `zhuguang`。
 
 ## 2026 GOAI 复赛答辩与在线体验入口
 
 > **线上答辩时间**：2026 年 9 月 4 日 14:08—14:16（请于 **13:58 前** 进入钉钉会议候场区）  
-> **答辩队伍**：第 3 组｜第 13 队 **店巡 Agent**  
+> **参赛队伍**：逐光（第 3 组｜第 13 队）  
+> **作品名称**：店巡 Agent  
 > **答辩时长**：严格控制为 **8 分钟**（项目陈述 3 分钟 + **Demo 演示 1 分钟** + 评委问答 3 分钟 + 评分切换 1 分钟）
 
 ### 评审与演示入口
