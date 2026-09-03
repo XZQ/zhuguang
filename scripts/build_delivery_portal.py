@@ -1023,6 +1023,17 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
         现场部署于广州主机（mazhi-tencent，Ubuntu 24.04），通过内嵌 Controller 调度 5 个 Worker，驱动模型为阿里云百炼 <code>qwen3.8-max</code>。
       </div>
 
+            <!-- Interactive Animated Architecture Flow -->
+      <div style="background: rgba(3, 7, 18, 0.6); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 4px;">
+          <h3 style="font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>⚡</span> 店巡 Agent · 多 Agent 闭环架构动态流向 (交互动画)
+          </h3>
+          <a href="./architecture-flow.html" target="_blank" style="font-size: 12px; color: var(--cyan);">↗ 独立全屏打开</a>
+        </div>
+        <iframe src="./architecture-flow.html" style="width: 100%; height: 530px; border: none; border-radius: 10px; background: transparent;"></iframe>
+      </div>
+
       <div class="cluster-cards-grid" id="cluster-cards-container">
         <!-- Will be dynamically populated / updated from status.json -->
         <div class="worker-card">
