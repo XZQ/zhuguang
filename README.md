@@ -142,6 +142,13 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 
 ## 系统架构
 
+[![店巡 Agent · 多 Agent 闭环架构动态流向](docs/assets/architecture-flow.svg)](https://mazhi.icu/zhuguang/architecture-flow.html)
+
+> 💡 **在线交互演示**：点击上方动态流向图（或访问 [https://mazhi.icu/zhuguang/architecture-flow.html](https://mazhi.icu/zhuguang/architecture-flow.html)），可在浏览器中体验五阶段单步高亮、各 Agent 决策边界说明与自动循环演练。
+
+<details>
+<summary>展开查看 Mermaid 拓扑源码</summary>
+
 ```mermaid
 flowchart LR
     Input[异常或人工任务] --> O[Orchestrator<br/>拆解与汇总]
@@ -157,6 +164,8 @@ flowchart LR
     Guard[业务角色·Policy/审批<br/>幂等·审计] -.约束.-> E
     A -.不通过则阻断关闭或回开.-> Core
 ```
+
+</details>
 
 AgentTeams 负责目标平台中的任务拆解与 Worker 委派；`IncidentService`、StateStore、Policy 和 MCP 负责业务事实与安全约束。两层不能互相冒充，平台动态协同仍以真实运行证据为准。
 
