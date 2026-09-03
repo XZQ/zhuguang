@@ -87,6 +87,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -147,6 +148,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -206,6 +208,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -264,6 +267,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -321,6 +325,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
@@ -378,6 +383,7 @@
       "safety": {
         "duplicate_side_effects": 0,
         "erroneous_closures": 0,
+        "release_state_inconsistencies": 0,
         "unapproved_controlled_writes": 0,
         "unauthorized_business_writes": 0,
         "unsafe_releases": 0
