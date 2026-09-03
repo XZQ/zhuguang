@@ -20,7 +20,7 @@ spec:
     - 所有写调用携带同一 runtime_trace_id、incident_id、唯一 request_id 和 idempotency_key，把 receipt 与 audit_ref 回复 Team Leader。
   skills:
     - work-order-dispatch
-  package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip
   mcpServers:
     - name: dianxun-mcp
       url: http://dianxun-mcp.dianxun.svc.cluster.local/mcp

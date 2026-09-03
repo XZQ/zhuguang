@@ -20,7 +20,7 @@ spec:
     - 发现持续失温或证据不完整时请求安全遏制，并把结构化结果回复 Team Leader。
   skills:
     - anomaly-detect
-  package: https://raw.githubusercontent.com/XZQ/zhuguang/main/dist/dianxun-worker.zip
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip
   mcpServers:
     - name: dianxun-mcp
       url: http://dianxun-mcp.dianxun.svc.cluster.local/mcp

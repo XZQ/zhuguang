@@ -22,7 +22,7 @@ dist/dianxun-worker.zip
 dist/dianxun-worker.provenance.json
 ```
 
-Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP。当前 SHA-256 为 `6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b`；`dist/dianxun-worker.provenance.json` 还记录 Registry、生命周期文档和每个 Skill 的版本与内容哈希。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为集群可访问的镜像。
+Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP，并固定到已完成 Windows 干净克隆与 Ubuntu CI 复现的不可变 commit `ac0bc213dd0a4108deba4474761a575c39cc2a94`，禁止指向会漂移的 `main`。当前 SHA-256 为 `6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b`；`dist/dianxun-worker.provenance.json` 还记录 Registry、生命周期文档和每个 Skill 的版本与内容哈希。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为集群可访问的镜像。
 
 当前仓库只提交脱敏、可复现的配置。只有真实平台产生的 Team Room、委派消息、MCP 调用和资源状态才是动态证据；本地契约测试不能替代它们。
 
