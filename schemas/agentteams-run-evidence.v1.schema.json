@@ -8,19 +8,23 @@
     "capture_status",
     "captured_at",
     "agentteams_version",
+    "package_source_commit",
     "package_sha256",
+    "runtime",
     "resources",
     "skill_loads",
     "security_checks",
     "runs"
   ],
   "properties": {
-    "schema_version": { "const": "1.2" },
+    "schema_version": { "const": "1.3" },
     "evidence_kind": { "const": "agentteams_runtime" },
     "capture_status": { "const": "observed" },
-    "captured_at": { "type": "string", "minLength": 1 },
+    "captured_at": { "type": "string", "format": "date-time" },
     "agentteams_version": { "type": "string", "minLength": 1 },
+    "package_source_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
     "package_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "runtime": { "$ref": "#/$defs/runtime" },
     "resources": {
       "type": "object",
       "required": ["manager", "team", "workers"],
@@ -49,7 +53,8 @@
           "version",
           "skill_digest",
           "package_sha256",
-          "loaded_at"
+          "loaded_at",
+          "evidence_ref"
         ],
         "properties": {
           "worker": { "type": "string" },
@@ -57,7 +62,8 @@
           "version": { "type": "string" },
           "skill_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "package_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-          "loaded_at": { "type": "string" }
+          "loaded_at": { "type": "string", "format": "date-time" },
+          "evidence_ref": { "type": "string", "minLength": 1 }
         }
       }
     },
@@ -68,12 +74,13 @@
       "uniqueItems": true,
       "items": {
         "type": "object",
-        "required": ["check", "expected", "observed", "evidence_ref"],
+        "required": ["check", "expected", "observed", "at", "evidence_ref"],
         "properties": {
           "check": { "type": "string" },
           "expected": {},
           "observed": {},
-          "evidence_ref": { "type": "string" }
+          "at": { "type": "string", "format": "date-time" },
+          "evidence_ref": { "type": "string", "minLength": 1 }
         }
       }
     },
@@ -85,13 +92,36 @@
     }
   },
   "$defs": {
+    "runtime": {
+      "type": "object",
+      "required": [
+        "manager_runtime",
+        "worker_runtime",
+        "model",
+        "provider",
+        "credential_source_type",
+        "usage_status",
+        "evidence_ref"
+      ],
+      "properties": {
+        "manager_runtime": { "type": "string", "minLength": 1 },
+        "worker_runtime": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "provider": { "type": "string", "minLength": 1 },
+        "credential_source_type": {
+          "enum": ["environment", "gateway", "kubernetes_secret", "external_secret_manager"]
+        },
+        "usage_status": { "enum": ["measured", "not_measured"] },
+        "evidence_ref": { "type": "string", "minLength": 1 }
+      }
+    },
     "resource": {
       "type": "object",
       "required": ["name", "status", "evidence_ref"],
       "properties": {
-        "name": { "type": "string" },
-        "status": { "type": "string" },
-        "evidence_ref": { "type": "string" }
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "evidence_ref": { "type": "string", "minLength": 1 }
       }
     },
     "run": {
@@ -99,6 +129,8 @@
       "required": [
         "scenario_id",
         "branch",
+        "project_id",
+        "source_room_id",
         "incident_id",
         "trace_id",
         "coordination",
@@ -111,6 +143,8 @@
       "properties": {
         "scenario_id": { "type": "string" },
         "branch": { "enum": ["success", "failure"] },
+        "project_id": { "type": "string", "minLength": 1 },
+        "source_room_id": { "type": "string", "minLength": 1 },
         "incident_id": { "type": "string" },
         "trace_id": { "type": "string" },
         "coordination": { "$ref": "#/$defs/coordination" },
@@ -120,13 +154,23 @@
           "uniqueItems": true,
           "items": {
             "type": "object",
-            "required": ["from", "to", "phase", "message_id", "at"],
+            "required": [
+              "from",
+              "to",
+              "phase",
+              "task_id",
+              "message_id",
+              "at",
+              "evidence_ref"
+            ],
             "properties": {
               "from": { "type": "string" },
               "to": { "type": "string" },
               "phase": { "type": "string" },
+              "task_id": { "type": "string", "minLength": 1 },
               "message_id": { "type": "string" },
-              "at": { "type": "string" }
+              "at": { "type": "string", "format": "date-time" },
+              "evidence_ref": { "type": "string", "minLength": 1 }
             }
           }
         },
@@ -144,6 +188,10 @@
               "request_id",
               "incident_id",
               "trace_id",
+              "authenticated_actor",
+              "authentication_mode",
+              "auth_evidence_ref",
+              "at",
               "ok",
               "partial",
               "evidence_ref"
@@ -157,6 +205,12 @@
               "request_id": { "type": "string" },
               "incident_id": { "type": "string" },
               "trace_id": { "type": "string" },
+              "authenticated_actor": {
+                "enum": ["Sentry", "Diagnoser", "Executor", "Auditor"]
+              },
+              "authentication_mode": { "const": "actor_bound" },
+              "auth_evidence_ref": { "type": "string", "minLength": 1 },
+              "at": { "type": "string", "format": "date-time" },
               "ok": { "type": "boolean" },
               "partial": { "type": "boolean" },
               "audit_ref": {},
@@ -166,21 +220,30 @@
         },
         "approval": {
           "type": "object",
-          "required": ["status", "actor_type", "decision_id", "evidence_ref"],
+          "required": ["status", "actor_type", "decision_id", "at", "evidence_ref"],
           "properties": {
             "status": { "type": "string" },
             "actor_type": { "type": "string" },
             "decision_id": { "type": "string" },
-            "evidence_ref": { "type": "string" }
+            "at": { "type": "string", "format": "date-time" },
+            "evidence_ref": { "type": "string", "minLength": 1 }
           }
         },
         "final_state": {
           "type": "object",
-          "required": ["incident_status", "work_status", "sales_hold_status"],
+          "required": [
+            "incident_status",
+            "work_status",
+            "sales_hold_status",
+            "observed_at",
+            "evidence_ref"
+          ],
           "properties": {
             "incident_status": { "type": "string" },
             "work_status": { "type": "string" },
-            "sales_hold_status": { "type": "string" }
+            "sales_hold_status": { "type": "string" },
+            "observed_at": { "type": "string", "format": "date-time" },
+            "evidence_ref": { "type": "string", "minLength": 1 }
           }
         },
         "trace_artifact": {
@@ -211,7 +274,7 @@
       "properties": {
         "tenant_id": { "type": "string", "minLength": 1 },
         "context_version": { "type": "integer", "minimum": 1 },
-        "expires_at": { "type": "string", "minLength": 1 },
+        "expires_at": { "type": "string", "format": "date-time" },
         "resumed_from_checkpoint": { "type": "boolean" },
         "resume_evidence_ref": { "type": ["string", "null"] },
         "assignments": {
@@ -237,6 +300,7 @@
         "worker",
         "attempt",
         "status",
+        "assigned_at",
         "lease_expires_at",
         "heartbeat_at",
         "evidence_ref"
@@ -247,8 +311,9 @@
         "worker": { "type": "string", "minLength": 1 },
         "attempt": { "type": "integer", "minimum": 1 },
         "status": { "enum": ["expired", "succeeded"] },
-        "lease_expires_at": { "type": "string", "minLength": 1 },
-        "heartbeat_at": { "type": "string", "minLength": 1 },
+        "assigned_at": { "type": "string", "format": "date-time" },
+        "lease_expires_at": { "type": "string", "format": "date-time" },
+        "heartbeat_at": { "type": "string", "format": "date-time" },
         "predecessor_assignment_id": { "type": ["string", "null"] },
         "evidence_ref": { "type": "string", "minLength": 1 }
       }
@@ -259,12 +324,14 @@
         "phase",
         "assignment_id",
         "context_version",
+        "at",
         "evidence_refs"
       ],
       "properties": {
         "phase": { "type": "string", "minLength": 1 },
         "assignment_id": { "type": "string", "minLength": 1 },
         "context_version": { "type": "integer", "minimum": 1 },
+        "at": { "type": "string", "format": "date-time" },
         "evidence_refs": {
           "type": "array",
           "minItems": 1,

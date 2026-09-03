@@ -168,7 +168,7 @@ uv run dianxun demo-run demo/state/scenarios/coldchain-approval-timeout.json
 | 设备与批次分别验证 | 必须 | 必须 | Auditor 查询 |
 | 解除停售前后两次验证 | 必须 | 不适用 | verification attempts |
 | partial/timeout 保持遏制 | 不适用 | 必须 | 业务状态 |
-| context version / lease / heartbeat / checkpoint | 必须 | 必须 | AgentTeams 消息、协调存储与 Schema 1.2 gate |
+| context version / lease / heartbeat / checkpoint | 必须 | 必须 | AgentTeams 消息、协调存储与 Schema 1.3 gate；时间必须满足因果顺序 |
 | timeout 唯一 successor 与重启恢复 | 可与正常分支合并 | 必须 | assignment/predecessor 与恢复前后 Trace |
 | 最终状态与 Scenario 预期一致 | 必须 | 必须 | IncidentCase |
 | 模型/runtime 与用量披露 | 必须 | 必须 | 平台配置/账单；Key 必须遮挡，无法取得账单则标记未测量 |

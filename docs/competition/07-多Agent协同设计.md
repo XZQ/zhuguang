@@ -180,7 +180,7 @@ Agent 之间只传递最小必要引用：
 - active Context 过期后默认拒绝读取但不自动删除；清理默认只删除终态过期记录。强制清理 active 需要显式参数。
 - `coordination_status=completed` 只说明委派与交接完成，不能直接设置 Incident 的 `RESOLVED/CLOSED`；后者仍由 `IncidentService` 聚合业务事实。
 
-上述能力由本地 SQLite 和并发测试验证。真实 AgentTeams Worker heartbeat、超时改路和重启恢复仍必须在目标平台生成 Schema 1.2 运行证据。
+上述能力由本地 SQLite 和并发测试验证。真实 AgentTeams Worker heartbeat、超时改路和重启恢复仍必须在目标平台生成 Schema 1.3 运行证据；证据还必须绑定官方 Project/Room/Task ID、不可变 Worker 包、运行时配置、每次 MCP 调用的服务端 Actor、满足因果顺序的事件时间、最终状态来源及放行前后 Auditor 双重重查。
 
 ## 8. 动态 AgentTeams 验收
 

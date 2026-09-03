@@ -196,7 +196,7 @@ kubectl -n dianxun get deployment,pod,service,pvc
 uv run dianxun agentteams-verify <evidence.json> --output <gate-report.json>
 ```
 
-校验器使用证据 Schema `1.2`，除正确角色-阶段委派、四类 Worker 工具调用、人工审批、包/Skill provenance、每次调用的 Skill version/digest、安全正负向结果、唯一关联 ID 和非占位 Trace 哈希外，还要求 tenant-bound Context、单调 checkpoint version、Worker heartbeat、唯一 timeout successor 和至少一次 checkpoint 恢复证据。它只校验提交的证据包，不能生成或替代真实平台证据。
+校验器使用证据 Schema `1.3`，除正确角色-阶段委派、四类 Worker 工具调用、人工审批、不可变包来源、包/Skill provenance、每次调用的 Skill version/digest、安全正负向结果和非占位 Trace 哈希外，还要求官方 Project/Room/Task ID、运行时与模型披露、每次 MCP 调用的服务端 Actor 绑定证据、带时区且满足因果顺序的事件时间、最终状态证据、tenant-bound Context、单调 checkpoint version、Worker heartbeat、唯一 timeout successor、至少一次 checkpoint 恢复，以及放行前后 Auditor 对设备/批次/停售状态的独立重查。它只校验提交的证据包，不能生成或替代真实平台证据。
 
 ## 安全说明
 

@@ -443,7 +443,9 @@ class AdversarialHardeningTests(unittest.TestCase):
 
         timestamp_schema = {"type": "string", "format": "date-time"}
         self.assertEqual([], validate_json("2026-09-03T12:00:00+08:00", timestamp_schema))
+        self.assertEqual([], validate_json("2026-09-03T04:00:00Z", timestamp_schema))
         self.assertTrue(validate_json("2026-09-03T12:00:00", timestamp_schema))
+        self.assertTrue(validate_json("2026-09-03 12:00:00+08:00", timestamp_schema))
 
     def test_scenario_schema_and_seed_path_are_enforced_at_runtime(self) -> None:
         definition = json.loads(SCENARIO_PATH.read_text(encoding="utf-8"))

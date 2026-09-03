@@ -14,6 +14,10 @@ import re
 from datetime import datetime
 from typing import Any
 
+_RFC3339_DATETIME = re.compile(
+    r"^\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[Zz]|[+-]\d{2}:\d{2})$"
+)
+
 
 def validate_json(
     value: Any,
@@ -169,8 +173,11 @@ def _is_number(value: Any) -> bool:
 
 
 def _is_datetime(value: str) -> bool:
+    if _RFC3339_DATETIME.fullmatch(value) is None:
+        return False
+    normalized = f"{value[:-1]}+00:00" if value.endswith(("Z", "z")) else value
     try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(normalized)
     except ValueError:
         return False
     return parsed.tzinfo is not None and parsed.utcoffset() is not None
