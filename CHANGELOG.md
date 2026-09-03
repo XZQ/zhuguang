@@ -22,6 +22,7 @@
 - AgentTeams Worker 包下载地址固定到已复现的不可变 commit，并由契约测试拒绝可漂移的分支 URL。
 - 运行时 JSON Schema 校验补齐 `maxItems`、组合条件和带时区 `date-time`，避免静态契约强于实际执行路径。
 - AgentTeams 动态证据 Schema 升级到 1.3，绑定平台关联 ID、Worker → MCP Actor、事件因果顺序、最终状态来源和放行前后独立复查。
+- MCP 工具输入契约允许 Worker 携带 `runtime_trace_id`，使 AgentTeams 调用能进入实际 Trace 而不会被严格 Schema 提前拒绝。
 
 ## 0.2.0.dev0 - 2026-09-02
 

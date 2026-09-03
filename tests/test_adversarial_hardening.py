@@ -414,6 +414,18 @@ class AdversarialHardeningTests(unittest.TestCase):
         result = json.loads(wrong_role["content"][0]["text"])
         self.assertEqual("FORBIDDEN", result["error"]["code"])
 
+        traced = tool_call(
+            "query_device_context",
+            {
+                "device_id": "FROST-S03",
+                "request_id": "runtime-trace-schema",
+                "runtime_trace_id": "agentteams-runtime-trace",
+            },
+            actor="Sentry",
+            service=self.service,
+        )
+        self.assertFalse(traced["isError"])
+
         array_schema = {"type": "array", "maxItems": 1, "items": {"type": "integer"}}
         self.assertEqual([], validate_json([1], array_schema))
         self.assertTrue(
