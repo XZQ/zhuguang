@@ -8,6 +8,43 @@
 
 作品名统一为**逐光**；**店巡 Agent**用于说明产品能力，`dianxun` 保持为工程包、命令与资源前缀，仓库地址保持 `zhuguang`。
 
+## 2026 GOAI 复赛答辩与在线体验入口
+
+> **线上答辩时间**：2026 年 9 月 4 日 14:08—14:16（请于 **13:58 前** 进入钉钉会议候场区）  
+> **答辩队伍**：第 3 组｜第 13 队 **店巡 Agent**  
+> **答辩时长**：严格控制为 **8 分钟**（项目陈述 3 分钟 + **Demo 演示 1 分钟** + 评委问答 3 分钟 + 评分切换 1 分钟）
+
+### 评审与演示入口
+
+| 体验通道 | 访问地址 | 资源用途 |
+| :--- | :--- | :--- |
+| 🌟 **官方评审与演示指挥中心** | **[https://mazhi.icu/zhuguang/](https://mazhi.icu/zhuguang/)** | 一体化评审主页，含 1 分钟演练、5 Workers 集群、6 Skill、HITL 审批与 6 场景 |
+| 🌟 **店巡镜像备用入口** | **[https://mazhi.icu/dianxun/](https://mazhi.icu/dianxun/)** | 同步备用镜像地址 |
+| 📑 **15 页方案 PPT 在线演示** | **[https://mazhi.icu/zhuguang/ppt/](https://mazhi.icu/zhuguang/ppt/)** | 专为答辩设计的 15 页 Swiss-design 全屏幻灯片（支持左右键翻页） |
+| ⬇️ **方案 PDF 官方文档** | **[https://mazhi.icu/zhuguang/ppt/店巡Agent方案.pdf](https://mazhi.icu/zhuguang/ppt/店巡Agent方案.pdf)** | 840KB 官方排版提交方案文档 |
+| 📊 **事故指挥台 (六场景完整版)** | **[https://mazhi.icu/zhuguang/command-center.html](https://mazhi.icu/zhuguang/command-center.html)** | A~F 六大场景真实温度变化 SVG 曲线、设备链、Auditor 独立验证矩阵 |
+| 🤖 **实机集群运行状态接口** | **[https://mazhi.icu/zhuguang/status.json](https://mazhi.icu/zhuguang/status.json)** | 广州服务器 AgentTeams v1.2.3 集群与 5 个 Worker 真实心跳与资源数据 |
+
+### 答辩流程与 1 分钟 Demo 演示指引
+
+1. **项目陈述（前 3 分钟）**：
+   - 投屏进入 [PPT 在线演示](https://mazhi.icu/zhuguang/ppt/)，重点阐明痛点（冷柜失温跨越设备与食品安全双重状态）、架构（AgentTeams v1.2.3 + 5 业务 Worker + 6 P0 Skill）以及**两项核心安全红线**：
+     - **红线一（职责分离）**：执行者不能自证成功，Auditor 必须独立重查事实；
+     - **红线二（双重状态）**：设备恢复 ≠ 商品安全，工单完成 ≠ 事件关闭，严禁直接放行变质品。
+2. **Demo 演示（第 4 分钟 · 核心亮点）**：
+   - 投屏打开 [官方演示指挥中心](https://mazhi.icu/zhuguang/) 第一栏的 **⚡️ 1 分钟答辩 Demo**，点击「一键演练 (60s)」：
+     - **00-10s Sentry 巡检**：FROST-S03 温度飙升至 9.6°C（超 8°C 告警线），质量校验排除断流，发出 critical 严重度遏制请求；
+     - **10-20s Executor 遏制**：立即执行 L1 预授权动作 `apply_sales_hold`，锁定鲜奶与熟食 2 个批次停售，防止食品安全风险外溢；
+     - **20-30s Diagnoser 诊断**：多源特征排查排除除霜与柜门，输出 Top-1 压缩机故障（置信度 0.94），给出鲜奶报损、熟食转库处置建议；
+     - **30-40s Executor + HITL 审批**：维修预算（¥680）与鲜奶报损触发 L2 人工审批流，店长移动端一键核准，维修工到场换件修复；
+     - **40-50s Auditor 独立稽核（高光时刻）**：设备温度虽已降至 4.8°C（设备恢复），但 Auditor 独立重查批次暴露时长，判定鲜奶超温变质强制报损并维持停售，熟食转库合格后才允许放行，**严禁设备恢复直接放行变质商品**！
+     - **50-60s Orchestrator 复盘**：生成复盘报告与知识候选条目，通过安全门禁后事件安全迁移为 `CLOSED`。
+3. **评委问答（第 5~7 分钟 · 靶向响应）**：
+   - **问及 AgentTeams 真实性**：切换至指挥中心「🤖 AgentTeams 集群拓扑」，展示广州 Linux 主机运行的 5 个 Worker 容器、`qwen3.8-max` 驱动、Matrix 本地 Team Room 与标准字段矩阵；
+   - **问及 Skill 规范**：切换至「🛠 6 大核心 Skill 资产」，展示严格满足参赛指南的九要素卡片；
+   - **问及审批与审计安全**：切换至「🔒 高风险审批与审计」，演示交互式审批单演练与 Append-only 防篡改审计设计；
+   - **问及异常与对抗分支**：切换至「📊 事故指挥台」，随时调取 B（误报）、C（门开）、D（超时）、E（商品不安全）、F（工具降级）的时序与判定。
+
 ## 比赛命题与核心回答
 
 | 评审关注点 | 逐光的回答 |
