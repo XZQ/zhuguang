@@ -25,7 +25,10 @@ def _object_schema(
 ) -> dict[str, Any]:
     return {
         "type": "object",
-        "properties": properties,
+        "properties": {
+            "runtime_trace_id": {"type": "string", "minLength": 1},
+            **properties,
+        },
         "required": required or [],
         "additionalProperties": False,
     }
