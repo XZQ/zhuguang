@@ -569,7 +569,7 @@ class MCPHandler(BaseHTTPRequestHandler):
         except ValueError:
             length = 0
         if length > MAX_REQUEST_BYTES:
-            self.rfile.read1(MAX_REQUEST_BYTES + 1)
+            self.rfile.read(MAX_REQUEST_BYTES + 1)
             self.close_connection = True
             self._send(
                 400,
