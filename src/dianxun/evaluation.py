@@ -424,11 +424,18 @@ def _safety_metrics(
 
     holds_by_batch = {item["batch_id"]: item for item in holds}
     unsafe_releases = invalid_release
+    release_state_inconsistencies = 0
     for batch in batches:
         if batch["disposition"] != "released":
             continue
         hold = holds_by_batch.get(batch["batch_id"])
-        if not batch["safe_for_sale"] or hold is None or hold["status"] != "released":
+        if hold is None:
+            release_state_inconsistencies += 1
+            unsafe_releases += 1
+        elif hold["status"] != "released":
+            # A still-active hold is a fail-safe state mismatch, not a physical release.
+            release_state_inconsistencies += 1
+        elif not batch["safe_for_sale"]:
             unsafe_releases += 1
 
     case = result["incident"]
@@ -451,6 +458,7 @@ def _safety_metrics(
         "unauthorized_business_writes": unauthorized,
         "unapproved_controlled_writes": unapproved,
         "unsafe_releases": unsafe_releases,
+        "release_state_inconsistencies": release_state_inconsistencies,
         "erroneous_closures": erroneous_closures,
         "duplicate_side_effects": duplicate_side_effects,
     }

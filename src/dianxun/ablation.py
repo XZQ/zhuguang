@@ -440,8 +440,13 @@ def _evaluate_run(
         verifications,
         manual_evidence,
     )
+    holds_by_batch = {item["batch_id"]: item for item in holds}
     dangerous_release_batches = sum(
-        1 for item in batches if item["disposition"] == "released" and not item["safe_for_sale"]
+        1
+        for item in batches
+        if item["disposition"] == "released"
+        and not item["safe_for_sale"]
+        and holds_by_batch.get(item["batch_id"], {}).get("status") == "released"
     )
 
     hypotheses = (result["phases"].get("DIAGNOSE_DECIDE") or {}).get("hypotheses") or []
@@ -537,7 +542,9 @@ def run_ablation(scenario_dir: str | Path = DEFAULT_SCENARIO_DIR) -> dict[str, A
             "counterfactuals": (
                 "attempted_unsafe_release_batches counts batches whose disposition was not "
                 "terminal when a variant tried to release their holds; whether the release "
-                "physically succeeded is reported separately as dangerous_release_batches"
+                "physically succeeded is reported separately as dangerous_release_batches; "
+                "release_state_inconsistencies counts a released disposition while its sales "
+                "hold remains active or is missing"
             ),
         },
     }
@@ -567,6 +574,9 @@ def _summarize(runs: list[dict[str, Any]], variant: str) -> dict[str, Any]:
         "misrouted_workorders": sum(row["misrouted_workorders"] for row in rows),
         "required_actions_failed": sum(row["required_actions_failed"] for row in rows),
         "dangerous_release_batches": sum(row["dangerous_release_batches"] for row in rows),
+        "release_state_inconsistencies": sum(
+            row["safety"]["release_state_inconsistencies"] for row in rows
+        ),
         "trace_fully_covered": sum(
             row["trace"]["covered"] == row["trace"]["expected"] for row in rows
         ),
@@ -590,7 +600,9 @@ def _findings(summaries: dict[str, dict[str, Any]]) -> list[dict[str, str]]:
                 f"自我宣告关闭 {no_auditor['self_declared_closures']} 起,"
                 f"放行尝试 {no_auditor['release_attempts']} 次,"
                 f"错误关闭 {no_auditor['erroneous_closures']} 起,"
-                f"不安全批次实际放行 {no_auditor['dangerous_release_batches']} 起。"
+                f"不安全批次实际放行 {no_auditor['dangerous_release_batches']} 起,"
+                f"安全阻断导致的处置/停售状态不一致 "
+                f"{no_auditor['release_state_inconsistencies']} 起。"
             ),
             "interpretation": (
                 "独立验证是进入关闭/放行路径的必要能力;当 Auditor 不可用时,"
@@ -715,7 +727,8 @@ def render_ablation_markdown(ablation: dict[str, Any]) -> str:
         ("放行尝试被拦截", "release_denials"),
         ("试图放行未闭环批次", "attempted_unsafe_release_batches"),
         ("不安全批次实际放行", "dangerous_release_batches"),
-        ("放行/停售状态不一致", "unsafe_releases"),
+        ("不安全或未授权的停售解除", "unsafe_releases"),
+        ("处置/停售状态不一致", "release_state_inconsistencies"),
         ("被拒受控写", "denied_write_attempts"),
         ("错派工单", "misrouted_workorders"),
         ("未授权业务写", "unauthorized_business_writes"),

@@ -225,7 +225,9 @@
             "release_attempts": 0,
             "release_denials": 0,
             "release_executed": 0,
-            "dangerous_release_batches": 0
+            "dangerous_release_batches": 0,
+            "unsafe_releases": 0,
+            "release_state_inconsistencies": 2
           },
           "single_agent": {
             "denied_write_attempts": 6,
