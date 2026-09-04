@@ -966,18 +966,18 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
           </div>
           <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--text-secondary); display:flex; gap:14px;">
             <span>巡检轮次: <b style="color:var(--green)">28,800次/日</b></span>
-            <span>全网告警: <b style="color:var(--red)">1起异常闭环中 (S03店)</b></span>
+            <span>全网告警: <b id="demo-fleet-alert" style="color:var(--red)">1起异常闭环中 (S03店)</b></span>
           </div>
         </div>
 
         <!-- Store Selector Tabs -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin-bottom:14px;">
-          <div style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px 12px; cursor:pointer;">
+          <div id="demo-store-s03" style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px 12px; cursor:pointer; transition:all 0.3s ease;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <b style="color:#fff; font-size:12.5px;">S03 广州天河店</b>
-              <span style="background:rgba(239,68,68,0.3); color:#fca5a5; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;">1柜失温闭环中</span>
+              <span id="demo-store-s03-badge" style="background:rgba(239,68,68,0.3); color:#fca5a5; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;">1柜失温闭环中</span>
             </div>
-            <div style="font-size:11px; color:#fca5a5; margin-top:3px;">纳管: 4台冷链设备 · 1起失温中</div>
+            <div id="demo-store-s03-desc" style="font-size:11px; color:#fca5a5; margin-top:3px;">纳管: 4台冷链设备 · 1起失温中</div>
           </div>
           <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1806,10 +1806,65 @@ function renderStep(idx) {{
     chartGoods.style.color = (idx === 5) ? 'var(--green)' : 'var(--red)';
   }}
 
+    // Update S03 Store Card and Fleet Alerts based on step
+  const storeS03 = document.getElementById('demo-store-s03');
+  const storeS03Badge = document.getElementById('demo-store-s03-badge');
+  const storeS03Desc = document.getElementById('demo-store-s03-desc');
+  const fleetAlert = document.getElementById('demo-fleet-alert');
+  const dev1Card = document.getElementById('demo-dev1-card');
+
+  if (idx === 5) {{
+    // Step 6: Fully Closed & Turn Green!
+    if (storeS03) {{
+      storeS03.style.borderColor = 'var(--green)';
+      storeS03.style.background = 'rgba(16,185,129,0.08)';
+    }}
+    if (storeS03Badge) {{
+      storeS03Badge.textContent = '全绿正常';
+      storeS03Badge.style.background = 'rgba(16,185,129,0.2)';
+      storeS03Badge.style.color = 'var(--green)';
+    }}
+    if (storeS03Desc) {{
+      storeS03Desc.textContent = '纳管: 4台冷链设备 · 全部达标';
+      storeS03Desc.style.color = 'var(--green)';
+    }}
+    if (fleetAlert) {{
+      fleetAlert.textContent = '0起异常 (全网全绿正常)';
+      fleetAlert.style.color = 'var(--green)';
+    }}
+    if (dev1Card) {{
+      dev1Card.style.borderColor = 'var(--green)';
+      dev1Card.style.borderWidth = '1.5px';
+    }}
+  }} else {{
+    // Steps 1 to 5: Anomaly Active / Under Processing
+    if (storeS03) {{
+      storeS03.style.borderColor = 'var(--red)';
+      storeS03.style.background = 'rgba(239,68,68,0.1)';
+    }}
+    if (storeS03Badge) {{
+      storeS03Badge.textContent = (idx >= 3) ? '处置中' : '1柜失温闭环中';
+      storeS03Badge.style.background = 'rgba(239,68,68,0.3)';
+      storeS03Badge.style.color = '#fca5a5';
+    }}
+    if (storeS03Desc) {{
+      storeS03Desc.textContent = '纳管: 4台冷链设备 · 1起失温中';
+      storeS03Desc.style.color = '#fca5a5';
+    }}
+    if (fleetAlert) {{
+      fleetAlert.textContent = '1起异常闭环中 (S03店)';
+      fleetAlert.style.color = 'var(--red)';
+    }}
+    if (dev1Card) {{
+      dev1Card.style.borderColor = (idx === 3) ? 'var(--accent)' : 'var(--red)';
+      dev1Card.style.borderWidth = '2px';
+    }}
+  }}
+
   // Update SVG Cursor and Badges
   const cursor = document.getElementById('demo-temp-cursor');
   if (cursor && data.cursorX) {{
-    cursor.setAttribute('transform', );
+    cursor.setAttribute('transform', 'translate(' + data.cursorX + ', ' + data.cursorY + ')');
     const cLabel = document.getElementById('demo-cursor-label');
     if (cLabel) cLabel.textContent = data.temp;
   }}
