@@ -956,6 +956,206 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
       </div>
 
       <!-- Stepper Steps -->
+            <!-- ================= MULTI-STORE FLEET & S03 DEVICE MATRIX IN 1-MIN DEMO ================= -->
+      <div style="background: rgba(3, 7, 18, 0.85); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+        <!-- Level 1: Fleet Bar -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="pulse-dot"></span>
+            <span style="font-size:13px; font-weight:700; color:#fff;">全网连锁门店巡检态势 (128家门店 · 512台冷链设备在线)</span>
+          </div>
+          <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--text-secondary); display:flex; gap:14px;">
+            <span>巡检轮次: <b style="color:var(--green)">28,800次/日</b></span>
+            <span>全网告警: <b style="color:var(--red)">1起异常闭环中 (S03店)</b></span>
+          </div>
+        </div>
+
+        <!-- Store Selector Tabs -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin-bottom:14px;">
+          <div style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px 12px; cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:#fff; font-size:12.5px;">S03 广州天河店</b>
+              <span style="background:rgba(239,68,68,0.3); color:#fca5a5; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;">1柜失温闭环中</span>
+            </div>
+            <div style="font-size:11px; color:#fca5a5; margin-top:3px;">纳管: 4台冷链设备 · 1起失温中</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:var(--text-secondary); font-size:12.5px;">S01 深圳科技园店</b>
+              <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 6台全部在线达标</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:var(--text-secondary); font-size:12.5px;">S02 广州珠江新城店</b>
+              <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 4台全部在线达标</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:var(--text-secondary); font-size:12.5px;">S04 佛山千灯湖店</b>
+              <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 5台全部在线达标</div>
+          </div>
+        </div>
+
+        <!-- Level 2: S03 Store 4-Device Fleet Cards -->
+        <div style="border-top:1px solid var(--border-subtle); padding-top:12px; margin-bottom:12px;">
+          <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:flex; justify-content:space-between;">
+            <span><b>S03 门店 4 台多温区冷链设备实时监控矩阵：</b></span>
+            <span style="font-size:11px; color:var(--text-muted);">Sentry 排除其余 511 台正常设备，锁定 1 号柜精准闭环</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px;">
+            <!-- Device 1: Target Abnormal -->
+            <div id="demo-dev1-card" style="background:#0f172a; border:2px solid var(--red); border-radius:8px; padding:10px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b style="color:#fff; font-size:12px;">1号鲜奶冷藏立风柜</b>
+                <span id="demo-dev1-badge" style="background:var(--red); color:#000; font-size:9.5px; font-weight:800; padding:1px 5px; border-radius:3px;">失温闭环中</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:6px; margin:4px 0;">
+                <span id="demo-dev1-temp" style="font-size:20px; font-weight:900; font-family:var(--font-mono); color:var(--red);">9.6°C</span>
+                <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">阈值: 2~8°C</span>
+              </div>
+              <div style="font-size:10.5px; color:var(--text-secondary);">资产: 鲜牛奶 (超温暴露累积)</div>
+              <div id="demo-dev1-state" style="font-size:10px; color:var(--red); font-family:var(--font-mono); margin-top:2px;">Sentry 巡检发现 · 遏制中</div>
+            </div>
+
+            <!-- Device 2: Freezer -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px; opacity:0.85;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b style="color:var(--text-secondary); font-size:12px;">2号冰淇淋冷冻岛柜</b>
+                <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:9.5px; padding:1px 5px; border-radius:3px;">正常</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:6px; margin:4px 0;">
+                <span style="font-size:20px; font-weight:900; font-family:var(--font-mono); color:var(--green);">-18.4°C</span>
+                <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">-22~-16°C</span>
+              </div>
+              <div style="font-size:10.5px; color:var(--text-muted);">资产: 冷冻品 / 冰淇淋</div>
+              <div style="font-size:10px; color:var(--green); font-family:var(--font-mono); margin-top:2px;">Sentry 巡检: 质控平稳</div>
+            </div>
+
+            <!-- Device 3: Hot Warmer -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px; opacity:0.85;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b style="color:var(--text-secondary); font-size:12px;">3号热食恒温包子柜</b>
+                <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:9.5px; padding:1px 5px; border-radius:3px;">正常</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:6px; margin:4px 0;">
+                <span style="font-size:20px; font-weight:900; font-family:var(--font-mono); color:#fcd34d;">62.5°C</span>
+                <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">60~68°C</span>
+              </div>
+              <div style="font-size:10.5px; color:var(--text-muted);">资产: 鲜包 / 熟食保温</div>
+              <div style="font-size:10px; color:var(--green); font-family:var(--font-mono); margin-top:2px;">Sentry 巡检: 恒温达标</div>
+            </div>
+
+            <!-- Device 4: Beverage Cooler -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px; opacity:0.85;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b style="color:var(--text-secondary); font-size:12px;">4号低温饮料风幕柜</b>
+                <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:9.5px; padding:1px 5px; border-radius:3px;">正常</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:6px; margin:4px 0;">
+                <span style="font-size:20px; font-weight:900; font-family:var(--font-mono); color:var(--green);">3.8°C</span>
+                <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">2~8°C</span>
+              </div>
+              <div style="font-size:10.5px; color:var(--text-muted);">资产: 低温果汁 / 酸奶</div>
+              <div style="font-size:10px; color:var(--green); font-family:var(--font-mono); margin-top:2px;">Sentry 巡检: 走廊居中</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 3: Animated Live Temperature Chart with Westgard QC -->
+        <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px;">
+            <span style="color:#fff; font-weight:600;">S03-1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (动态游标与红线阻断联动)</span>
+            <span style="font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary);">
+              超温暴露: <b id="demo-chart-exposure" style="color:var(--red);">42 min</b> · 资产判定: <b id="demo-chart-goods" style="color:var(--red);">UNSAFE 鲜奶变质阻断</b>
+            </span>
+          </div>
+          <div style="background:#030712; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px;">
+            <svg id="demo-temp-svg" viewBox="0 0 900 160" style="width:100%; height:auto; display:block; font-family:var(--font-mono);">
+              <defs>
+                <linearGradient id="d-safe-band" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.15"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
+                </linearGradient>
+                <linearGradient id="d-danger-zone" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ef4444" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#ef4444" stop-opacity="0.05"/>
+                </linearGradient>
+                <linearGradient id="d-curve" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#10b981"/>
+                  <stop offset="35%" stop-color="#f59e0b"/>
+                  <stop offset="60%" stop-color="#ef4444"/>
+                  <stop offset="85%" stop-color="#38bdf8"/>
+                  <stop offset="100%" stop-color="#10b981"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Safe Corridor (2.0°C - 8.0°C) -->
+              <rect x="70" y="48" width="810" height="60" fill="url(#d-safe-band)" rx="4"/>
+              <line x1="70" y1="48" x2="880" y2="48" stroke="#f87171" stroke-width="1.2" stroke-dasharray="4,4"/>
+              <text x="885" y="52" fill="#f87171" font-size="9" font-weight="700">8.0°C 告警上限</text>
+
+              <line x1="70" y1="38" x2="880" y2="38" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2,3"/>
+              <text x="885" y="41" fill="#fbbf24" font-size="8">Westgard +3SD (8.5°C)</text>
+
+              <line x1="70" y1="108" x2="880" y2="108" stroke="#34d399" stroke-width="1" stroke-dasharray="4,4"/>
+              <text x="885" y="112" fill="#34d399" font-size="9">2.0°C 下限</text>
+
+              <line x1="70" y1="88" x2="880" y2="88" stroke="#64748b" stroke-width="0.8" stroke-dasharray="2,4"/>
+              <text x="885" y="91" fill="#64748b" font-size="8">均值 Mean (4.2°C)</text>
+
+              <!-- Axes -->
+              <line x1="70" y1="15" x2="70" y2="135" stroke="#334155" stroke-width="1"/>
+              <line x1="70" y1="135" x2="880" y2="135" stroke="#334155" stroke-width="1"/>
+
+              <!-- Y Labels -->
+              <text x="62" y="32" fill="#94a3b8" font-size="9" text-anchor="end">10.0°C</text>
+              <text x="62" y="52" fill="#f87171" font-size="9" font-weight="700" text-anchor="end">8.0°C</text>
+              <text x="62" y="91" fill="#94a3b8" font-size="9" text-anchor="end">4.0°C</text>
+              <text x="62" y="112" fill="#34d399" font-size="9" text-anchor="end">2.0°C</text>
+
+              <!-- X Labels -->
+              <text x="80" y="148" fill="#64748b" font-size="9">08:20</text>
+              <text x="210" y="148" fill="#64748b" font-size="9">08:40</text>
+              <text x="350" y="148" fill="#64748b" font-size="9">09:00 (Sentry超温)</text>
+              <text x="490" y="148" fill="#64748b" font-size="9">09:15 (维修派单)</text>
+              <text x="630" y="148" fill="#64748b" font-size="9">09:35 (换件降温)</text>
+              <text x="780" y="148" fill="#64748b" font-size="9">09:50 (Auditor重查)</text>
+
+              <!-- Exposure Fill Area -->
+              <polygon id="demo-exposure-poly" points="260,48 260,48 630,48 630,48" fill="url(#d-danger-zone)" opacity="0"/>
+
+              <!-- Temperature Line -->
+              <path id="demo-temp-line" d="M 80 96 Q 160 94, 230 92 T 300 46 T 380 30 T 480 32 T 570 36 Q 620 40, 690 78 T 820 84" fill="none" stroke="url(#d-curve)" stroke-width="2.5"/>
+
+              <!-- Cursor -->
+              <g id="demo-temp-cursor" transform="translate(80, 96)">
+                <circle r="11" fill="#38bdf8" opacity="0.3" class="temp-pulse-beacon"/>
+                <circle r="4" fill="#38bdf8" stroke="#ffffff" stroke-width="1.8"/>
+                <rect x="-28" y="-22" width="56" height="16" rx="4" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+                <text id="demo-cursor-label" x="0" y="-11" fill="#38bdf8" font-size="9" font-weight="700" text-anchor="middle">3.4°C</text>
+              </g>
+
+              <!-- Badges -->
+              <g id="demo-badge-hold" transform="translate(340, 16)" opacity="0">
+                <rect width="130" height="18" rx="4" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
+                <text x="65" y="12" fill="#fef08a" font-size="9.5" font-weight="700" text-anchor="middle">🔒 Executor: 停售锁已下发</text>
+              </g>
+
+              <g id="demo-badge-block" transform="translate(660, 16)" opacity="0">
+                <rect width="180" height="18" rx="4" fill="#450a0a" stroke="#ef4444" stroke-width="1.2"/>
+                <text x="90" y="12" fill="#fca5a5" font-size="9.5" font-weight="700" text-anchor="middle">🛡️ Auditor: 鲜奶超温变质阻断放行!</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+
       <div class="stepper-steps">
         <div class="step-tab active" id="step-tab-0" onclick="goToStep(0)">
           <div class="step-num">STEP 1 · 00-10s</div>
@@ -1407,47 +1607,79 @@ const DEMO_STEPS = [
   {{
     step: 0,
     time: "00:00 - 00:10",
-    title: "1. Sentry 只读巡检发现失温异常",
-    desc: "Sentry 周期巡检发现冷柜 FROST-S03 温度在 40 分钟内由 3.4°C 飙升至 9.6°C（超出 8.0°C 安全红线）。经数据质量校验排除传感器断流与漂移，标记 critical 严重度，向 Orchestrator 发起紧急遏制请求。",
-    agent: "Sentry (巡检守卫 · L0 只读)",
+    title: "1. Sentry 全网巡检：锁定 S03 店 1号柜失温",
+    desc: "Sentry 并行轮询全网 128 店 512 台设备，自动校验时序数据质量并排除传感器断流与漂移。发现 S03 天河店 1号鲜奶柜温度从 3.4°C 飙升至 9.6°C（突破 Westgard +3SD 质控红线），标记 critical 严重度，向 Orchestrator 发起紧急遏制。",
+    agent: "Sentry (全网巡检守卫 · L0 只读)",
     skill: "anomaly-detect v1.0.0",
     mcp: "query_device_context",
     evidence: "EVID-DETECT-S03-20260828 (Hash: e9d9a4...)",
     trace: "trace-detect-fa4416ba",
+    temp: "9.6°C",
+    devState: "Sentry 发现失温 · 发起遏制",
+    badgeText: "失温闭环中",
+    exposure: "15 min",
+    goodsVerdict: "RISK (超温累积中)",
+    cursorX: 380,
+    cursorY: 30,
+    exposureOpacity: 0.35,
+    showHold: false,
+    showBlock: false,
     terminal: [
-      "[09:00:00] [Sentry] IOT_TELEMETRY: FROST-S03 current_temp=9.6°C (threshold=8.0°C, duration=42min)",
+      "[09:00:00] [Sentry] FLEET_POLL: 128 stores, 512 devices scanned (511 normal, 1 anomaly)",
+      "[09:00:00] [Sentry] S03-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
       "[09:00:01] [Sentry] INVOKE_SKILL: anomaly-detect (sensor_quality=good, suspect=false)",
       "[09:00:02] [Sentry] VERDICT: anomaly=True, severity=CRITICAL",
-      "[09:00:02] [Sentry] EMIT_REQUEST: request_containment(store_id='S03', device_id='FROST-S03')"
+      "[09:00:02] [Sentry] EMIT_REQUEST: request_containment(store_id='S03', device_id='FROST-01')"
     ]
   }},
   {{
     step: 1,
     time: "00:10 - 00:20",
-    title: "2. Executor 紧急执行销售阻断",
-    desc: "遵循'食品安全优先'原则，Executor 立即执行 L1 预授权动作 apply_sales_hold，对该冷柜内的 2 个商品批次（鲜牛奶、鲜肉熟食）下发 POS 停售锁，切断收银台结算，防止变质食品流向顾客。",
-    agent: "Executor (受控执行 · L1 预授权)",
-    skill: "work-order-dispatch (containment)",
-    mcp: "apply_sales_hold",
-    evidence: "EVID-HOLD-S03-001 (Hash: b2a773...)",
-    trace: "trace-hold-fa4416ba",
+    title: "2. S03 店 Executor 紧急停售遏制 (食品安全防线)",
+    desc: "食品安全第一！Orchestrator 调度 Executor 立即下发 L1 预授权操作 apply_sales_hold，通过 MCP 锁定 S03 店鲜奶（BATCH-001）与熟食（BATCH-002）2 个批次停售，切断收银结算，防止变质风险外溢；同时其余 511 台正常设备丝器官受影响。",
+    agent: "Executor (受控执行 · L1/L2 受控写)",
+    skill: "sales-containment v1.0.0",
+    mcp: "apply_sales_hold, query_inventory_batches",
+    evidence: "EVID-CONTAIN-S03-001 (Hold applied: 2 batches)",
+    trace: "trace-exec-fa4416ba",
+    temp: "9.6°C",
+    devState: "POS停售锁定 · 等待诊断",
+    badgeText: "已停售拦截",
+    exposure: "25 min",
+    goodsVerdict: "HOLD (已隔离封存)",
+    cursorX: 430,
+    cursorY: 32,
+    exposureOpacity: 0.55,
+    showHold: true,
+    showBlock: false,
     terminal: [
-      "[09:00:03] [Orchestrator] DISPATCH: Delegating containment to Executor",
-      "[09:00:04] [Executor] MCP_CALL: apply_sales_hold(batches=['BATCH-DAIRY-001', 'BATCH-FRESH-001'])",
-      "[09:00:05] [Executor] POS_GATEWAY: Broadcasted sales lock to store S03 cashiers",
-      "[09:00:05] [Executor] RESULT: 2/2 batches locked (state=HOLD_ACTIVE, risk_contained=True)"
+      "[09:00:03] [Orchestrator] DISPATCH: Phase -> CONTAINMENT (Agent: Executor)",
+      "[09:00:04] [Executor] MCP_CALL: query_inventory_batches(device_id='FROST-01')",
+      "[09:00:04] [Executor] FOUND: BATCH-DAIRY-001 (Milk), BATCH-FRESH-001 (Bento)",
+      "[09:00:05] [Executor] MCP_CALL: apply_sales_hold(batches=['BATCH-DAIRY-001','BATCH-FRESH-001'])",
+      "[09:00:05] [Executor] VERDICT: POS sale locked! Zero risk of customer checkout."
     ]
   }},
   {{
     step: 2,
     time: "00:20 - 00:30",
-    title: "3. Diagnoser 多源特征根因诊断",
-    desc: "Diagnoser 综合分析门磁状态、除霜加热丝电流与历史故障。排除柜门未关与除霜周期，锁定 Top-1 压缩机启闭故障（置信度 0.94）。同时调用批次风险评估，计算鲜奶已超温暴露，建议强制报损，熟食转移备用冷库。",
+    title: "3. Diagnoser 多源特征根因诊断与暴露评估",
+    desc: "Diagnoser 综合分析门磁状态、除霜加热丝电流与设备时序特征。排除柜门未关与除霜周期，锁定 Top-1 压缩机启闭故障（置信度 0.94）。同时调用批次风险评估，计算鲜奶已超温暴露，建议强制报损，熟食转移备用冷库。",
     agent: "Diagnoser (根因诊断 · L0 只读)",
     skill: "rootcause-drilldown / coldchain-risk-assess",
     mcp: "query_device_context, query_inventory_batches",
     evidence: "EVID-DIAG-S03-001 (Top-1: compressor_failure)",
     trace: "trace-diag-fa4416ba",
+    temp: "9.4°C",
+    devState: "诊断锁定: 压缩机启动电容",
+    badgeText: "排查完成",
+    exposure: "35 min",
+    goodsVerdict: "CRITICAL (暴露>30m)",
+    cursorX: 520,
+    cursorY: 34,
+    exposureOpacity: 0.75,
+    showHold: true,
+    showBlock: false,
     terminal: [
       "[09:00:06] [Diagnoser] SENSOR_ANALYSIS: Door=CLOSED (100%), Defrost=INACTIVE",
       "[09:00:07] [Diagnoser] HYPOTHESIS_RANK: 1. compressor_failure (0.94) | 2. refrigerant_leak (0.05)",
@@ -1458,47 +1690,77 @@ const DEMO_STEPS = [
   {{
     step: 3,
     time: "00:30 - 00:40",
-    title: "4. Executor 处置派单与 HITL 审批",
-    desc: "因维修预算超限（¥680）且鲜奶报损属高风险资产处置，系统触发 L2 人工审批流（HITL）。店长通过移动端完成两笔审批批准后，Executor 自动向驻场冷修服务商下发急修工单，维修工到场更换压缩机启动电容。",
+    title: "4. S03 店长移动端审批 (HITL) 与换件降温",
+    desc: "维修预算超限（¥680）且鲜奶报损属高风险资产处置，系统触发 L2 人工审批流（HITL）。S03 店长通过移动端完成两笔审批批准后，Executor 自动向驻场冷修服务商下发急修工单，维修工到场更换压缩机启动电容，冷柜迅速回落降温！",
     agent: "Executor + Human (HITL 审批流)",
     skill: "work-order-dispatch v1.0.0",
     mcp: "create_approval, create_workorder",
     evidence: "EVID-WO-REPAIR-8821 (Status: EXECUTED)",
     trace: "trace-exec-fa4416ba",
+    temp: "7.2°C",
+    devState: "技工换件完毕 · 降温中",
+    badgeText: "维保修复中",
+    exposure: "42 min",
+    goodsVerdict: "EXPOSURE_TERMINATED",
+    cursorX: 650,
+    cursorY: 65,
+    exposureOpacity: 0.85,
+    showHold: true,
+    showBlock: false,
     terminal: [
       "[09:01:00] [Executor] POLICY_GATE: Repair budget ¥680 requires HITL approval",
       "[09:02:00] [HITL] Approval ticket #APPR-01 APPROVED by StoreManager S03",
       "[09:02:05] [Executor] MCP_CALL: create_workorder(vendor='QuickColdService', code='COMP_CAPACITOR')",
-      "[09:05:00] [Vendor] Technician marked workorder as EXECUTED (parts replaced, compressor running)"
+      "[09:05:00] [Vendor] Technician marked workorder as EXECUTED (capacitor replaced, cooling restored!)"
     ]
   }},
   {{
     step: 4,
     time: "00:40 - 00:50",
-    title: "5. Auditor 独立稽核 (双重红线门禁)",
-    desc: "核心安全红线生效！维修后冷柜温度已降至 4.8°C（设备恢复）。但系统绝不信任执行者自证：Auditor 独立重查设备与商品事实，判定鲜奶已变质强制报损并维持停售；熟食转移冷库后符合安全标准解除停售。严禁错误放行！",
+    title: "5. Auditor 独立稽核 (双重红线高光阻断)",
+    desc: "核心安全红线生效！维修后冷柜温度已降至 4.8°C（设备完全恢复）。但系统绝不信任执行者自证：Auditor 独立重查设备与商品事实，判定鲜奶超标超温变质强制报损并维持停售；熟食转移冷库复验合格解除停售。严禁设备恢复直接放行变质商品！",
     agent: "Auditor (独立稽核 · 职责分离)",
     skill: "outcome-verify v1.1.0",
     mcp: "query_device_context, query_inventory_batches",
     evidence: "EVID-AUDIT-VERIFY-001 (Verdict: CONDITIONAL_RESOLVED)",
     trace: "trace-audit-fa4416ba",
+    temp: "4.8°C",
+    devState: "设备已恢复 · 鲜奶阻断!",
+    badgeText: "红线门禁拦截",
+    exposure: "42 min (违规)",
+    goodsVerdict: "UNSAFE (鲜奶已变质·阻断放行)",
+    cursorX: 740,
+    cursorY: 82,
+    exposureOpacity: 0.95,
+    showHold: true,
+    showBlock: true,
     terminal: [
-      "[09:06:00] [Auditor] INDEPENDENT_CHECK: Device temp=4.8°C -> PASS",
-      "[09:06:01] [Auditor] REDLINE_CHECK: BATCH-DAIRY-001 was >8°C for >30m -> DISPOSITION ENFORCED!",
-      "[09:06:02] [Auditor] RELEASE_GUARD: BATCH-DAIRY-001 CANNOT BE RELEASED! (Remain HOLD)",
+      "[09:06:00] [Auditor] INDEPENDENT_CHECK: Device temp=4.8°C (Cooling RECOVERED -> PASS)",
+      "[09:06:01] [Auditor] REDLINE_CHECK: BATCH-DAIRY-001 was >8°C for 42min (>30m limit!)",
+      "[09:06:02] [Auditor] RELEASE_GUARD: BATCH-DAIRY-001 CANNOT BE RELEASED! (Remain HOLD & SCRAP)",
       "[09:06:03] [Auditor] RELEASE_GUARD: BATCH-FRESH-001 Transfer confirmed -> RELEASE_PERMITTED"
     ]
   }},
   {{
     step: 5,
     time: "00:50 - 00:60",
-    title: "6. Orchestrator 复盘沉淀与事件关闭",
-    desc: "在确保变质鲜奶销毁、熟食转移、冷柜温控稳定后，Orchestrator 推进至 LEARN 阶段。Auditor 调用 review-report 生成结构化复盘报告，生成'冷柜启动电容老化早期温升特征'知识候选条目，完成闭环安全关闭。",
+    title: "6. Orchestrator 复盘沉淀与全网安全复归",
+    desc: "在确保变质鲜奶销毁报损、熟食转移、1 号柜温控持续平稳后，Orchestrator 推进至 LEARN 阶段。Auditor 调用 review-report 生成结构化复盘报告与知识候选条目，通过安全门禁后事件安全关闭，全网 512 台设备重归全绿守护！",
     agent: "Orchestrator + Auditor (复盘归档)",
     skill: "review-report v1.1.0",
     mcp: "IncidentService, search_knowledge",
     evidence: "EVID-REVIEW-LEARN-001 (State: CLOSED)",
     trace: "trace-learn-fa4416ba",
+    temp: "4.5°C",
+    devState: "闭环归档 · 恢复绿灯",
+    badgeText: "安全关闭",
+    exposure: "归档完毕",
+    goodsVerdict: "RESOLVED (变质销毁/熟食放行)",
+    cursorX: 820,
+    cursorY: 85,
+    exposureOpacity: 0.2,
+    showHold: false,
+    showBlock: false,
     terminal: [
       "[09:07:00] [Orchestrator] PHASE_TRANSITION: VERIFY -> LEARN",
       "[09:07:05] [Auditor] INVOKE_SKILL: review-report (Generated postmortem & knowledge candidate)",
@@ -1522,7 +1784,42 @@ function renderStep(idx) {{
     tab.classList.toggle('active', i === idx);
     tab.classList.toggle('completed', i < idx);
   }});
-  
+
+  // Update Fleet & Temperature Monitor in Demo
+  const dev1Temp = document.getElementById('demo-dev1-temp');
+  if (dev1Temp && data.temp) {{
+    dev1Temp.textContent = data.temp;
+    dev1Temp.style.color = (idx >= 4) ? 'var(--green)' : 'var(--red)';
+  }}
+  const dev1State = document.getElementById('demo-dev1-state');
+  if (dev1State && data.devState) dev1State.textContent = data.devState;
+  const dev1Badge = document.getElementById('demo-dev1-badge');
+  if (dev1Badge && data.badgeText) {{
+    dev1Badge.textContent = data.badgeText;
+    dev1Badge.style.background = (idx >= 4) ? 'var(--green)' : 'var(--red)';
+  }}
+  const chartExp = document.getElementById('demo-chart-exposure');
+  if (chartExp && data.exposure) chartExp.textContent = data.exposure;
+  const chartGoods = document.getElementById('demo-chart-goods');
+  if (chartGoods && data.goodsVerdict) {{
+    chartGoods.textContent = data.goodsVerdict;
+    chartGoods.style.color = (idx === 5) ? 'var(--green)' : 'var(--red)';
+  }}
+
+  // Update SVG Cursor and Badges
+  const cursor = document.getElementById('demo-temp-cursor');
+  if (cursor && data.cursorX) {{
+    cursor.setAttribute('transform', );
+    const cLabel = document.getElementById('demo-cursor-label');
+    if (cLabel) cLabel.textContent = data.temp;
+  }}
+  const poly = document.getElementById('demo-exposure-poly');
+  if (poly) poly.setAttribute('opacity', data.exposureOpacity || '0');
+  const bHold = document.getElementById('demo-badge-hold');
+  if (bHold) bHold.setAttribute('opacity', data.showHold ? '1' : '0');
+  const bBlock = document.getElementById('demo-badge-block');
+  if (bBlock) bBlock.setAttribute('opacity', data.showBlock ? '1' : '0');
+
   // Render details
   const container = document.getElementById('step-detail-container');
   container.innerHTML = `
