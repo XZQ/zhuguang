@@ -1031,7 +1031,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
           </h3>
           <a href="./architecture-flow.html" target="_blank" style="font-size: 12px; color: var(--cyan);">↗ 独立全屏打开</a>
         </div>
-        <iframe src="./architecture-flow.html" style="width: 100%; height: 760px; border: none; border-radius: 10px; background: transparent;"></iframe>
+        <iframe src="./architecture-flow.html" style="width: 100%; height: 940px; border: none; border-radius: 10px; background: transparent;"></iframe>
       </div>
 
       <div class="cluster-cards-grid" id="cluster-cards-container">
