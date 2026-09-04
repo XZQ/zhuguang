@@ -32,7 +32,7 @@ DOSSIER_HTML = """
               全屏独立大纲网页
             </a>
             <a href="./ppt/" target="_blank" class="demo-btn secondary" style="text-decoration:none; padding:8px 14px; font-size:12px; border-radius:8px; display:flex; align-items:center; gap:6px;">
-              📑 打开 15 页方案 PPT
+              📑 打开 12 页方案 PPT
             </a>
             <button onclick="switchMainTab('demo')" class="demo-btn secondary" style="padding:8px 14px; font-size:12px; border-radius:8px; display:flex; align-items:center; gap:6px;">
               ⚡️ 切回 1 分钟 Demo 演练
@@ -230,68 +230,290 @@ DOSSIER_HTML = """
         </div>
       </section>
 
-      <!-- CHAPTER 9: 3-MIN SPEECH (HIGH IMPACT) -->
-      <section id="d-ch9" style="background: linear-gradient(180deg, rgba(234,179,8,0.1) 0%, rgba(15,23,42,0.9) 100%); border: 1.5px solid #eab308; border-radius:14px; padding:20px; margin-bottom:20px; box-shadow: 0 0 20px rgba(234,179,8,0.15);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <h3 style="color:#fde047; font-size:18px; margin:0; display:flex; align-items:center; gap:8px;">
-            <span>★ 09</span> 【3 分钟项目陈述】终极实战逐字发言稿（掐秒精确到秒 · 答辩必背）
-          </h3>
-          <span style="font-size:12px; font-weight:700; color:#fde047; font-family:var(--font-mono);">配图：15 页 PPT 全屏翻页</span>
+      <!-- CHAPTER 9: 3-MIN SPEECH (HIGH IMPACT - 12 SLIDES STEP-BY-STEP) -->
+      <section id="d-ch9" style="background: linear-gradient(180deg, rgba(234,179,8,0.12) 0%, rgba(15,23,42,0.95) 100%); border: 1.5px solid #eab308; border-radius:14px; padding:22px; margin-bottom:24px; box-shadow: 0 0 25px rgba(234,179,8,0.18);">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="background:#eab308; color:#0f172a; font-size:11px; font-weight:900; padding:2px 8px; border-radius:4px;">答辩必背核心</span>
+              <h3 style="color:#fde047; font-size:19px; margin:0; font-weight:800;">
+                ★ 09 【3 分钟项目陈述】12 页 PPT 逐页掐秒口播逐字稿（180 秒严格分秒版）
+              </h3>
+            </div>
+            <p style="font-size:12.5px; color:#cbd5e1; margin-top:5px; margin-bottom:0;">
+              全屏打开 <a href="./ppt/" target="_blank" style="color:#38bdf8; text-decoration:underline;">/zhuguang/ppt/</a>，右手按方向键 [→] 翻页，手机/副屏对照此稿口播，分秒不差！
+            </p>
+          </div>
+          <span style="font-size:12px; font-weight:700; color:#fde047; background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:6px; border:1px solid rgba(253,224,71,0.3); font-family:var(--font-mono);">
+            总限时：180 秒（12 页，平均 15 秒/页）
+          </span>
         </div>
 
         <div style="space-y: 12px; font-size: 13px; line-height: 1.8;">
-          <div style="background:rgba(0,0,0,0.4); border-left:4px solid #eab308; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="color:#fde047; font-weight:700; font-size:12.5px; margin-bottom:4px;">
-              00:00 - 00:40（痛点聚焦 · 40秒 · PPT 第 1~3 页）
+          
+          <!-- P01 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P01 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【封面】逐光 · 店巡 Agent 异常闭环基础设施</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 00:00 - 00:10 (10秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“独立闭环”按 [→] 翻页</span>
+              </div>
             </div>
-            <div style="color:#f8fafc;">
-              “各位评委老师下午好！我是第 13 队逐光队，今天汇报的作品是面向连锁门店的物理异常闭环基础设施——<b>店巡 Agent</b>。<br>
-              在便利店冷链运维中，冷柜失温看似简单，但现有方案存在三个致命缺陷：<br>
-              第一，<b>告警风暴与假闭环</b>：传统监控只做单点硬报警，全网每天上千条告警让店员疲劳麻木，处置手段只有一个敷衍的‘标记已解决’，这是典型的‘告警已读，事故未消’；<br>
-              第二，<b>双重状态严重脱节</b>：<b>设备恢复不等于商品安全！</b>冷柜修好了、温度降回去了，但超温暴露超标的鲜牛奶依然已经变质；<br>
-              第三，<b>缺乏职责制衡</b>：派工、维修、验收常由同一人自验自放。<br>
-              因此，店巡 Agent 解决的不是单纯发告警，而是<b>让异常从发现、遏制、诊断，真正走向独立稽核与安全闭环</b>。”
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “各位评委老师下午好！我们是第 13 队‘逐光’，今天汇报的作品是面向连锁门店的物理异常闭环基础设施——<b>店巡 Agent</b>。<br>
+              在连锁冷链中，面对单柜失温等物理突发事件，我们的核心立意是：<b>先遏制风险，再诊断决策，最后基于客观证据实现独立闭环</b>。”
             </div>
-          </div>
-
-          <div style="background:rgba(0,0,0,0.4); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="color:#38bdf8; font-weight:700; font-size:12.5px; margin-bottom:4px;">
-              00:40 - 01:40（方案与多 Agent 协同 · 60秒 · PPT 第 4~8 页）
-            </div>
-            <div style="color:#f8fafc;">
-              “在架构设计上，我们基于赛道指定的 <b>AgentTeams v1.2.3</b> 基础设施，构建了 1 个 Team Leader + 5 个业务 Worker 的拓扑体系，坚持严格的<b>职责分离与权限隔离</b>：<br>
-              • <b>Orchestrator（总控编排）</b>：负责全局目标拆解与状态推进，只调度协调，没有任何领域写权限；<br>
-              • <b>Sentry（全网守卫 · 只读）</b>：以 30 秒周期并行巡检全网 128 店 512 台设备，引入 Westgard 质控法则时序去噪，精准锁定异常单柜，发起紧急遏制；<br>
-              • <b>Diagnoser（根因诊断 · 只读）</b>：排查门磁与除霜，锁定压缩机故障，同时积分计算每批次商品超温暴露时长；<br>
-              • <b>Executor（受控执行 · 受控写）</b>：下发 POS 停售锁、派发急修工单，全量写操作强制挂载幂等键；<br>
-              • <b>Auditor（独立稽核 · 核心红线守门员）</b>：<b>执行者不能自证成功！</b> Auditor 必须独立调用接口重查设备与商品双重事实，只要商品变质，坚决阻断放行或回开事件！”
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：PPT 封面居中大标题与副标“先遏制风险，再诊断决策，最后验证闭环”。
             </div>
           </div>
 
-          <div style="background:rgba(0,0,0,0.4); border-left:4px solid var(--green); padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="color:var(--green); font-weight:700; font-size:12.5px; margin-bottom:4px;">
-              01:40 - 02:20（技术亮点与安全边界 · 40秒 · PPT 第 9~12 页）
+          <!-- P02 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(234,179,8,0.25); border-left:4px solid #eab308; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#ca8a04; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P02 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【01·场景价值】总部运营要的不是告警，而是可安全放行的闭环</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 00:10 - 00:30 (20秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“完整证据链”按 [→] 翻页</span>
+              </div>
             </div>
-            <div style="color:#f8fafc;">
-              “在底层 Agent Infra 创新与安全防御上，我们重点构筑了三层防线：<br>
-              • <b>有状态业务中枢（IncidentService）</b>：定义了严格的五阶段业务状态机，支持大模型断线重连与故障原子恢复；<br>
-              • <b>高风险人机协同（HITL）</b>：维修预算超限或商品强制报损时，Policy 门禁自动拦截并挂起，推送店长移动端一键核准，杜绝模型越权；<br>
-              • <b>金融级防篡改审计</b>：在数据库底层剥夺 audit_log 的 UPDATE 和 DELETE 权限，保证全链路操作‘只增不改’，完美契合食品安全合规溯源。”
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “连锁门店缺的从来不是监控告警。传统系统每天数百条告警轰炸（例如某温盾系统 608 条警报），店长只能麻木点击‘标记已解决’，这是典型的假闭环！<br>
+              更致命的是：<b>设备修好了、温度降回去了，不等于商品没变质！</b>误放行会导致严重食安事故，错关会导致追责断链。<br>
+              总部运营要的从来不是通知推送，而是<b>能够证明‘可以安全放行’的完整证据链</b>。”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：左侧三大痛点、中间 4 类输入、右侧 OUTPUT + DONE 安全放行完成条件。
             </div>
           </div>
 
-          <div style="background:rgba(0,0,0,0.4); border-left:4px solid #a78bfa; padding:12px 16px; border-radius:0 8px 8px 0;">
-            <div style="color:#a78bfa; font-weight:700; font-size:12.5px; margin-bottom:4px;">
-              02:20 - 03:00（可验证价值与规模化复制 · 40秒 · PPT 第 13~15 页）
+          <!-- P03 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P03 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【02·系统架构】一个业务核心，两套可验证运行底座</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 00:30 - 00:48 (18秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“动态协同”按 [→] 翻页</span>
+              </div>
             </div>
-            <div style="color:#f8fafc;">
-              “逐光项目拒绝空洞的概念设计，所有能力均已在生产级环境中严密验证：<br>
-              • <b>真实生产集群</b>：部署于广州 Linux 服务器，接入阿里百炼 qwen3.8-max，通过 Matrix 协议驱动实机多 Worker；<br>
-              • <b>确定性证据链</b>：内置 87 个自动化测试用例，覆盖 6 大正常与对抗场景，沉淀了 45 份不可篡改的 Evidence 证据包和 26 条 Trace 链路，违规放行率为 0；<br>
-              • <b>广泛的复用能力</b>：规范治理 6 大核心 P0 Skill，不仅能管便利店冷柜，更能无缝迁移至<b>医药疫苗冷链、中央厨房 HACCP 品控与数据中心动环</b>！<br>
-              下面进入 1 分钟实机协同 Demo 演示！”
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “为此，逐光构筑了‘一个业务核心，两套运行底座’：<br>
+              底层由 <b>IncidentService 状态机</b>提供全局唯一的单一事实源；<br>
+              在本地端，采用 SQLite 和固定随机种子，保证评测 100% 确定性复现、零外部依赖；<br>
+              在云端，无缝对接赛道指定的 <b>AgentTeams 平台与 PolarDB</b>，支撑 1 Manager + 5 Agent 生产级多 Worker 动态协同。”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：中间黑色卡片 SINGLE SOURCE OF TRUTH，连接左右 SQLite 本地底座与 AgentTeams 云端底座。
             </div>
           </div>
+
+          <!-- P04 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(16,185,129,0.25); border-left:4px solid #10b981; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#059669; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P04 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【03·五 Agent 职责】五个角色，不共享“宣布成功”的权力</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 00:48 - 01:06 (18秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“独立稽核”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “在多 Agent 协同上，我们践行最小权限与职责分离原则，划分 5 个角色，<b>绝不共享‘宣布成功’的权力</b>：<br>
+              • <b>Orchestrator</b> 仅调度协调，无领域写权；<br>
+              • <b>Sentry</b> 只读巡检全网设备与时序去噪；<br>
+              • <b>Diagnoser</b> 积分计算商品暴露风险与 Top-K 假设；<br>
+              • <b>Executor</b> 受控执行 POS 停售锁与急修工单；<br>
+              • <b>Auditor</b> 是核心守门员——<b>执行者绝不能自证成功</b>，必须由 Auditor 独立稽核！”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：五列角色并排，特别强调最右侧 05 INDEPENDENT Auditor 的独立守卫地位。
+            </div>
+          </div>
+
+          <!-- P05 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P05 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【04·五阶段闭环】从异常到关闭，每一步都有拒绝条件</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 01:06 - 01:22 (16秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“沉淀知识复盘”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “业务状态机分为严密的五阶段，每一步都有严苛拒绝条件：<br>
+              第一步‘发现与遏制’，首要动作不是报修，而是<b>立即在 POS 端下发停售锁保安全</b>；<br>
+              随后完成诊断与审批，派工维修；<br>
+              维修完成后进入第四步‘独立验证’，由 Auditor <b>核验温度恢复与商品批次双重事实</b>，才允许解除停售；最后沉淀知识复盘。”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：横向 5 步流程卡片（01 DETECT → 02 DIAGNOSE → 03 EXECUTE → 04 VERIFY → 05 LEARN）。
+            </div>
+          </div>
+
+          <!-- P06 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(239,68,68,0.25); border-left:4px solid #ef4444; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#b91c1c; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P06 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【05·六场景门禁】三条安全关闭，三条安全不关闭</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 01:22 - 01:40 (18秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“绝不盲目关闭”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “在评测设计上，我们视<b>‘失败为一等公民’</b>，落地‘三条安全关闭，三条安全不关闭’：<br>
+              场景 A 压缩机故障经双重验证后安全放行；场景 B 传感器误报通过 Westgard 质控降权与人工核验放行；<br>
+              而场景 D 审批超时、场景 E 温度恢复但鲜奶变质、场景 F 接口 partial，系统坚决保持阻断与遏制状态，<b>宁可升级人工，绝不盲目关闭！</b>”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：6 宫格卡片，对比上方绿色 CLOSED 与下方灰色 CONTAINED / BLOCKED 的鲜明反差。
+            </div>
+          </div>
+
+          <!-- P07 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P07 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【06·Skill 工程】六个 P0 Skill 进入版本化 Registry 与 Worker ZIP</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 01:40 - 01:55 (15秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“热插拔标准”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “在 Infra 规范性上，我们封装治理了 6 个核心 P0 Skill，全部具备 SemVer 语义化版本、输入输出 JSON Schema 强类型约束以及负向异常反例。<br>
+              所有 Skill 已通过自动化流水线打包装入 Worker ZIP，通过了本地与平台静态契约校验，完全符合平台生产分发与热插拔标准。”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：左侧 6 个版本化 Skill 条目与右侧 REGISTRY + PACKAGE 规范。
+            </div>
+          </div>
+
+          <!-- P08 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(234,179,8,0.25); border-left:4px solid #eab308; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#ca8a04; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P08 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【07·MCP 与安全】先重查事实 再决定动作</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 01:55 - 02:10 (15秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“永久拉黑”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “在工具集成上，我们实现了 15 个 MCP 工具，强制遵循<b>‘先重查事实，再决定动作’</b>。<br>
+              系统设立四道安全闸：通过 Policy 拦截越权、写操作强加 Client-Token 幂等键、在 DB 底层剥夺审计修改权；<br>
+              审批与人工证据录入仅开放给人类，而资金支付对所有 Agent 永久拉黑！”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：左侧 5 P0 Queries 事实重查清单，右侧可逆、跨系统与不可逆操作分类与红线禁令。
+            </div>
+          </div>
+
+          <!-- P09 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(16,185,129,0.25); border-left:4px solid #10b981; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#059669; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P09 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【08·评测证据】所有本地 P0 门禁通过，口径可追溯</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 02:10 - 02:26 (16秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“架构的必要性”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “用数据说话：在本地评测门禁中，6 大场景 100% 确定性通过，产出 45 份哈希校验的 Evidence 证据包与 26 段完整 Trace，违规放行率为零！<br>
+              消融实验更证实：<b>去掉 Auditor 独立稽核，将有 5 个失败场景被错误放行</b>，直接量化证明了多 Agent 架构的必要性！”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：四大核心数字（6/6 场景、45/45 证据、26/26 Trace、0 违规），底部 Ablation 消融数据。
+            </div>
+          </div>
+
+          <!-- P10 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(239,68,68,0.25); border-left:4px solid #ef4444; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#b91c1c; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P10 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【09·初赛反馈落地】反馈不写成口号，逐项落到可验证改造</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 02:26 - 02:40 (14秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“环境兜底”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “初赛评委的每一条宝贵建议，我们都落地为了可运行的代码（如幻灯片红色列所示）：<br>
+              我们将冷柜立为唯一主线做透闭环；通过 Auditor 证伪了单 Agent 自验缺陷；所有工程声明都有 87 个本地测试与 Docker 环境兜底，拒绝口号化。”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：标红的整改列（聚焦主线、多 Agent 增益、复现证据）。
+            </div>
+          </div>
+
+          <!-- P11 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P11 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【10·复制路径】复制的不是冷柜规则，而是“证据闭环控制面”</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 02:40 - 02:52 (12秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“IDC 动环”按 [→] 翻页</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “逐光沉淀的不是冷柜的死规则，而是一套通用的‘证据闭环控制面’。<br>
+              只要替换领域契约与工具，这套体系可直接复用到连锁餐饮中央厨房、工业设备预防性维护，乃至<b>生物医药疫苗冷链 (GSP) 与智算中心 IDC 动环</b>！”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>画面焦点</b>：左侧黑色沉淀控制面，右侧 PATH A 与 PATH B 迁移路径，底部拓展领域。
+            </div>
+          </div>
+
+          <!-- P12 -->
+          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(167,139,250,0.25); border-left:4px solid #a78bfa; padding:12px 16px; border-radius:0 8px 8px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="background:#7c3aed; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P12 / 12</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【11·交付边界与总结】事件只有在证据闭环后才能关闭</span>
+              </div>
+              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
+                <span style="color:#38bdf8; font-weight:700;">⏱ 02:52 - 03:00 (8秒)</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完致谢，投屏切至指挥中心</span>
+              </div>
+            </div>
+            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
+              “最后重申逐光的第一性原理：<b>‘温度恢复不等于商品安全，Agent 的完成声明绝不等于业务事实！’</b><br>
+              逐光只做证据闭环。汇报完毕，感谢各位评委，请老师们批评指正！”
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8;">
+              👀 <b>动作配合</b>：致谢鞠躬，切到浏览器标签页 2（指挥中心 `https://mazhi.icu/zhuguang/`），准备随时现场点触演练。
+            </div>
+          </div>
+
         </div>
       </section>
 
