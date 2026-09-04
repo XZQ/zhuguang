@@ -634,9 +634,9 @@ def update():
     # 1. Replace the iframe in build_delivery_portal.py with DOSSIER_HTML
     text = BUILD_SCRIPT.read_text(encoding="utf-8")
     
-    # Locate section id="view-dossier"
-    pattern = r'<section id="view-dossier" class="view-section">.*?</section>'
-    new_section = f'<section id="view-dossier" class="view-section">\n{DOSSIER_HTML}\n  </section>'
+    # Locate section id="view-dossier" all the way to <!-- Footer -->
+    pattern = r'<section id="view-dossier" class="view-section">.*?(?=\s*<!-- Footer -->)'
+    new_section = f'<section id="view-dossier" class="view-section">\n{DOSSIER_HTML}\n  </section>\n\n'
     
     text = re.sub(pattern, new_section, text, flags=re.DOTALL)
     BUILD_SCRIPT.write_text(text, encoding="utf-8")
