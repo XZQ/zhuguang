@@ -445,6 +445,20 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
 .step-tab.completed {{
   border-color: var(--green);
 }}
+.fleet-card-clickable {{
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}}
+.fleet-card-clickable:hover {{
+  border-color: var(--cyan) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+}}
+.fleet-card-clickable.active-target {{
+  border-color: var(--cyan) !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.5) !important;
+}}
 .step-tab .step-num {{
   font-family: var(--font-mono);
   font-size: 10.5px;
@@ -983,28 +997,28 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
 
         <!-- Store Selector Tabs -->
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin-bottom:14px;">
-          <div id="demo-store-s03" style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px 12px; cursor:pointer; transition:all 0.3s ease;">
+          <div id="demo-store-s03" class="fleet-card-clickable active-target" onclick="selectFleetTarget('s03-1')" style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px 12px; cursor:pointer; transition:all 0.3s ease;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <b style="color:#fff; font-size:12.5px;">S03 广州天河店</b>
               <span id="demo-store-s03-badge" style="background:rgba(239,68,68,0.3); color:#fca5a5; font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;">1柜失温闭环中</span>
             </div>
             <div id="demo-store-s03-desc" style="font-size:11px; color:#fca5a5; margin-top:3px;">纳管: 4台冷链设备 · 1起失温中</div>
           </div>
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
+          <div id="demo-store-s01" class="fleet-card-clickable" onclick="selectFleetTarget('s01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <b style="color:var(--text-secondary); font-size:12.5px;">S01 深圳科技园店</b>
               <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
             </div>
             <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 6台全部在线达标</div>
           </div>
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
+          <div id="demo-store-s02" class="fleet-card-clickable" onclick="selectFleetTarget('s02')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <b style="color:var(--text-secondary); font-size:12.5px;">S02 广州珠江新城店</b>
               <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
             </div>
             <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 4台全部在线达标</div>
           </div>
-          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; opacity:0.8;">
+          <div id="demo-store-s04" class="fleet-card-clickable" onclick="selectFleetTarget('s04')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <b style="color:var(--text-secondary); font-size:12.5px;">S04 佛山千灯湖店</b>
               <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
@@ -1015,13 +1029,13 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
 
         <!-- Level 2: S03 Store 4-Device Fleet Cards -->
         <div style="border-top:1px solid var(--border-subtle); padding-top:12px; margin-bottom:12px;">
-          <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:flex; justify-content:space-between;">
-            <span><b>S03 门店 4 台多温区冷链设备实时监控矩阵：</b></span>
+          <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <span><b>S03 门店 4 台多温区冷链设备实时监控矩阵：</b> <span style="font-size:11px; color:#38bdf8; font-weight:400;">(🖱️ 点击任意门店或设备卡片，可即时切换查看其温控质控时序)</span></span>
             <span style="font-size:11px; color:var(--text-muted);">Sentry 排除其余 511 台正常设备，锁定 1 号柜精准闭环</span>
           </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px;">
             <!-- Device 1: Target Abnormal -->
-            <div id="demo-dev1-card" style="background:#0f172a; border:2px solid var(--red); border-radius:8px; padding:10px; position:relative;">
+            <div id="demo-dev1-card" class="fleet-card-clickable active-target" onclick="selectFleetTarget('s03-1')" style="background:#0f172a; border:2px solid var(--red); border-radius:8px; padding:10px; position:relative;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <b style="color:#fff; font-size:12px;">1号鲜奶冷藏立风柜</b>
                 <span id="demo-dev1-badge" style="background:var(--red); color:#000; font-size:9.5px; font-weight:800; padding:1px 5px; border-radius:3px;">失温闭环中</span>
@@ -1035,7 +1049,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             </div>
 
             <!-- Device 2: Freezer -->
-            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px; opacity:0.85;">
+            <div id="demo-dev2-card" class="fleet-card-clickable" onclick="selectFleetTarget('s03-2')" style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <b style="color:var(--text-secondary); font-size:12px;">2号冰淇淋冷冻岛柜</b>
                 <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:9.5px; padding:1px 5px; border-radius:3px;">正常</span>
@@ -1049,7 +1063,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             </div>
 
             <!-- Device 3: Hot Warmer -->
-            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px; opacity:0.85;">
+            <div id="demo-dev3-card" class="fleet-card-clickable" onclick="selectFleetTarget('s03-3')" style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <b style="color:var(--text-secondary); font-size:12px;">3号热食恒温包子柜</b>
                 <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:9.5px; padding:1px 5px; border-radius:3px;">正常</span>
@@ -1063,7 +1077,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             </div>
 
             <!-- Device 4: Beverage Cooler -->
-            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px; opacity:0.85;">
+            <div id="demo-dev4-card" class="fleet-card-clickable" onclick="selectFleetTarget('s03-4')" style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:10px;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <b style="color:var(--text-secondary); font-size:12px;">4号低温饮料风幕柜</b>
                 <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:9.5px; padding:1px 5px; border-radius:3px;">正常</span>
@@ -1080,9 +1094,14 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
 
         <!-- Level 3: Animated Live Temperature Chart with Westgard QC -->
         <div style="border-top:1px solid var(--border-subtle); padding-top:10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px;">
-            <span style="color:#fff; font-weight:600;">S03-1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (动态游标与红线阻断联动)</span>
-            <span style="font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="demo-chart-title" style="color:#fff; font-weight:700;">S03-1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (动态游标与红线阻断联动)</span>
+              <button id="demo-btn-switch-back" onclick="selectFleetTarget('s03-1')" style="display:none; background:#78350f; color:#fef08a; border:1px solid #f59e0b; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px; cursor:pointer;">
+                ⚡️ 切回 S03-1 异常演练
+              </button>
+            </div>
+            <span id="demo-chart-status-meta" style="font-family:var(--font-mono); font-size:11.5px; color:var(--text-secondary);">
               超温暴露: <b id="demo-chart-exposure" style="color:var(--red);">42 min</b> · 资产判定: <b id="demo-chart-goods" style="color:var(--red);">UNSAFE 鲜奶变质阻断</b>
             </span>
           </div>
@@ -1107,36 +1126,36 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
               </defs>
 
               <!-- Safe Corridor (2.0°C - 8.0°C) -->
-              <rect x="70" y="48" width="810" height="60" fill="url(#d-safe-band)" rx="4"/>
-              <line x1="70" y1="48" x2="880" y2="48" stroke="#f87171" stroke-width="1.2" stroke-dasharray="4,4"/>
-              <text x="885" y="52" fill="#f87171" font-size="9" font-weight="700">8.0°C 告警上限</text>
+              <rect id="demo-safe-band-rect" x="70" y="48" width="810" height="60" fill="url(#d-safe-band)" rx="4"/>
+              <line id="demo-line-upper" x1="70" y1="48" x2="880" y2="48" stroke="#f87171" stroke-width="1.2" stroke-dasharray="4,4"/>
+              <text id="demo-text-upper" x="885" y="52" fill="#f87171" font-size="9" font-weight="700">8.0°C 告警上限</text>
 
-              <line x1="70" y1="38" x2="880" y2="38" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2,3"/>
-              <text x="885" y="41" fill="#fbbf24" font-size="8">Westgard +3SD (8.5°C)</text>
+              <line id="demo-line-westgard" x1="70" y1="38" x2="880" y2="38" stroke="#fbbf24" stroke-width="1" stroke-dasharray="2,3"/>
+              <text id="demo-text-westgard" x="885" y="41" fill="#fbbf24" font-size="8">Westgard +3SD (8.5°C)</text>
 
-              <line x1="70" y1="108" x2="880" y2="108" stroke="#34d399" stroke-width="1" stroke-dasharray="4,4"/>
-              <text x="885" y="112" fill="#34d399" font-size="9">2.0°C 下限</text>
+              <line id="demo-line-lower" x1="70" y1="108" x2="880" y2="108" stroke="#34d399" stroke-width="1" stroke-dasharray="4,4"/>
+              <text id="demo-text-lower" x="885" y="112" fill="#34d399" font-size="9">2.0°C 下限</text>
 
-              <line x1="70" y1="88" x2="880" y2="88" stroke="#64748b" stroke-width="0.8" stroke-dasharray="2,4"/>
-              <text x="885" y="91" fill="#64748b" font-size="8">均值 Mean (4.2°C)</text>
+              <line id="demo-line-mean" x1="70" y1="88" x2="880" y2="88" stroke="#64748b" stroke-width="0.8" stroke-dasharray="2,4"/>
+              <text id="demo-text-mean" x="885" y="91" fill="#64748b" font-size="8">均值 Mean (4.2°C)</text>
 
               <!-- Axes -->
               <line x1="70" y1="15" x2="70" y2="135" stroke="#334155" stroke-width="1"/>
               <line x1="70" y1="135" x2="880" y2="135" stroke="#334155" stroke-width="1"/>
 
               <!-- Y Labels -->
-              <text x="62" y="32" fill="#94a3b8" font-size="9" text-anchor="end">10.0°C</text>
-              <text x="62" y="52" fill="#f87171" font-size="9" font-weight="700" text-anchor="end">8.0°C</text>
-              <text x="62" y="91" fill="#94a3b8" font-size="9" text-anchor="end">4.0°C</text>
-              <text x="62" y="112" fill="#34d399" font-size="9" text-anchor="end">2.0°C</text>
+              <text id="demo-y1" x="62" y="32" fill="#94a3b8" font-size="9" text-anchor="end">10.0°C</text>
+              <text id="demo-y2" x="62" y="52" fill="#f87171" font-size="9" font-weight="700" text-anchor="end">8.0°C</text>
+              <text id="demo-y3" x="62" y="91" fill="#94a3b8" font-size="9" text-anchor="end">4.0°C</text>
+              <text id="demo-y4" x="62" y="112" fill="#34d399" font-size="9" text-anchor="end">2.0°C</text>
 
               <!-- X Labels -->
-              <text x="80" y="148" fill="#64748b" font-size="9">08:20</text>
-              <text x="210" y="148" fill="#64748b" font-size="9">08:40</text>
-              <text x="350" y="148" fill="#64748b" font-size="9">09:00 (Sentry超温)</text>
-              <text x="490" y="148" fill="#64748b" font-size="9">09:15 (维修派单)</text>
-              <text x="630" y="148" fill="#64748b" font-size="9">09:35 (换件降温)</text>
-              <text x="780" y="148" fill="#64748b" font-size="9">09:50 (Auditor重查)</text>
+              <text id="demo-x1" x="80" y="148" fill="#64748b" font-size="9">08:20</text>
+              <text id="demo-x2" x="210" y="148" fill="#64748b" font-size="9">08:40</text>
+              <text id="demo-x3" x="350" y="148" fill="#64748b" font-size="9">09:00 (Sentry超温)</text>
+              <text id="demo-x4" x="490" y="148" fill="#64748b" font-size="9">09:15 (维修派单)</text>
+              <text id="demo-x5" x="630" y="148" fill="#64748b" font-size="9">09:35 (换件降温)</text>
+              <text id="demo-x6" x="780" y="148" fill="#64748b" font-size="9">09:50 (Auditor重查)</text>
 
               <!-- Exposure Fill Area -->
               <polygon id="demo-exposure-poly" points="260,48 260,48 630,48 630,48" fill="url(#d-danger-zone)" opacity="0"/>
@@ -2411,8 +2430,300 @@ let currentStep = 0;
 let isPlaying = false;
 let timerInterval = null;
 let secondsLeft = 60;
+let currentTargetKey = 's03-1';
+
+const FLEET_TARGETS = {{
+  's03-1': {{
+    cardId: 'demo-dev1-card',
+    title: 'S03-1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (动态游标与红线阻断联动)',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '38', wgTextY: '41', wgText: 'Westgard +3SD (8.5°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '88', meanTextY: '91', meanText: '均值 Mean (4.2°C)',
+    yLabels: [
+      {{ text: '10.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '8.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '4.0°C', y: '91', fill: '#94a3b8' }},
+      {{ text: '2.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry超温)', '09:15 (维修派单)', '09:35 (换件降温)', '09:50 (Auditor重查)'],
+    linePath: 'M 80 96 Q 160 94, 230 92 T 300 46 T 380 30 T 480 32 T 570 36 Q 620 40, 690 78 T 820 84',
+    lineStroke: 'url(#d-curve)'
+  }},
+  's01': {{
+    cardId: 'demo-store-s01',
+    title: 'S01 深圳科技园旗舰店 · 全店 6 台冷链设备温控与质控时序 (稳定受控)',
+    metaHtml: '门店状态: <b style="color:var(--green)">全绿达标 (6/6)</b> · 均值: <b style="color:var(--green)">3.6°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 72h 零超温',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '58', wgTextY: '61', wgText: 'Westgard +3SD (6.8°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '92', meanTextY: '95', meanText: '均值 Mean (3.6°C)',
+    yLabels: [
+      {{ text: '10.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '8.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '4.0°C', y: '91', fill: '#94a3b8' }},
+      {{ text: '2.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)'],
+    linePath: 'M 80 93 C 140 88, 200 96, 260 92 C 320 89, 380 95, 440 91 C 500 87, 560 94, 620 90 C 680 88, 740 95, 820 92',
+    lineStroke: '#10b981',
+    cursorX: 820, cursorY: 92, cursorTemp: '3.6°C'
+  }},
+  's02': {{
+    cardId: 'demo-store-s02',
+    title: 'S02 广州珠江新城店 · 全店 4 台冷链设备温控与质控时序 (稳定受控)',
+    metaHtml: '门店状态: <b style="color:var(--green)">全绿达标 (4/4)</b> · 均值: <b style="color:var(--green)">4.1°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 48h 零超温',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '56', wgTextY: '59', wgText: 'Westgard +3SD (7.1°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '89', meanTextY: '92', meanText: '均值 Mean (4.1°C)',
+    yLabels: [
+      {{ text: '10.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '8.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '4.0°C', y: '91', fill: '#94a3b8' }},
+      {{ text: '2.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)'],
+    linePath: 'M 80 89 C 140 94, 200 86, 260 90 C 320 93, 380 85, 440 88 C 500 92, 560 86, 620 89 C 680 93, 740 87, 820 89',
+    lineStroke: '#10b981',
+    cursorX: 820, cursorY: 89, cursorTemp: '4.1°C'
+  }},
+  's04': {{
+    cardId: 'demo-store-s04',
+    title: 'S04 佛山千灯湖店 · 全店 5 台冷链设备温控与质控时序 (稳定受控)',
+    metaHtml: '门店状态: <b style="color:var(--green)">全绿达标 (5/5)</b> · 均值: <b style="color:var(--green)">3.9°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 96h 零超温',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '57', wgTextY: '60', wgText: 'Westgard +3SD (6.9°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '90', meanTextY: '93', meanText: '均值 Mean (3.9°C)',
+    yLabels: [
+      {{ text: '10.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '8.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '4.0°C', y: '91', fill: '#94a3b8' }},
+      {{ text: '2.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)'],
+    linePath: 'M 80 91 C 140 87, 200 93, 260 89 C 320 86, 380 94, 440 89 C 500 88, 560 92, 620 89 C 680 87, 740 93, 820 90',
+    lineStroke: '#10b981',
+    cursorX: 820, cursorY: 90, cursorTemp: '3.9°C'
+  }},
+  's03-2': {{
+    cardId: 'demo-dev2-card',
+    title: 'S03-2号冰淇淋冷冻岛柜 实时时序与 Westgard 质控曲线 (稳定受控)',
+    metaHtml: '温区: <b style="color:var(--green)">深冷冷冻区 (-22°C ~ -16°C)</b> · 当前: <b style="color:var(--green)">-18.4°C</b> · 均值: <b style="color:var(--green)">-18.5°C</b> · 质控: <b style="color:var(--green)">1-3s 正常</b>',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '-16.0°C 告警上限',
+    wgY: '52', wgTextY: '55', wgText: 'Westgard +3SD (-16.5°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '-22.0°C 下限',
+    meanY: '73', meanTextY: '76', meanText: '均值 Mean (-18.5°C)',
+    yLabels: [
+      {{ text: '-14.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '-16.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '-19.0°C', y: '78', fill: '#94a3b8' }},
+      {{ text: '-22.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (深冷平稳)'],
+    linePath: 'M 80 73 C 140 70, 200 76, 260 72 C 320 75, 380 69, 440 74 C 500 71, 560 76, 620 73 C 680 70, 740 75, 820 73',
+    lineStroke: '#38bdf8',
+    cursorX: 820, cursorY: 73, cursorTemp: '-18.4°C'
+  }},
+  's03-3': {{
+    cardId: 'demo-dev3-card',
+    title: 'S03-3号热食恒温包子柜 实时时序与 Westgard 质控曲线 (稳定受控)',
+    metaHtml: '温区: <b style="color:#fcd34d">热食恒温区 (60°C ~ 68°C)</b> · 当前: <b style="color:#fcd34d">62.5°C</b> · 均值: <b style="color:#fcd34d">63.0°C</b> · 质控: <b style="color:var(--green)">1-3s 正常</b>',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '68.0°C 上限',
+    wgY: '54', wgTextY: '57', wgText: 'Westgard +3SD (67.0°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '60.0°C 下限',
+    meanY: '88', meanTextY: '91', meanText: '均值 Mean (63.0°C)',
+    yLabels: [
+      {{ text: '70.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '68.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '64.0°C', y: '84', fill: '#94a3b8' }},
+      {{ text: '60.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (恒温平稳)'],
+    linePath: 'M 80 87 C 140 85, 200 90, 260 86 C 320 89, 380 84, 440 87 C 500 85, 560 89, 620 88 C 680 86, 740 90, 820 88',
+    lineStroke: '#f59e0b',
+    cursorX: 820, cursorY: 88, cursorTemp: '62.5°C'
+  }},
+  's03-4': {{
+    cardId: 'demo-dev4-card',
+    title: 'S03-4号低温饮料风幕柜 实时时序与 Westgard 质控曲线 (稳定受控)',
+    metaHtml: '温区: <b style="color:var(--green)">冷藏饮品区 (2.0°C ~ 8.0°C)</b> · 当前: <b style="color:var(--green)">3.8°C</b> · 均值: <b style="color:var(--green)">3.8°C</b> · 质控: <b style="color:var(--green)">1-3s 正常</b>',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '58', wgTextY: '61', wgText: 'Westgard +3SD (6.8°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '90', meanTextY: '93', meanText: '均值 Mean (3.8°C)',
+    yLabels: [
+      {{ text: '10.0°C', y: '32', fill: '#94a3b8' }},
+      {{ text: '8.0°C', y: '52', fill: '#f87171' }},
+      {{ text: '4.0°C', y: '91', fill: '#94a3b8' }},
+      {{ text: '2.0°C', y: '112', fill: '#34d399' }}
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)'],
+    linePath: 'M 80 90 C 140 88, 200 92, 260 89 C 320 91, 380 87, 440 90 C 500 88, 560 92, 620 89 C 680 88, 740 91, 820 90',
+    lineStroke: '#10b981',
+    cursorX: 820, cursorY: 90, cursorTemp: '3.8°C'
+  }}
+}};
+
+function selectFleetTarget(key) {{
+  currentTargetKey = key;
+  const target = FLEET_TARGETS[key];
+  if (!target) return;
+
+  // Update card active classes
+  document.querySelectorAll('.fleet-card-clickable').forEach(el => el.classList.remove('active-target'));
+  
+  if (key === 's03-1') {{
+    const s03 = document.getElementById('demo-store-s03');
+    const dev1 = document.getElementById('demo-dev1-card');
+    if (s03) s03.classList.add('active-target');
+    if (dev1) dev1.classList.add('active-target');
+  }} else {{
+    const targetEl = document.getElementById(target.cardId);
+    if (targetEl) targetEl.classList.add('active-target');
+  }}
+  
+  // Switch back button visibility
+  const switchBackBtn = document.getElementById('demo-btn-switch-back');
+  if (switchBackBtn) {{
+    switchBackBtn.style.display = (key === 's03-1') ? 'none' : 'inline-block';
+  }}
+  
+  // Title & Status Meta
+  const titleEl = document.getElementById('demo-chart-title');
+  if (titleEl) titleEl.textContent = target.title;
+  
+  const metaEl = document.getElementById('demo-chart-status-meta');
+  if (metaEl) {{
+    if (key === 's03-1') {{
+      const stepData = DEMO_STEPS[currentStep];
+      metaEl.innerHTML = `超温暴露: <b id="demo-chart-exposure" style="color:var(--red);">${{stepData.exposure}}</b> · 资产判定: <b id="demo-chart-goods" style="color:${{currentStep === 5 ? 'var(--green)' : 'var(--red)'}};">${{stepData.goodsVerdict}}</b>`;
+    }} else {{
+      metaEl.innerHTML = target.metaHtml;
+    }}
+  }}
+  
+  // Corridor & Threshold lines
+  const safeRect = document.getElementById('demo-safe-band-rect');
+  if (safeRect) {{
+    safeRect.setAttribute('y', target.safeY);
+    safeRect.setAttribute('height', target.safeH);
+  }}
+  
+  const lineUp = document.getElementById('demo-line-upper');
+  if (lineUp) {{
+    lineUp.setAttribute('y1', target.upperY);
+    lineUp.setAttribute('y2', target.upperY);
+  }}
+  const textUp = document.getElementById('demo-text-upper');
+  if (textUp) {{
+    textUp.setAttribute('y', target.upperTextY);
+    textUp.textContent = target.upperText;
+  }}
+  
+  const lineWg = document.getElementById('demo-line-westgard');
+  if (lineWg) {{
+    lineWg.setAttribute('y1', target.wgY);
+    lineWg.setAttribute('y2', target.wgY);
+  }}
+  const textWg = document.getElementById('demo-text-westgard');
+  if (textWg) {{
+    textWg.setAttribute('y', target.wgTextY);
+    textWg.textContent = target.wgText;
+  }}
+  
+  const lineLow = document.getElementById('demo-line-lower');
+  if (lineLow) {{
+    lineLow.setAttribute('y1', target.lowerY);
+    lineLow.setAttribute('y2', target.lowerY);
+  }}
+  const textLow = document.getElementById('demo-text-lower');
+  if (textLow) {{
+    textLow.setAttribute('y', target.lowerTextY);
+    textLow.textContent = target.lowerText;
+  }}
+  
+  const lineMean = document.getElementById('demo-line-mean');
+  if (lineMean) {{
+    lineMean.setAttribute('y1', target.meanY);
+    lineMean.setAttribute('y2', target.meanY);
+  }}
+  const textMean = document.getElementById('demo-text-mean');
+  if (textMean) {{
+    textMean.setAttribute('y', target.meanTextY);
+    textMean.textContent = target.meanText;
+  }}
+  
+  // Y Labels
+  for (let i = 1; i <= 4; i++) {{
+    const yEl = document.getElementById('demo-y' + i);
+    if (yEl && target.yLabels[i - 1]) {{
+      yEl.textContent = target.yLabels[i - 1].text;
+      yEl.setAttribute('y', target.yLabels[i - 1].y);
+      if (target.yLabels[i - 1].fill) yEl.setAttribute('fill', target.yLabels[i - 1].fill);
+    }}
+  }}
+  
+  // X Labels
+  for (let i = 1; i <= 6; i++) {{
+    const xEl = document.getElementById('demo-x' + i);
+    if (xEl && target.xLabels && target.xLabels[i - 1]) {{
+      xEl.textContent = target.xLabels[i - 1];
+    }}
+  }}
+  
+  // Temperature Line
+  const tempLine = document.getElementById('demo-temp-line');
+  if (tempLine) {{
+    tempLine.setAttribute('d', target.linePath);
+    tempLine.setAttribute('stroke', target.lineStroke);
+  }}
+  
+  // Exposure Polygon & Badges
+  const poly = document.getElementById('demo-exposure-poly');
+  if (poly) {{
+    poly.setAttribute('opacity', (key === 's03-1') ? (DEMO_STEPS[currentStep].exposureOpacity || '0') : '0');
+  }}
+  
+  const bHold = document.getElementById('demo-badge-hold');
+  if (bHold) {{
+    bHold.setAttribute('opacity', (key === 's03-1' && DEMO_STEPS[currentStep].showHold) ? '1' : '0');
+  }}
+  
+  const bBlock = document.getElementById('demo-badge-block');
+  if (bBlock) {{
+    bBlock.setAttribute('opacity', (key === 's03-1' && DEMO_STEPS[currentStep].showBlock) ? '1' : '0');
+  }}
+  
+  // Cursor
+  const cursor = document.getElementById('demo-temp-cursor');
+  const cLabel = document.getElementById('demo-cursor-label');
+  if (key === 's03-1') {{
+    const stepData = DEMO_STEPS[currentStep];
+    if (cursor && stepData.cursorX) {{
+      cursor.setAttribute('transform', 'translate(' + stepData.cursorX + ', ' + stepData.cursorY + ')');
+    }}
+    if (cLabel) cLabel.textContent = stepData.temp;
+  }} else {{
+    if (cursor) {{
+      cursor.setAttribute('transform', 'translate(' + target.cursorX + ', ' + target.cursorY + ')');
+    }}
+    if (cLabel) cLabel.textContent = target.cursorTemp;
+  }}
+}}
 
 function renderStep(idx) {{
+  if (currentTargetKey !== 's03-1') {{
+    selectFleetTarget('s03-1');
+  }}
   const data = DEMO_STEPS[idx];
   currentStep = idx;
   
@@ -2443,7 +2754,7 @@ function renderStep(idx) {{
     chartGoods.style.color = (idx === 5) ? 'var(--green)' : 'var(--red)';
   }}
 
-    // Update S03 Store Card and Fleet Alerts based on step
+  // Update S03 Store Card and Fleet Alerts based on step
   const storeS03 = document.getElementById('demo-store-s03');
   const storeS03Badge = document.getElementById('demo-store-s03-badge');
   const storeS03Desc = document.getElementById('demo-store-s03-desc');
@@ -2539,6 +2850,9 @@ function renderStep(idx) {{
 }}
 
 function stepDemo(delta) {{
+  if (currentTargetKey !== 's03-1') {{
+    selectFleetTarget('s03-1');
+  }}
   let next = currentStep + delta;
   if (next < 0) next = 0;
   if (next >= DEMO_STEPS.length) next = DEMO_STEPS.length - 1;
@@ -2546,11 +2860,17 @@ function stepDemo(delta) {{
 }}
 
 function goToStep(idx) {{
+  if (currentTargetKey !== 's03-1') {{
+    selectFleetTarget('s03-1');
+  }}
   currentStep = idx;
   renderStep(idx);
 }}
 
 function resetDemo() {{
+  if (currentTargetKey !== 's03-1') {{
+    selectFleetTarget('s03-1');
+  }}
   clearInterval(timerInterval);
   isPlaying = false;
   secondsLeft = 60;
@@ -2560,6 +2880,9 @@ function resetDemo() {{
 }}
 
 function toggleAutoPlay() {{
+  if (currentTargetKey !== 's03-1') {{
+    selectFleetTarget('s03-1');
+  }}
   if (isPlaying) {{
     clearInterval(timerInterval);
     isPlaying = false;
