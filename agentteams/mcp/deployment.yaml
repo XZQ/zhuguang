@@ -70,13 +70,13 @@ spec:
           runAsGroup: 10001
         readinessProbe:
           httpGet:
-            path: /health
+            path: /ready
             port: http
           initialDelaySeconds: 2
           periodSeconds: 5
         livenessProbe:
           httpGet:
-            path: /health
+            path: /live
             port: http
           initialDelaySeconds: 10
           periodSeconds: 15

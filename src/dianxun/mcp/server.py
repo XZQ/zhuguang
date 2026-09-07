@@ -6,7 +6,7 @@ import hmac
 import json
 import logging
 import os
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from time import perf_counter
 from typing import Any
 
@@ -504,6 +504,12 @@ def _adapter_error(
 class MCPHandler(BaseHTTPRequestHandler):
     server_version = "DianxunMCP/0.2"
 
+    def handle(self) -> None:
+        try:
+            super().handle()
+        except (ConnectionError, TimeoutError):
+            self.close_connection = True
+
     def _send(self, code: int, body: Any) -> None:
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
         self.send_response(code)
@@ -584,14 +590,16 @@ class MCPHandler(BaseHTTPRequestHandler):
             )
             return
         try:
-            length = int(self.headers.get("Content-Length", "0"))
+            lengths = self.headers.get_all("Content-Length", [])
+            if len(lengths) != 1 or self.headers.get("Transfer-Encoding") is not None:
+                raise ValueError("ambiguous request framing")
+            length = int(lengths[0])
         except ValueError:
             length = 0
         if length > MAX_REQUEST_BYTES:
-            self.rfile.read(MAX_REQUEST_BYTES + 1)
             self.close_connection = True
             self._send(
-                400,
+                413,
                 {"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}},
             )
             return
@@ -602,7 +610,8 @@ class MCPHandler(BaseHTTPRequestHandler):
                 self.rfile.read(length),
                 parse_constant=_reject_nonfinite,
             )
-        except (ValueError, json.JSONDecodeError):
+        except (ValueError, json.JSONDecodeError, TimeoutError):
+            self.close_connection = True
             self._send(
                 400,
                 {"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}},
@@ -640,7 +649,9 @@ class MCPHandler(BaseHTTPRequestHandler):
                 )
                 return
             tool_name = params.get("name", "")
-            if auth_mode == "shared" and tool_name not in _READ_ONLY_TOOLS:
+            if auth_mode == "shared" and (
+                not isinstance(tool_name, str) or tool_name not in _READ_ONLY_TOOLS
+            ):
                 result = _tool_result(
                     _adapter_error(
                         "FORBIDDEN",
@@ -731,13 +742,53 @@ class MCPHandler(BaseHTTPRequestHandler):
                 "text/plain; version=0.0.4; charset=utf-8",
             )
             return
-        if self.path != "/health":
+        if self.path in {"/health", "/ready"}:
+            from contextlib import closing
+
+            from ..skills.registry import load_skill_registry
+
+            try:
+                service = getattr(self.server, "service", None) or default_service()
+                with closing(service.store.connect()) as conn:
+                    row = conn.execute(
+                        "SELECT value FROM meta WHERE key = 'virtual_time'"
+                    ).fetchone()
+                    if not row:
+                        raise RuntimeError("Uninitialized store")
+                    for table, column in (
+                        ("incidents", "case_json"),
+                        ("runtime_contexts", "payload_json"),
+                        ("inventory_batches", "safe_for_sale"),
+                        ("sales_holds", "status"),
+                        ("devices", "health_state"),
+                        ("device_readings", "temp_c"),
+                        ("actions", "status"),
+                        ("verifications", "result"),
+                        ("approvals", "status"),
+                        ("workorders", "status"),
+                        ("audit_log", "audit_id"),
+                        ("idempotency", "idempotency_key"),
+                    ):
+                        conn.execute(f"SELECT {column} FROM {table} LIMIT 0")
+                load_skill_registry()
+            except Exception:
+                self._send(
+                    503,
+                    {
+                        "service": "dianxun-mcp",
+                        "ready": False,
+                        "reason": "Required state or contracts unavailable",
+                    },
+                )
+                return
+        elif self.path != "/live":
             self._send(404, {"error": "Not found"})
             return
         self._send(
             200,
             {
                 "service": "dianxun-mcp",
+                **({"alive": True} if self.path == "/live" else {"ready": True}),
                 "version": "0.2.0",
                 "tools": len(enabled_tools()),
                 "p0_tools": len(TOOLS),
@@ -757,7 +808,11 @@ def main() -> None:
     host = os.environ.get("HOST", "127.0.0.1")
     port = int(os.environ.get("PORT", "8080"))
     _validate_server_auth(host)
-    server = ThreadingHTTPServer((host, port), MCPHandler)
+    from .http_transport import BoundedHTTPServer
+
+    service = default_service()
+    server = BoundedHTTPServer((host, port), MCPHandler)
+    server.service = service
     print(f"Dianxun MCP listening on http://{host}:{port} with {len(enabled_tools())} tools")
     try:
         server.serve_forever()

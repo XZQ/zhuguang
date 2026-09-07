@@ -164,8 +164,10 @@ class PostgresStateStore(SQLiteStateStore):
 
     def connect(self) -> _PostgresConnection:
         driver, dict_row = _load_driver()
-        raw = driver.connect(self.dsn, row_factory=dict_row)
+        raw = driver.connect(self.dsn, row_factory=dict_row, connect_timeout=5)
         connection = _PostgresConnection(raw, driver)
+        connection.execute("SET statement_timeout = '5s'")
+        connection.execute("SET lock_timeout = '5s'")
         connection.execute(
             "SELECT set_config('dianxun.tenant_id', ?, false)",
             (self.tenant_id or "",),

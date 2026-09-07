@@ -305,13 +305,13 @@ class AdversarialHardeningTests(unittest.TestCase):
                 self.assertEqual(400, status)
                 self.assertEqual(-32600, json.loads(body)["error"]["code"])
 
-                oversized = b"x" * (MAX_REQUEST_BYTES + 1)
                 status, body = self._post(
                     server.server_port,
-                    oversized,
+                    b"",
                     token="metrics-secret",
+                    content_length=MAX_REQUEST_BYTES + 1,
                 )
-                self.assertEqual(400, status)
+                self.assertEqual(413, status)
                 self.assertEqual(-32700, json.loads(body)["error"]["code"])
 
                 status, _ = self._post(server.server_port, b"{}", token="wrong-secret")
@@ -535,12 +535,14 @@ class AdversarialHardeningTests(unittest.TestCase):
         return approval_id
 
     @staticmethod
-    def _post(port: int, payload: bytes, *, token: str | None = None) -> tuple[int, str]:
+    def _post(
+        port: int, payload: bytes, *, token: str | None = None, content_length: int | None = None
+    ) -> tuple[int, str]:
         connection = http.client.HTTPConnection("127.0.0.1", port, timeout=5)
         try:
             headers = {
                 "Content-Type": "application/json",
-                "Content-Length": str(len(payload)),
+                "Content-Length": str(len(payload) if content_length is None else content_length),
             }
             if token:
                 headers["Authorization"] = f"Bearer {token}"

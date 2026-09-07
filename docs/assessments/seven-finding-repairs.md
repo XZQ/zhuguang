@@ -45,7 +45,17 @@ IncidentService 接通。runtime_contexts 与领域数据原子持久化，重�
 
 ## 后续项
 
-5. HTTP 请求边界与就绪探测。
+## 5. HTTP 与就绪检查
+
+HTTP 默认最多处理 32 个连接，每个连接 10 秒绝对截止时间，覆盖慢速头部和请求体；
+超过容量返回 503，超过 1 MiB 的 Content-Length 在读取 body 前返回 413。
+拒绝重复长度头和 Transfer-Encoding，避免歧义。PostgreSQL 连接、语句和锁等待各有 5 秒上限。
+`/live` 仅报告进程存活；`/ready` 和兼容 `/health` 检查必要业务表、初始化状态、Skill 摘要。
+数据库或 Schema 不可用返回 503；Kubernetes 和 Docker 探针已区分配置。
+回归使用真实慢速 socket、超限请求、连接耗尽和数据库故障验证。
+
+## 后续项
+
 6. 门户真实状态与可复现构建。
 7. 质量门禁与文档证据一致性。
 
