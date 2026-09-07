@@ -97,7 +97,7 @@
 - Evidence 关键字段完整 45/45。
 - 适用阶段 Trace 覆盖 26/26。
 - 未授权业务写、未审批受控写、错误放行、错误关闭、重复副作用均为 0。
-- 全量发现 87 项自动化测试：85 项通过，2 项 PolarDB 条件集成测试因无外部实例跳过。
+- 全量发现 105 项自动化测试：103 项通过，2 项 PolarDB 条件集成测试因无外部实例跳过。
 - 四变体消融门禁通过；无 Auditor 时 5 个需修复场景安全阻断于 VERIFY/BLOCKED，单一身份的 6 次受控写全部被 Policy 拒绝，纯规则诊断 Top-1 降至 4/6。
 - 只读事故指挥台把六场景的 Agent 交接、设备/商品状态、审批、审计和 Auditor 判决同屏呈现。
 - 标注口径：固定 seed + 隔离 SQLite/Trace + 有状态 Mock；不是生产 KPI 或真实经营收益。
@@ -110,7 +110,7 @@
 |---|---|---|---|
 | 场景要聚焦、闭环要讲深 | 冷柜、缺货、价签平均展开；设备恢复容易被写成业务完成 | 冷柜升级为唯一 P0 主线；设备与商品分别验收，停售经审批和 Auditor 二次重查后解除 | A～F 六场景、45/45 Evidence、26/26 Trace |
 | 多 Agent 要证明协作增益 | 本地类顺序调用；动作记录曾被当作验证结果 | 5 个业务 Agent 职责分离；Executor 不可自验；增加无 Auditor、单身份、纯规则诊断消融 | 0 错误关闭、5 个失败场景阻断、6 次越权拒绝 |
-| 工程声明必须可复现 | 自动审批、强因果诊断与云上能力缺少对应运行证据 | pending/timeout、Top-K + 证据缺口、制品 provenance，并拆分“本地已验证”和“外部待验证” | 87 项测试、Worker checksum、事实 JSON |
+| 工程声明必须可复现 | 自动审批、强因果诊断与云上能力缺少对应运行证据 | pending/timeout、Top-K + 证据缺口、制品 provenance，并拆分“本地已验证”和“外部待验证” | 105 项测试、Worker checksum、事实 JSON |
 
 ## P11 复制路径：保留控制面，替换领域契约
 
@@ -129,7 +129,7 @@
 
 ## P12 交付与边界：仓库证明不等于平台证明
 
-- 仓库已验证：有状态核心、六场景、6 个 P0 Skill、12+3 MCP、Worker ZIP/provenance、87 项测试、协调生命周期、消融、指挥台和 HTML/PDF。
+- 仓库已验证：有状态核心、六场景、6 个 P0 Skill、12+3 MCP、Worker ZIP/provenance、105 项测试、协调生命周期、消融、指挥台和当前 Markdown/HTML。既有 PDF 保留为历史版本。
 - 可部署但不声称已运行：AgentTeams/Kubernetes 配置，以及 PostgreSQL Store、pgvector、RLS、分区、pg_cron 和 OSS 复制复核归档契约。
 - 最终外部验收：同一事故中的 Team Room 委派、Skill Trace、Worker → MCP Actor 正负向鉴权、真实 HITL、正常/partial 分支，以及不超过 8 分钟的最终成片。
 - 结束句：温度恢复不等于商品安全；Agent 的完成声明不等于业务事实。事件只有在证据闭环后才能关闭。

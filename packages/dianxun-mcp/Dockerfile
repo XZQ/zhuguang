@@ -4,7 +4,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     HOST=0.0.0.0 \
     PORT=8080 \
-    DIANXUN_STATE_DB=/var/lib/dianxun/runtime.db
+    DIANXUN_STATE_DB=/var/lib/dianxun/runtime.db \
+    DIANXUN_TRACE_DB=/var/lib/dianxun/trace.db \
+    DIANXUN_OUTPUT_DIR=/var/lib/dianxun
 
 WORKDIR /app
 

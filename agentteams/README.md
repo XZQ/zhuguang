@@ -39,7 +39,7 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试和 10 项协调生命周期测试；全量发现 87 项测试，其中 85 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
+仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试和 10 项协调生命周期测试；全量发现 105 项测试，其中 103 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
 
 ## 2. 模型、凭证、费用与 Skill 类型
 
@@ -66,6 +66,7 @@ kubectl set image -f agentteams/mcp/deployment.yaml \
 kubectl apply -f agentteams/namespace.yaml
 kubectl -n dianxun create secret generic dianxun-agent-identities \
   --from-file=actor-tokens-json=/secure/local/actor-tokens.json \
+  --from-file=runtime-tokens-json=/secure/local/runtime-tokens.json \
   --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f agentteams/mcp/pvc.yaml
 kubectl apply -f /tmp/dianxun-mcp-deployment.yaml
@@ -74,7 +75,7 @@ kubectl -n dianxun rollout status deployment/dianxun-mcp
 kubectl -n dianxun get pod,service,pvc
 ```
 
-`/secure/local/actor-tokens.json` 必须位于仓库外并限制访问；不要把 Secret YAML、命令输出或真实 Token 保存到仓库和录屏中。
+两个身份 JSON 文件必须位于仓库外并限制访问；不要把 Secret YAML、命令输出或真实 Token 保存到仓库和录屏中。`runtime-tokens.json` 的四字段身份格式和调用顺序见 [Worker 运行接口](../docs/operations/worker-runtime.md)。
 
 在本地镜像已加载且名称不变时，可直接 apply 原始 `deployment.yaml`。MCP 以单副本运行并使用 PVC 保存 SQLite 状态与 Trace；空卷首次启动时从固定 Seed 初始化。Deployment 强制引用 `dianxun-agent-identities` Secret，未创建时 Pod 不会就绪。Service 的集群内地址为：
 
@@ -88,8 +89,9 @@ HTTP Adapter 支持：
 
 - `MCP_TOKEN`：共享 Bearer 请求认证，不区分 Worker 角色，只允许只读工具；
 - `MCP_ACTOR_TOKENS_JSON`：Bearer Token → Actor 映射，可将服务身份绑定到业务角色。
+- `DIANXUN_RUNTIME_TOKENS_JSON`：为独立 `/runtime` 接口绑定 actor、worker_id、tenant_id、store_id；委派、心跳、阶段执行和 checkpoint 与 IncidentService 共享事务。
 
-未配置时 Adapter 只在回环地址保留匿名 Demo；非回环监听会拒绝启动。`deployment.yaml` 已引用 Actor 映射 Secret，但 Worker CR 的 `mcpServers` 只支持 `name/url/transport`，动态 `gatewayKey` 不能预填进仓库。因此必须在 Worker 创建后由部署者把真实动态身份写入集群 Secret 或可信网关；静态引用本身不能证明 Worker 身份已经验证。
+未配置业务接口身份时 Adapter 只在回环地址保留匿名 Demo；非回环监听会拒绝启动。`deployment.yaml` 已引用 Actor 与 scoped runtime 两份映射 Secret，五个 Worker 的 `mcpServers` 已改为 `/runtime`。Worker CR 不内嵌 Token；必须由运行时或可信网关注入对应的动态 Bearer，并在创建 Worker 后配置服务端映射。静态引用和本地 HTTP 回归不证明真实平台已经完成身份注入。
 
 目标环境必须在 Worker 创建后，通过可信网关或运行时 Secret 将动态 Bearer 身份映射到正确 Actor，并限制 MCP Service 的网络入口。Adapter 会再次按工具级角色白名单授权。动态验收至少包括：无 Token/错误 Token 返回 401；错误角色调用不属于自己的查询或动作得到 `FORBIDDEN`；正确调用的 Audit Log 记录实际 Actor；密钥可轮换/撤销。任何日志、命令、视频和提交都不得出现 Token 或 `gatewayKey` 原文。
 
@@ -100,6 +102,7 @@ HTTP Adapter 支持：
 - `dianxun-polardb-runtime/database-url`：受 RLS 约束的运行账号 DSN；
 - `dianxun-embedding-runtime/{endpoint,model,api-key}`：HTTPS embedding 服务配置；
 - `dianxun-agent-identities/actor-tokens-json`：动态 Token → Actor 映射。
+- `dianxun-agent-identities/runtime-tokens-json`：动态 Token → Worker/租户/门店/角色映射。
 
 数据库管理员需先从可信环境按顺序执行：
 
@@ -201,6 +204,6 @@ uv run dianxun agentteams-verify <evidence.json> --output <gate-report.json>
 ## 安全说明
 
 - YAML 和 ZIP 不含 API Key、审批身份或固定 Bearer Token。
-- 当前 ClusterIP 是比赛环境的内部直连接线骨架，Deployment 只声明 Actor Secret 引用，仓库未注入真实动态 Worker 映射值；生产环境必须由可信网关/Adapter 完成认证和工具级 Actor 授权，并限制后端 Service 的网络入口。
+- 当前 ClusterIP 是比赛环境的内部直连接线骨架，Deployment 声明 Actor 和 scoped runtime Secret 引用，仓库未注入真实动态 Worker 映射值；生产环境必须完成 Token 注入与服务端身份绑定，并限制后端 Service 的网络入口。
 - 请求带 Bearer Header 只证明客户端发送了字段，不证明服务端已验证；取得 401、`FORBIDDEN` 和正确 Actor 审计证据前，状态保持“外部待验证”。
 - 冷链阈值和 Seed 仅用于比赛 Demo，不替代 HACCP、设备说明书、食品安全人员判断或当地监管要求。

@@ -1,0 +1,16 @@
+.git
+.venv
+.workbuddy
+.ruff_cache
+build
+dist
+evidence
+ppt
+**/__pycache__
+**/*.egg-info
+**/*.pyc
+**/*.db
+**/*.db-shm
+**/*.db-wal
+.env
+.env.*

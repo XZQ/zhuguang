@@ -14,8 +14,19 @@ concurrency:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: windows-latest
+            python: "3.12"
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    env:
+      PYTHONUTF8: "1"
+      UV_PYTHON: ${{ matrix.python }}
 
     steps:
       - name: Check out repository
@@ -28,7 +39,12 @@ jobs:
           cache-dependency-glob: uv.lock
 
       - name: Install Python
-        run: uv python install 3.11
+        run: uv python install ${{ matrix.python }}
+
+      - name: Install Node for portal regressions
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
 
       - name: Sync locked dependencies
         run: uv sync --locked --group dev
@@ -41,6 +57,9 @@ jobs:
 
       - name: Unit and conditional integration tests
         run: uv run python -W error::ResourceWarning -m unittest discover -v
+
+      - name: Test inventory and documented evidence agree
+        run: uv run python scripts/check_quality_facts.py
 
       - name: M4 evaluation
         run: uv run dianxun evaluate
@@ -66,5 +85,31 @@ jobs:
       - name: Build wheel and source distribution
         run: uv build
 
+      - name: Installed wheel outside the checkout with Docker COPY inputs
+        run: uv run python scripts/check_installed_distribution.py --docker-inputs
+
+      - name: Rebuild presentation sources and full portal
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run python scripts/build_animated_svg.py
+          uv run python scripts/build_defense_guide_doc.py
+          uv run python scripts/build_illustrated_defense_guide.py
+          uv run python scripts/build_master_defense_dossier.py
+          uv run python scripts/build_full_delivery_portal.py
+
       - name: Generated artifacts are current
         run: git diff --exit-code
+
+  container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Build actual runtime image
+        run: docker build -f packages/dianxun-mcp/Dockerfile -t dianxun-mcp:ci .
+
+      - name: Non-root container, readiness, authenticated MCP and Worker runtime
+        run: python3 scripts/check_docker_image.py --image dianxun-mcp:ci

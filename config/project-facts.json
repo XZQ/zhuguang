@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-09-03",
+  "updated_at": "2026-09-07",
   "owner": "XZQ",
   "project_name": "逐光",
   "display_name": "逐光｜店巡 Agent",
@@ -49,15 +49,51 @@
     "LEARN"
   ],
   "skills": [
-    { "name": "anomaly-detect", "priority": "P0", "owner": "Sentry" },
-    { "name": "coldchain-risk-assess", "priority": "P0", "owner": "Diagnoser" },
-    { "name": "rootcause-drilldown", "priority": "P0", "owner": "Diagnoser" },
-    { "name": "work-order-dispatch", "priority": "P0", "owner": "Executor" },
-    { "name": "outcome-verify", "priority": "P0", "owner": "Auditor" },
-    { "name": "review-report", "priority": "P0", "owner": "Auditor" },
-    { "name": "cross-store-benchmark", "priority": "P1", "owner": "Diagnoser" },
-    { "name": "restock-order-gen", "priority": "P2", "owner": "Executor" },
-    { "name": "price-tag-check", "priority": "P2", "owner": "Sentry/Executor" }
+    {
+      "name": "anomaly-detect",
+      "priority": "P0",
+      "owner": "Sentry"
+    },
+    {
+      "name": "coldchain-risk-assess",
+      "priority": "P0",
+      "owner": "Diagnoser"
+    },
+    {
+      "name": "rootcause-drilldown",
+      "priority": "P0",
+      "owner": "Diagnoser"
+    },
+    {
+      "name": "work-order-dispatch",
+      "priority": "P0",
+      "owner": "Executor"
+    },
+    {
+      "name": "outcome-verify",
+      "priority": "P0",
+      "owner": "Auditor"
+    },
+    {
+      "name": "review-report",
+      "priority": "P0",
+      "owner": "Auditor"
+    },
+    {
+      "name": "cross-store-benchmark",
+      "priority": "P1",
+      "owner": "Diagnoser"
+    },
+    {
+      "name": "restock-order-gen",
+      "priority": "P2",
+      "owner": "Executor"
+    },
+    {
+      "name": "price-tag-check",
+      "priority": "P2",
+      "owner": "Sentry/Executor"
+    }
   ],
   "p0_mcp": {
     "queries": [
@@ -94,15 +130,33 @@
       "purpose": "managed_deployment_backend",
       "status": "implemented_code_pending_external_validation",
       "optional_dependency": "dianxun[postgres]",
-      "migration_profiles": ["core", "security", "cron", "archive"],
-      "features": ["pgvector", "monthly_audit_partitions", "rls", "pg_cron", "oss_fdw_archive_contract"]
+      "migration_profiles": [
+        "core",
+        "security",
+        "cron",
+        "archive"
+      ],
+      "features": [
+        "pgvector",
+        "monthly_audit_partitions",
+        "rls",
+        "pg_cron",
+        "oss_fdw_archive_contract"
+      ]
     }
   },
   "knowledge_flywheel": {
     "status": "implemented_optional_pending_real_store_baseline",
-    "publication_gate": ["human_review", "redaction_passed", "confidence"],
+    "publication_gate": [
+      "human_review",
+      "redaction_passed",
+      "confidence"
+    ],
     "auditor_can_auto_publish": false,
-    "retrieval_metrics": ["Recall@K", "MRR"],
+    "retrieval_metrics": [
+      "Recall@K",
+      "MRR"
+    ],
     "claim_boundary": "labeled_dataset_only_not_real_store_improvement"
   },
   "agentteams": {
@@ -143,7 +197,8 @@
       "polardb_kubernetes_overlay": "verified_static",
       "agentteams_mcp_identity_binding": "pending_external_validation",
       "local_runtime": "unavailable",
-      "cloud_studio_runtime": "pending"
+      "cloud_studio_runtime": "pending",
+      "worker_runtime_bridge": "verified_local_http_external_pending"
     }
   },
   "implementation_levels": {
@@ -152,7 +207,12 @@
     "planned": "只有设计或接口，尚无可运行证据"
   },
   "implementation": {
-    "completed_milestones": ["M0", "M1", "M2", "M4"],
+    "completed_milestones": [
+      "M0",
+      "M1",
+      "M2",
+      "M4"
+    ],
     "local_demo_scenarios": {
       "A": "demo/state/scenarios/coldchain-compressor-failure.json",
       "B": "demo/state/scenarios/coldchain-sensor-false-positive.json",
@@ -161,7 +221,10 @@
       "E": "demo/state/scenarios/coldchain-device-recovered-goods-unsafe.json",
       "F": "demo/state/scenarios/coldchain-workorder-query-partial.json"
     },
-    "supplementary_demo_entries": ["stockout", "price-tag"],
+    "supplementary_demo_entries": [
+      "stockout",
+      "price-tag"
+    ],
     "p0_skill_contract_root": "skills",
     "m3_repository_artifacts": {
       "status": "implemented_static_external_runtime_pending",
@@ -193,8 +256,8 @@
       },
       "mcp_deployment": "agentteams/mcp/deployment.yaml",
       "mcp_authentication": {
-        "local_adapter": "shared_readonly_or_actor_token_mapping_with_tool_allowlist",
-        "static_agentteams_deployment": "dynamic_gateway_key_mapping_not_wired",
+        "local_adapter": "shared_readonly_or_actor_token_mapping_plus_scoped_worker_runtime",
+        "static_agentteams_deployment": "runtime_endpoint_and_secret_references_wired_external_injection_pending",
         "status": "pending_external_validation"
       }
     },
@@ -209,14 +272,19 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 87,
-      "full_unittest_passed": 85,
+      "full_unittest_count": 105,
+      "full_unittest_passed": 103,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json",
       "ablation": {
         "suite_id": "dianxun-p0-coldchain-ablation-v1",
-        "variants": ["full", "no_auditor", "single_agent", "rule_only"],
+        "variants": [
+          "full",
+          "no_auditor",
+          "single_agent",
+          "rule_only"
+        ],
         "gate_passed": true,
         "headline": {
           "no_auditor": {
@@ -245,7 +313,9 @@
         "results": "evidence/m4/ablation.json",
         "report": "evidence/m4/ablation.md"
       },
-      "command_center_html": "evidence/m4/command-center.html"
+      "command_center_html": "evidence/m4/command-center.html",
+      "unittest_verified_at": "2026-09-07",
+      "unittest_environment": "Windows_Python_3.12.13_Node_local_SQLite"
     },
     "operations_hardening": {
       "status": "implemented_local_pending_production_measurement",
@@ -257,8 +327,18 @@
           "dianxun_mcp_tool_duration_seconds",
           "dianxun_mcp_auth_failures_total"
         ],
-        "labels": ["tool", "outcome"],
-        "forbidden_labels": ["tenant", "incident", "request", "trace", "actor", "token"]
+        "labels": [
+          "tool",
+          "outcome"
+        ],
+        "forbidden_labels": [
+          "tenant",
+          "incident",
+          "request",
+          "trace",
+          "actor",
+          "token"
+        ]
       },
       "recovery_drill": {
         "script": "scripts/recovery_drill.py",
@@ -268,9 +348,23 @@
         "status": "verified_local"
       },
       "ci": ".github/workflows/ci.yml",
-      "governance": ["CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"],
+      "governance": [
+        "CONTRIBUTING.md",
+        "SECURITY.md",
+        "CHANGELOG.md"
+      ],
       "slo": "targets_defined_production_measurement_pending",
-      "claim_boundary": "local_metrics_and_recovery_drill_not_production_slo_or_cloud_dr"
+      "claim_boundary": "local_metrics_and_recovery_drill_not_production_slo_or_cloud_dr",
+      "quality_gates": {
+        "matrix": [
+          "ubuntu_python3.11",
+          "windows_python3.12"
+        ],
+        "installed_distribution": "verified_local_isolated_wheel",
+        "portal_build": "verified_local_deterministic_and_node_regressions",
+        "container_smoke": "configured_in_ci_not_executed_locally_no_docker",
+        "github_ci_for_local_patches": "not_run_no_push"
+      }
     },
     "m5_materials": {
       "documents": "implemented",

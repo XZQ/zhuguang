@@ -1,8 +1,8 @@
 # 逐光｜店巡 Agent — 腾讯云 Lighthouse 部署与验证手册
 
-> 版本对齐：`config/project-facts.json` @ 0.2.0.dev0（updated_at 2026-09-01）
+> 版本对齐：`config/project-facts.json` @ 0.2.0.dev0（updated_at 2026-09-07）
 > 本手册所有命令与参数均取自仓库实际代码，不使用臆测值。
-> 编写日期：2026-08-30；仓库口径复核：2026-09-02。
+> 编写日期：2026-08-30；仓库口径复核：2026-09-07（本地验证，不证明服务器已部署本次修复）。
 
 ---
 
@@ -101,7 +101,7 @@ uv run python -m unittest discover -s tests -v
 | `evidence_records` | 45 / 45 |
 | `covered_trace_phases` | 26 / 26 |
 | `safety_violations` | 0 |
-| 单元测试 | 85 通过 / 2 条件跳过（共发现 87） |
+| 单元测试 | 103 通过 / 2 条件跳过（共发现 105） |
 
 > 以上均为**仓库内确定性行为**，不是模型效果或真实门店收益证明。
 
@@ -272,7 +272,7 @@ journalctl -u dianxun-mcp -f
 - [ ] `dianxun evaluate` → 6/6，`evidence/m4/report.md` 已重新生成
 - [ ] `dianxun ablation` → `gate.passed=true`，四变体结果与 Markdown 报告已重新生成
 - [ ] `dianxun command-center` → `evidence/m4/command-center.html` 已重新生成
-- [ ] 87 项测试完成（85 通过 + 2 条 PolarDB 条件跳过）
+- [ ] 105 项测试完成（103 通过 + 2 条 PolarDB 条件跳过）
 - [ ] `curl /health` 健康检查返回 `tools: 12`
 - [ ] `curl /metrics` 返回低基数 Counter/Histogram，且端点未暴露公网
 - [ ] `python scripts/recovery_drill.py --check` 通过
