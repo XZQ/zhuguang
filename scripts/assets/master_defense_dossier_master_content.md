@@ -102,7 +102,7 @@
    - **双底座存储机制**：本地 SQLite 零依赖评测引擎 + 生产级 PolarDB PostgreSQL；
    - **审计硬约束**：底层彻底剥夺 `audit_log` 的 UPDATE 和 DELETE 权限，只允许 INSERT，实现只增防篡改审计；
 3. **L3 协同智能体基座层（AgentTeams v1.2.3）**：
-   - 目标拓扑为 Linux 容器集群、Matrix 协议与 1 Manager + 5 Workers，配置模型为 `qwen3.5-plus`，实际部署待验收；
+   - 目标拓扑为 Linux 容器集群、Matrix 协议与 1 Manager + 5 Workers，配置模型为 `@@MODEL@@`，实际部署待验收；
 4. **L4 业务工具生态层（12 个 P0 标准 MCP）**：
    - 设备时序遥测、商品批次查询、POS 停售控制锁、移动端审批单、服务商急修工单等 12 个微服务解耦封装；
 5. **L5 安全防御治理层（Guard & Policy）**：

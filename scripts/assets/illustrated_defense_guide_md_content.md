@@ -115,7 +115,7 @@ graph TB
     end
 
     subgraph L3 ["3. 协同智能体基座层 (AgentTeams v1.2.3 Cluster)"]
-        ATCluster[Linux 目标集群（外部待验收）· Matrix 协议通信<br/>驱动 1 Manager + 5 Workers · 阿里百炼 qwen3.5-plus]
+        ATCluster[Linux 目标集群（外部待验收）· Matrix 协议通信<br/>驱动 1 Manager + 5 Workers · 阿里百炼 @@MODEL@@]
     end
 
     subgraph L4 ["4. 业务工具生态层 (12 个 P0 MCP 服务)"]
@@ -237,7 +237,7 @@ graph TD
 
 ### 02:20 - 03:00（可验证价值与规模化复制 · 40秒）
 > “逐光项目拒绝空洞的概念设计，所有能力均已在生产级环境中严密验证：
-> • **目标部署集群（外部待验收）**：目标为 Linux 集群、配置模型 qwen3.5-plus 和 Matrix 多 Worker；实际运行需独立观测；
+> • **目标部署集群（外部待验收）**：目标为 Linux 集群、配置模型 @@MODEL@@ 和 Matrix 多 Worker；实际运行需独立观测；
 > • **确定性证据链**：内置自动化回归测试，覆盖 6 大正常与对抗场景，沉淀了 45 份不可篡改的 Evidence 证据包和 26 条 Trace 链路，违规放行率为 0；
 > • **广泛的复用能力**：规范治理 6 大核心 P0 Skill，不仅能管便利店冷柜，更能无缝迁移至**医药疫苗冷链、中央厨房 HACCP 品控与数据中心动环**！
 >
