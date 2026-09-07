@@ -489,12 +489,13 @@ class MCPService:
             if len(hold_ids) != len(set(hold_ids)):
                 raise ValueError("hold_ids must not contain duplicates")
             placeholders = ",".join("?" for _ in hold_ids)
+            lock = " FOR UPDATE OF h, b" if self.store.backend_name == "postgresql" else ""
             rows = conn.execute(
                 f"""SELECT h.hold_id, h.status, h.batch_id, h.applied_at,
-                           b.updated_at AS batch_updated_at
+                           b.updated_at AS batch_updated_at, b.disposition, b.safe_for_sale
                     FROM sales_holds AS h
                     JOIN inventory_batches AS b ON b.batch_id = h.batch_id
-                    WHERE h.hold_id IN ({placeholders}) AND h.incident_id = ?""",
+                    WHERE h.hold_id IN ({placeholders}) AND h.incident_id = ?{lock}""",
                 [*hold_ids, incident_id],
             ).fetchall()
             if len(rows) != len(set(hold_ids)):
@@ -508,6 +509,8 @@ class MCPService:
                 for row in rows
             ):
                 raise PermissionError("The Auditor release_guard verification is stale")
+            if any(row["disposition"] != "released" or not row["safe_for_sale"] for row in rows):
+                raise PermissionError("Current batch facts do not authorize safe sales release")
             evidence_ids = _decode_json(verification["evidence_ids_json"])
             observed = _decode_json(verification["observed_json"])
             verified_hold_states = observed.get("released_batch_holds", {})

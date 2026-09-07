@@ -3,15 +3,85 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from dianxun.adapters import LocalDemoAdapter
 from dianxun.domain import ActionStatus, IncidentStatus, Phase, WorkStatus
+from dianxun.domain.safety import batches_are_safe_terminal
+from dianxun.domain.service import InvalidTransition
 
 ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS = ROOT / "demo" / "state" / "scenarios"
 
 
 class ColdChainWorkflowTests(unittest.TestCase):
+    def test_unsafe_facts_after_release_block_closure_and_restore_containment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            adapter = LocalDemoAdapter(
+                db_path=Path(directory) / "runtime.db",
+                scenario_path=SCENARIOS / "coldchain-sensor-false-positive.json",
+            )
+            release = adapter.mcp.release_sales_hold
+
+            def invalidate(**kwargs):
+                response = release(**kwargs)
+                self.assertTrue(response["ok"])
+                for hold in adapter.store.list_sales_holds(incident_id=kwargs["incident_id"]):
+                    adapter.store.set_batch_safety(hold["batch_id"], safe_for_sale=False)
+                return response
+
+            with patch.object(adapter.mcp, "release_sales_hold", side_effect=invalidate):
+                result = adapter.run()
+            self.assertNotEqual(IncidentStatus.CLOSED, result["incident"]["incident_status"])
+            self.assertFalse(result["acceptance"]["passed"])
+            self.assertIn("batches", result["verification"]["failed_conditions"])
+            batches = adapter.store.list_batches(batch_ids=result["incident"]["affected_batches"])
+            self.assertTrue(all(row["disposition"] == "quarantined" for row in batches))
+            holds = adapter.store.list_sales_holds(incident_id=result["incident"]["incident_id"])
+            self.assertEqual(2, sum(row["status"] == "active" for row in holds))
+
+    def test_close_rechecks_safety_even_without_clock_advance(self) -> None:
+        adapter, result = self.run_scenario("coldchain-sensor-false-positive.json")
+        case = result["incident"]
+        adapter.store.set_batch_safety(case["affected_batches"][0], safe_for_sale=False)
+        with self.assertRaises(InvalidTransition):
+            adapter.incidents.close_after_learning(case["incident_id"])
+        self.assertNotEqual(
+            IncidentStatus.CLOSED, adapter.incidents.get(case["incident_id"]).incident_status
+        )
+
+    def test_terminal_goods_check_requires_exact_scope_and_safe_release(self) -> None:
+        rows = [
+            {"batch_id": "a", "disposition": "disposed", "safe_for_sale": False},
+            {"batch_id": "b", "disposition": "transferred", "safe_for_sale": False},
+        ]
+        self.assertTrue(batches_are_safe_terminal(rows, ["a", "b"]))
+        self.assertFalse(batches_are_safe_terminal(rows[:1], ["a", "b"]))
+        self.assertFalse(batches_are_safe_terminal([rows[0], rows[0]], ["a", "b"]))
+        rows[0]["disposition"] = "released"
+        self.assertFalse(batches_are_safe_terminal(rows, ["a", "b"]))
+
+    def test_release_rechecks_current_safety_in_same_clock_tick(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            adapter = LocalDemoAdapter(
+                db_path=Path(directory) / "runtime.db",
+                scenario_path=SCENARIOS / "coldchain-sensor-false-positive.json",
+            )
+            release = adapter.mcp.release_sales_hold
+
+            def invalidate(**kwargs):
+                for hold in adapter.store.list_sales_holds(incident_id=kwargs["incident_id"]):
+                    adapter.store.set_batch_safety(hold["batch_id"], safe_for_sale=False)
+                response = release(**kwargs)
+                self.assertFalse(response["ok"])
+                return response
+
+            with patch.object(adapter.mcp, "release_sales_hold", side_effect=invalidate):
+                result = adapter.run()
+            self.assertNotEqual(IncidentStatus.CLOSED, result["incident"]["incident_status"])
+            holds = adapter.store.list_sales_holds(incident_id=result["incident"]["incident_id"])
+            self.assertTrue(all(row["status"] == "active" for row in holds))
+
     def run_scenario(self, name: str):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

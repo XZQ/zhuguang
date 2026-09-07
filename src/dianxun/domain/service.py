@@ -16,6 +16,7 @@ from .enums import (
     WorkStatus,
 )
 from .models import Action, Decision, Evidence, Hypothesis, IncidentCase, Verification
+from .safety import batches_are_safe_terminal
 
 if TYPE_CHECKING:
     from ..state import StateStoreProtocol
@@ -31,12 +32,6 @@ _PHASE_GRAPH: dict[Phase, set[Phase]] = {
     Phase.EXECUTE: {Phase.VERIFY},
     Phase.VERIFY: {Phase.DIAGNOSE_DECIDE, Phase.EXECUTE, Phase.LEARN},
     Phase.LEARN: set(),
-}
-
-_TERMINAL_BATCH_STATES = {
-    BatchDisposition.TRANSFERRED,
-    BatchDisposition.RELEASED,
-    BatchDisposition.DISPOSED,
 }
 
 
@@ -312,10 +307,7 @@ class IncidentService:
                 ActionStatus.TIMEOUT,
             }
         ]
-        batch_terminal = bool(case.affected_batches) and all(
-            case.batch_dispositions.get(batch_id) in _TERMINAL_BATCH_STATES
-            for batch_id in case.affected_batches
-        )
+        batch_terminal = batches_are_safe_terminal(batches, case.affected_batches)
         latest_by_subject: dict[str, Verification] = {}
         for verification in case.verifications:
             latest_by_subject[verification.subject] = verification
@@ -364,7 +356,7 @@ class IncidentService:
         return all(verified_at >= _parse_timestamp(updated_at) for updated_at in state_updates)
 
     def close_after_learning(self, incident_id: str) -> IncidentCase:
-        case = self.get(incident_id)
+        case = self.recompute(incident_id)
         if case.phase is not Phase.LEARN or case.incident_status is not IncidentStatus.RESOLVED:
             raise InvalidTransition("CLOSED requires phase LEARN and status RESOLVED")
         case.incident_status = IncidentStatus.CLOSED

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from .. import trace
 from ..domain import Verification, VerificationResult
+from ..domain.safety import TERMINAL_BATCH_STATES, batches_are_safe_terminal
 from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
@@ -179,8 +180,7 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
     )
 
     batches = _rows(responses["batches"], "batches")
-    terminal = {"transferred", "released", "disposed"}
-    batches_passed = bool(batches) and all(item.get("disposition") in terminal for item in batches)
+    batches_passed = batches_are_safe_terminal(batches, case.affected_batches)
     holds = _rows(responses["sales_hold"], "sales_holds")
     hold_by_batch = {item["batch_id"]: item for item in holds}
     holds_passed = bool(batches) and all(
@@ -220,7 +220,11 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
         },
         "batches": {
             "passed": batches_passed,
-            "expected": {"dispositions": sorted(terminal)},
+            "expected": {
+                "dispositions": sorted(TERMINAL_BATCH_STATES),
+                "batch_ids": sorted(case.affected_batches),
+                "released_goods_safe_for_sale": True,
+            },
             "observed": {"batches": batches},
         },
         "sales_hold": {
@@ -266,7 +270,7 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
 
 
 def _rows(response: dict[str, Any], key: str) -> list[dict[str, Any]]:
-    if not response.get("ok"):
+    if not response.get("ok") or response.get("partial"):
         return []
     return list(response["data"].get(key, []))
 

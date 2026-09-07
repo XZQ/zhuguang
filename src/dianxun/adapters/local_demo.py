@@ -304,6 +304,26 @@ class LocalDemoAdapter:
                 phase_outputs["LEARN"] = review
                 final_case = self.incidents.close_after_learning(incident_id)
             else:
+                case = self.incidents.get(incident_id)
+                active = {
+                    row["batch_id"]
+                    for row in self.store.list_sales_holds(incident_id=incident_id)
+                    if row["status"] == "active"
+                }
+                unsafe = [
+                    row["batch_id"]
+                    for row in self.store.list_batches(batch_ids=case.affected_batches)
+                    if row["disposition"] == "released"
+                    and not row["safe_for_sale"]
+                    and row["batch_id"] not in active
+                ]
+                if unsafe:
+                    phase_outputs["EXECUTE"]["renewed_containment"] = self._contain(
+                        incident_id,
+                        trace_id,
+                        batch_ids=unsafe,
+                        suffix=f"rehold:{len(case.actions)}",
+                    )
                 self.incidents.reopen(
                     incident_id,
                     reason=(
@@ -363,17 +383,25 @@ class LocalDemoAdapter:
             sp.output = {"detected": result["detected"], "severity": result["severity"]}
             return result
 
-    def _contain(self, incident_id: str, trace_id: str) -> dict[str, Any]:
+    def _contain(
+        self,
+        incident_id: str,
+        trace_id: str,
+        *,
+        batch_ids: list[str] | None = None,
+        suffix: str = "hold",
+    ) -> dict[str, Any]:
         case = self.incidents.get(incident_id)
-        action_id = f"{incident_id}:hold"
+        batch_ids = case.affected_batches if batch_ids is None else batch_ids
+        action_id = f"{incident_id}:{suffix}"
         action = Action(
             action_id=action_id,
             action_type="apply_sales_hold",
             tool_name="apply_sales_hold",
             target=case.store_id,
-            idempotency_key=f"{incident_id}:hold:v1",
+            idempotency_key=f"{action_id}:v1",
             status=ActionStatus.EXECUTING,
-            request={"batch_ids": case.affected_batches, "reason": "coldchain containment"},
+            request={"batch_ids": batch_ids, "reason": "coldchain containment"},
             rollback_or_compensation={"type": "controlled_release_only", "automatic": False},
             started_at=self.store.now(),
         )
@@ -384,7 +412,7 @@ class LocalDemoAdapter:
                     incident_id=incident_id,
                     action_id=action_id,
                     store_id=case.store_id,
-                    batch_ids=case.affected_batches,
+                    batch_ids=batch_ids,
                     reason="coldchain temperature risk containment",
                     idempotency_key=action.idempotency_key,
                     actor="Executor",
