@@ -6,13 +6,14 @@ import hashlib
 import json
 import sqlite3
 from collections.abc import Iterator
-from contextlib import closing, contextmanager
+from contextlib import closing, contextmanager, nullcontext
+from contextvars import ContextVar
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from ..domain.enums import ApprovalStatus, BatchDisposition, WorkOrderStatus
-from .protocols import ConnectionProtocol
+from .protocols import ConnectionProtocol, IncidentConflictError
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -291,6 +292,13 @@ class SQLiteStateStore:
     def __init__(self, db_path: str | Path) -> None:
         self.path = Path(db_path)
         self.database_identity = str(self.path.resolve())
+        self._transaction_connection: ContextVar[ConnectionProtocol | None] = ContextVar(
+            "transaction_connection", default=None
+        )
+
+    def _reader(self):
+        current = self._transaction_connection.get()
+        return nullcontext(current) if current is not None else closing(self.connect())
 
     def connect(self) -> sqlite3.Connection:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -302,7 +310,12 @@ class SQLiteStateStore:
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
+        current = self._transaction_connection.get()
+        if current is not None:
+            yield current
+            return
         conn = self.connect()
+        token = self._transaction_connection.set(conn)
         try:
             conn.execute("BEGIN IMMEDIATE")
             yield conn
@@ -311,6 +324,7 @@ class SQLiteStateStore:
             conn.rollback()
             raise
         finally:
+            self._transaction_connection.reset(token)
             conn.close()
 
     def create_schema(self) -> None:
@@ -409,7 +423,7 @@ class SQLiteStateStore:
         return self.initialize(seed, reset=reset)
 
     def get_meta(self, key: str) -> str | None:
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             row = conn.execute("SELECT value FROM meta WHERE key = ?", (key,)).fetchone()
         return str(row["value"]) if row else None
 
@@ -438,7 +452,7 @@ class SQLiteStateStore:
 
     def snapshot_digest(self) -> str:
         snapshot: dict[str, list[dict[str, Any]]] = {}
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             for table, order_by in (
                 ("stores", "store_id"),
                 ("devices", "device_id"),
@@ -475,7 +489,7 @@ class SQLiteStateStore:
             clauses.append("store_id = ?")
             params.append(store_id)
         where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             rows = conn.execute(
                 f"SELECT * FROM devices{where} ORDER BY device_id",
                 params,
@@ -494,7 +508,7 @@ class SQLiteStateStore:
             sql += " AND observed_at >= ?"
             params.append(since)
         sql += " ORDER BY observed_at"
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             rows = conn.execute(sql, params).fetchall()
         return [dict(row) for row in rows]
 
@@ -518,7 +532,7 @@ class SQLiteStateStore:
             clauses.append(f"batch_id IN ({placeholders})")
             params.extend(batch_ids)
         where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             rows = conn.execute(
                 f"SELECT * FROM inventory_batches{where} ORDER BY batch_id",
                 params,
@@ -548,7 +562,7 @@ class SQLiteStateStore:
             clauses.append("status = ?")
             params.append(status)
         where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             rows = conn.execute(
                 f"SELECT * FROM sales_holds{where} ORDER BY hold_id",
                 params,
@@ -630,7 +644,7 @@ class SQLiteStateStore:
         return [self._decode_json_columns(row) for row in rows]
 
     def get_incident(self, incident_id: str) -> dict[str, Any] | None:
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             row = conn.execute(
                 "SELECT case_json FROM incidents WHERE incident_id = ?",
                 (incident_id,),
@@ -640,34 +654,47 @@ class SQLiteStateStore:
         value = row["case_json"]
         return json.loads(value) if isinstance(value, str) else dict(value)
 
-    def save_incident(self, case: dict[str, Any]) -> None:
+    def save_incident(self, case: dict[str, Any], *, create: bool = False) -> int:
+        expected = case.get("version", 0)
+        if type(expected) is not int or expected < 0:
+            raise ValueError("Incident version must be a nonnegative integer")
+        version = expected + 1
+        payload = {**case, "version": version}
+        version_sql = (
+            "COALESCE((incidents.case_json->>'version')::bigint, 0)"
+            if self.backend_name == "postgresql"
+            else "COALESCE(json_extract(incidents.case_json, '$.version'), 0)"
+        )
+        values = (
+            case["trace_id"],
+            case["tenant_id"],
+            case["store_id"],
+            case["phase"],
+            case["incident_status"],
+            case["work_status"],
+            _canonical(payload),
+            case["updated_at"],
+        )
         with self.transaction() as conn:
-            conn.execute(
-                """INSERT INTO incidents(
-                    incident_id, trace_id, tenant_id, store_id, phase, incident_status,
-                    work_status, case_json, updated_at
-                ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(incident_id) DO UPDATE SET
-                    trace_id=excluded.trace_id,
-                    tenant_id=excluded.tenant_id,
-                    store_id=excluded.store_id,
-                    phase=excluded.phase,
-                    incident_status=excluded.incident_status,
-                    work_status=excluded.work_status,
-                    case_json=excluded.case_json,
-                    updated_at=excluded.updated_at""",
-                (
-                    case["incident_id"],
-                    case["trace_id"],
-                    case["tenant_id"],
-                    case["store_id"],
-                    case["phase"],
-                    case["incident_status"],
-                    case["work_status"],
-                    _canonical(case),
-                    case["updated_at"],
-                ),
-            )
+            if create:
+                cursor = conn.execute(
+                    """INSERT INTO incidents(
+                        trace_id, tenant_id, store_id, phase, incident_status, work_status,
+                        case_json, updated_at, incident_id
+                    ) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(incident_id) DO NOTHING""",
+                    (*values, case["incident_id"]),
+                )
+            else:
+                cursor = conn.execute(
+                    f"""UPDATE incidents SET trace_id = ?, tenant_id = ?, store_id = ?,
+                        phase = ?, incident_status = ?, work_status = ?, case_json = ?,
+                        updated_at = ? WHERE incident_id = ? AND {version_sql} = ?""",
+                    (*values, case["incident_id"], expected),
+                )
+            if cursor.rowcount != 1:
+                raise IncidentConflictError(f"Incident {case['incident_id']} version conflict")
+        return version
 
     def idempotent_result(
         self,
@@ -935,7 +962,7 @@ class SQLiteStateStore:
                 clauses.append(f"{column} = ?")
                 params.append(value)
         where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
-        with closing(self.connect()) as conn:
+        with self._reader() as conn:
             rows = conn.execute(
                 f"SELECT * FROM {table}{where} ORDER BY {order_by}",
                 params,

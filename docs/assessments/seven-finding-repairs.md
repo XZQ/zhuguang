@@ -9,9 +9,21 @@ Auditor 要求完整批次范围，且 released 批次当前 safe_for_sale 为�
 重新止售，独立核验失败的事件不能关闭。回归覆盖解禁前后同一时钟安全变化、关闭前变化和缺失批次。
 没有改变公开 MCP/Skill 契约或数据库结构；回滚代码会重新暴露安全缺口。
 
+## 2. 事件并发和事务
+
+IncidentCase 增加可选 version（旧数据默认为 0），每次写入用数据库条件 UPDATE 比较版本。
+冲突抛出 IncidentConflictError，调用方必须重读后重放意图，不能盲目重存旧快照。
+新增操作采用 INSERT DO NOTHING，避免同名创建相互覆盖。核验记录和事件聚合在同一连接、
+同一事务内提交/回滚；关闭时持有批次锁直到状态提交。
+
+数据库表结构无需迁移，JSON Schema 接受可选 version。升级时停止旧写入实例，避免不支持
+CAS 的旧程序并行覆盖。回滚须停写、备份数据库，再在独立事务中移除 case_json 的 version
+属性（SQLite json_remove(case_json, '$.version')；PostgreSQL case_json - 'version'），
+然后回退程序。不得在新旧程序并行运行时降级数据。
+并发测试验证两个旧快照只有一个成功，重读重试后两个事实均保留；失败注入验证无孤立核验记录。
+
 ## 后续项
 
-2. 事件并发版本控制与核验原子提交。
 3. Docker 输入与安装后资源解析。
 4. Worker 运行时协调和领域桥接。
 5. HTTP 请求边界与就绪探测。

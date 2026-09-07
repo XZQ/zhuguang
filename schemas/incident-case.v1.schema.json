@@ -34,6 +34,7 @@
     "updated_at"
   ],
   "properties": {
+    "version": { "type": "integer", "minimum": 0, "default": 0 },
     "incident_id": { "type": "string", "minLength": 1 },
     "trace_id": { "type": "string", "minLength": 1 },
     "tenant_id": { "type": "string", "minLength": 1 },

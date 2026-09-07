@@ -49,7 +49,7 @@ class IncidentService:
         if self.store.get_incident(case.incident_id) is not None:
             raise ValueError(f"Incident {case.incident_id} already exists")
         case.touch(self.store.now())
-        self.store.save_incident(case.to_dict())
+        case.version = self.store.save_incident(case.to_dict(), create=True)
         return case
 
     def get(self, incident_id: str) -> IncidentCase:
@@ -60,7 +60,7 @@ class IncidentService:
 
     def save(self, case: IncidentCase) -> IncidentCase:
         case.touch(self.store.now())
-        self.store.save_incident(case.to_dict())
+        case.version = self.store.save_incident(case.to_dict())
         return case
 
     def transition_phase(
@@ -220,14 +220,14 @@ class IncidentService:
         incident_id: str,
         verification: Verification,
     ) -> IncidentCase:
-        case = self.get(incident_id)
-        case.verifications = [
-            existing
-            for existing in case.verifications
-            if existing.verification_id != verification.verification_id
-        ]
-        case.verifications.append(verification)
         with self.store.transaction() as conn:
+            case = self.get(incident_id)
+            case.verifications = [
+                existing
+                for existing in case.verifications
+                if existing.verification_id != verification.verification_id
+            ]
+            case.verifications.append(verification)
             conn.execute(
                 """INSERT INTO verifications(
                     verification_id, incident_id, subject, result, verifier,
@@ -254,7 +254,7 @@ class IncidentService:
                     verification.verified_at,
                 ),
             )
-        return self.save(case)
+            return self.save(case)
 
     def recompute(self, incident_id: str) -> IncidentCase:
         """Refresh entity states and derive aggregate status without trusting an Agent claim."""
@@ -356,12 +356,26 @@ class IncidentService:
         return all(verified_at >= _parse_timestamp(updated_at) for updated_at in state_updates)
 
     def close_after_learning(self, incident_id: str) -> IncidentCase:
-        case = self.recompute(incident_id)
-        if case.phase is not Phase.LEARN or case.incident_status is not IncidentStatus.RESOLVED:
+        with self.store.transaction() as conn:
+            current = self.get(incident_id)
+            if self.store.backend_name == "postgresql" and current.affected_batches:
+                placeholders = ",".join("?" for _ in current.affected_batches)
+                conn.execute(
+                    f"SELECT batch_id FROM inventory_batches WHERE batch_id IN ({placeholders})"
+                    " ORDER BY batch_id FOR UPDATE",
+                    current.affected_batches,
+                ).fetchall()
+            case = self.recompute(incident_id)
+            if case.phase is not Phase.LEARN or case.incident_status is not IncidentStatus.RESOLVED:
+                refused = True
+            else:
+                refused = False
+                case.incident_status = IncidentStatus.CLOSED
+                case.work_status = WorkStatus.COMPLETED
+                self.save(case)
+        if refused:
             raise InvalidTransition("CLOSED requires phase LEARN and status RESOLVED")
-        case.incident_status = IncidentStatus.CLOSED
-        case.work_status = WorkStatus.COMPLETED
-        return self.save(case)
+        return case
 
     @staticmethod
     def snapshot(case: IncidentCase) -> dict[str, Any]:

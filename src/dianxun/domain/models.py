@@ -174,6 +174,7 @@ class IncidentCase:
     next_wakeup_at: str | None = None
     created_at: str = field(default_factory=iso_now)
     updated_at: str = field(default_factory=iso_now)
+    version: int = 0
 
     @classmethod
     def create(

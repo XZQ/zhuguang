@@ -136,7 +136,7 @@ class StateStoreProtocol(Protocol):
 
     def get_incident(self, incident_id: str) -> dict[str, Any] | None: ...
 
-    def save_incident(self, case: dict[str, Any]) -> None: ...
+    def save_incident(self, case: dict[str, Any], *, create: bool = False) -> int: ...
 
     def expire_approvals(self) -> int: ...
 
@@ -145,3 +145,7 @@ class StateStoreProtocol(Protocol):
 
 class StoreIntegrityError(RuntimeError):
     """Normalized integrity failure raised by optional database drivers."""
+
+
+class IncidentConflictError(ValueError):
+    """The supplied incident version is stale; reload before retrying the intent."""

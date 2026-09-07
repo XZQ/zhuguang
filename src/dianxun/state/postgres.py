@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping, Sequence
 from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import date, datetime
 from importlib import resources
 from typing import Any
@@ -157,6 +158,9 @@ class PostgresStateStore(SQLiteStateStore):
         self.runtime_role = runtime_role
         self.runtime_store_id = store_id
         self.database_identity = redact_dsn(dsn)
+        self._transaction_connection: ContextVar[ConnectionProtocol | None] = ContextVar(
+            "transaction_connection", default=None
+        )
 
     def connect(self) -> _PostgresConnection:
         driver, dict_row = _load_driver()
@@ -178,7 +182,12 @@ class PostgresStateStore(SQLiteStateStore):
 
     @contextmanager
     def transaction(self):
+        current = self._transaction_connection.get()
+        if current is not None:
+            yield current
+            return
         connection = self.connect()
+        token = self._transaction_connection.set(connection)
         try:
             yield connection
             connection.commit()
@@ -186,6 +195,7 @@ class PostgresStateStore(SQLiteStateStore):
             connection.rollback()
             raise
         finally:
+            self._transaction_connection.reset(token)
             connection.close()
 
     def create_schema(self) -> None:
