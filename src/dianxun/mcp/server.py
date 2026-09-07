@@ -553,10 +553,29 @@ class MCPHandler(BaseHTTPRequestHandler):
         return True, None, "anonymous"
 
     def do_POST(self) -> None:  # noqa: N802
-        if self.path != "/mcp":
+        if self.path not in {"/mcp", "/runtime"}:
             self._send(404, {"error": "Not found"})
             return
-        authenticated, actor, auth_mode = self._authenticate()
+        principal = None
+        if self.path == "/runtime":
+            from ..runtime import load_principals
+
+            try:
+                principals = load_principals(os.environ.get("DIANXUN_RUNTIME_TOKENS_JSON", ""))
+            except ValueError:
+                principals = {}
+            supplied = self.headers.get("Authorization", "").removeprefix("Bearer ")
+            principal = next(
+                (
+                    identity
+                    for token, identity in principals.items()
+                    if hmac.compare_digest(supplied, token)
+                ),
+                None,
+            )
+            authenticated, actor, auth_mode = principal is not None, None, "runtime"
+        else:
+            authenticated, actor, auth_mode = self._authenticate()
         if not authenticated:
             MCP_METRICS.record_auth_failure()
             self._send(
@@ -597,6 +616,9 @@ class MCPHandler(BaseHTTPRequestHandler):
             return
         method = request.get("method")
         request_id = request.get("id")
+        if self.path == "/runtime":
+            self._runtime_request(request, principal, principals)
+            return
         if method == "initialize":
             result: Any = {
                 "protocolVersion": "2024-11-05",
@@ -645,6 +667,61 @@ class MCPHandler(BaseHTTPRequestHandler):
             )
             return
         self._send(200, {"jsonrpc": "2.0", "id": request_id, "result": result})
+
+    def _runtime_request(self, request, principal, principals):
+        from ..runtime import RUNTIME_SCHEMAS, RuntimeService
+
+        method = request.get("method")
+        if method == "initialize":
+            result = {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {"tools": {}},
+                "serverInfo": {"name": "dianxun-runtime", "version": "1.0"},
+            }
+        elif method == "tools/list":
+            result = {
+                "tools": [
+                    {"name": name, "description": name.replace("_", " "), "inputSchema": schema}
+                    for name, schema in RUNTIME_SCHEMAS.items()
+                ]
+            }
+        elif method == "tools/call":
+            params = request.get("params")
+            try:
+                if not isinstance(params, dict) or not isinstance(params.get("name"), str):
+                    raise ValueError("Invalid runtime tool params")
+                runtime = getattr(self.server, "runtime_service", None) or RuntimeService(
+                    default_service(), principals.values()
+                )
+                data = runtime.call(params["name"], params.get("arguments", {}), principal)
+                result = {
+                    "content": [{"type": "text", "text": json.dumps(data, ensure_ascii=False)}],
+                    "isError": False,
+                }
+            except Exception as exc:  # stable boundary; never expose credentials or database errors
+                from ..context_bus import ContextBusError
+                from ..coordination import CoordinationError
+
+                known = isinstance(
+                    exc, (ValueError, KeyError, PermissionError, ContextBusError, CoordinationError)
+                )
+                result = _tool_result(
+                    _adapter_error(
+                        "FORBIDDEN" if isinstance(exc, PermissionError) else "RUNTIME_REJECTED",
+                        str(exc) if known else "Runtime operation failed",
+                    )
+                )
+        else:
+            self._send(
+                200,
+                {
+                    "jsonrpc": "2.0",
+                    "id": request.get("id"),
+                    "error": {"code": -32601, "message": "Unknown runtime method"},
+                },
+            )
+            return
+        self._send(200, {"jsonrpc": "2.0", "id": request.get("id"), "result": result})
 
     def do_GET(self) -> None:  # noqa: N802
         if self.path == "/metrics":

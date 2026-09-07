@@ -35,7 +35,16 @@ resource_path 统一解析只读资源；output_path 将安装后的评测/Trace
 
 ## 后续项
 
-4. Worker 运行时协调和领域桥接。
+## 4. Worker 运行时桥接
+
+新增 /runtime MCP 接口，将绑定租户/门店/Worker 的身份、租约、规范 Skill、工具回执和
+IncidentService 接通。runtime_contexts 与领域数据原子持久化，重启由数据库恢复；
+完整 HTTP 测试覆盖闭环、partial、租约、越权和 checkpoint 提交失败回滚。
+部署配置已接线，Worker 包保持字节不变，新增规则由 YAML 传递。
+接口、凭证配置、迁移和回滚见 [运行接口说明](../operations/worker-runtime.md)。
+
+## 后续项
+
 5. HTTP 请求边界与就绪探测。
 6. 门户真实状态与可复现构建。
 7. 质量门禁与文档证据一致性。

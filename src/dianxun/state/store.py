@@ -145,6 +145,15 @@ CREATE TABLE IF NOT EXISTS incidents (
     updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS runtime_contexts (
+    tenant_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    store_id TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    payload_json TEXT NOT NULL,
+    PRIMARY KEY (tenant_id, task_id)
+);
+
 CREATE TABLE IF NOT EXISTS actions (
     action_id TEXT PRIMARY KEY,
     incident_id TEXT NOT NULL,
@@ -257,6 +266,7 @@ CREATE TABLE IF NOT EXISTS supplier_contracts (
 """
 
 _RESET_TABLES = (
+    "runtime_contexts",
     "tool_failures",
     "idempotency",
     "audit_log",

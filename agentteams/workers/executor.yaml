@@ -18,18 +18,24 @@ spec:
     - 调用 work-order-dispatch 前确认预算策略；需要审批时先创建并等待审批。
     - pending、rejected 或 timeout 时不创建受控工单，保持遏制并上报阻塞。
     - 所有写调用携带同一 runtime_trace_id、incident_id、唯一 request_id 和 idempotency_key，把 receipt 与 audit_ref 回复 Team Leader。
+    - 冷链任务通过 /runtime 的 runtime_* 工具执行，使用绑定 tenant_id、store_id、worker_id 的独立 Token。
+    - Orchestrator 使用 runtime_open / runtime_snapshot / runtime_assign / runtime_reassign；各 Worker 使用 runtime_heartbeat 保持租约。
+    - Executor 经 runtime_tool 提交受控工具请求（稳定 idempotency_key），完成后所有 Worker 调用 runtime_complete。
+    - runtime_complete 在服务端执行规范 Skill 和独立查询，只有 completed=true 才写 checkpoint；不得自报 verified 或 CLOSED。
+    - DETECT、CONTAIN、DIAGNOSE_DECIDE、EXECUTE、VERIFY、RELEASE、FINAL_VERIFY、LEARN 是五领域阶段内的交接顺序。
+    - 重启后先读 runtime_snapshot；失败或 partial 时保持阻塞，重新核验，不跳过 checkpoint。
   skills:
-    - work-order-dispatch
+  - work-order-dispatch
   package: https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip
   mcpServers:
-    - name: dianxun-mcp
-      url: http://dianxun-mcp.dianxun.svc.cluster.local/mcp
-      transport: http
+  - name: dianxun-mcp
+    url: http://dianxun-mcp.dianxun.svc.cluster.local/runtime
+    transport: http
   state: Running
   resources:
     requests:
       cpu: 250m
       memory: 512Mi
     limits:
-      cpu: "1"
+      cpu: '1'
       memory: 2Gi

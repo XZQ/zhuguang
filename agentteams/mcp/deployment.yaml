@@ -26,65 +26,68 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: mcp
-          image: dianxun-mcp:0.2.0
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
-          env:
-            - name: HOST
-              value: 0.0.0.0
-            - name: PORT
-              value: "8080"
-            - name: DIANXUN_STATE_DB
-              value: /var/lib/dianxun/runtime.db
-            - name: DIANXUN_TRACE_DB
-              value: /var/lib/dianxun/agentteams-trace.db
-            # Provision this Secret after Worker identities are created. The pod
-            # intentionally stays unready until an actor-bound mapping exists.
-            - name: MCP_ACTOR_TOKENS_JSON
-              valueFrom:
-                secretKeyRef:
-                  name: dianxun-agent-identities
-                  key: actor-tokens-json
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: "1"
-              memory: 512Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 10001
-            runAsGroup: 10001
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 2
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 15
-          volumeMounts:
-            - name: state
-              mountPath: /var/lib/dianxun
-            - name: tmp
-              mountPath: /tmp
-      volumes:
+      - name: mcp
+        image: dianxun-mcp:0.2.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: HOST
+          value: 0.0.0.0
+        - name: PORT
+          value: '8080'
+        - name: DIANXUN_STATE_DB
+          value: /var/lib/dianxun/runtime.db
+        - name: DIANXUN_TRACE_DB
+          value: /var/lib/dianxun/agentteams-trace.db
+        - name: MCP_ACTOR_TOKENS_JSON
+          valueFrom:
+            secretKeyRef:
+              name: dianxun-agent-identities
+              key: actor-tokens-json
+        - name: DIANXUN_RUNTIME_TOKENS_JSON
+          valueFrom:
+            secretKeyRef:
+              name: dianxun-agent-identities
+              key: runtime-tokens-json
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: '1'
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 10001
+          runAsGroup: 10001
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        volumeMounts:
         - name: state
-          persistentVolumeClaim:
-            claimName: dianxun-mcp-state
+          mountPath: /var/lib/dianxun
         - name: tmp
-          emptyDir: {}
+          mountPath: /tmp
+      volumes:
+      - name: state
+        persistentVolumeClaim:
+          claimName: dianxun-mcp-state
+      - name: tmp
+        emptyDir: {}

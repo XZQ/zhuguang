@@ -134,6 +134,15 @@ CREATE TABLE IF NOT EXISTS incidents (
     updated_at TIMESTAMPTZ NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS runtime_contexts (
+    tenant_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    store_id TEXT NOT NULL,
+    version BIGINT NOT NULL,
+    payload_json JSONB NOT NULL,
+    PRIMARY KEY (tenant_id, task_id)
+);
+
 CREATE TABLE IF NOT EXISTS actions (
     action_id TEXT PRIMARY KEY,
     incident_id TEXT NOT NULL REFERENCES incidents(incident_id),

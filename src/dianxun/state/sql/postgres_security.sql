@@ -294,13 +294,19 @@ CREATE POLICY supplier_hq_only ON supplier_contracts
     );
 
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
+ALTER TABLE runtime_contexts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE runtime_contexts FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS runtime_context_scope ON runtime_contexts;
+CREATE POLICY runtime_context_scope ON runtime_contexts
+    USING (dianxun_tenant_allowed(tenant_id) AND dianxun_store_allowed(store_id))
+    WITH CHECK (dianxun_tenant_allowed(tenant_id) AND dianxun_store_allowed(store_id));
 REVOKE ALL ON dianxun_principal_scope
     FROM dianxun_runtime, dianxun_business_ro, dianxun_hq;
 GRANT USAGE ON SCHEMA public TO dianxun_runtime, dianxun_business_ro, dianxun_hq;
 GRANT SELECT, INSERT, UPDATE ON
     meta, stores, devices, device_readings, inventory_batches, sales_holds,
     approvals, workorders, manual_evidence, incidents, actions, verifications,
-    audit_log, idempotency, knowledge_items, review_jobs
+    audit_log, idempotency, knowledge_items, review_jobs, runtime_contexts
     TO dianxun_runtime;
 GRANT SELECT, UPDATE ON tool_failures TO dianxun_runtime;
 GRANT SELECT ON stores, devices, device_readings, inventory_batches, workorders

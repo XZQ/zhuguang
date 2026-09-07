@@ -18,7 +18,7 @@ PACKAGE_URL = (
     "https://raw.githubusercontent.com/XZQ/zhuguang/"
     f"{PACKAGE_SOURCE_COMMIT}/dist/dianxun-worker.zip"
 )
-MCP_URL = "http://dianxun-mcp.dianxun.svc.cluster.local/mcp"
+MCP_URL = "http://dianxun-mcp.dianxun.svc.cluster.local/runtime"
 
 
 def load_yaml(path: Path) -> dict:
@@ -109,7 +109,7 @@ class AgentTeamsArtifactTests(unittest.TestCase):
                 self.assertNotIn("/main/", spec["package"])
                 self.assertEqual(skills, set(spec.get("skills", [])))
                 if name == "orchestrator":
-                    self.assertNotIn("mcpServers", spec)
+                    self.assertEqual(MCP_URL, spec["mcpServers"][0]["url"])
                     self.assertIn("context_version", spec["agents"])
                     self.assertIn("lease_expires_at", spec["agents"])
                     self.assertIn("checkpoint", spec["agents"])
