@@ -11,7 +11,6 @@ import json
 import math
 import os
 import sqlite3
-import sys
 import uuid
 from collections.abc import Callable
 from datetime import timedelta
@@ -22,6 +21,7 @@ from ..domain.enums import ApprovalStatus, BatchDisposition, WorkOrderStatus
 from ..domain.models import Evidence
 from ..domain.policy import PolicyDecision, PolicyEngine
 from ..knowledge import KnowledgeService, embedding_provider_from_env
+from ..resources import output_path, resource_path
 from ..state import (
     ConnectionProtocol,
     StateStoreProtocol,
@@ -30,27 +30,10 @@ from ..state import (
 )
 from .envelope import ToolEnvelope
 
-_ROOT = Path(__file__).resolve().parents[3]
-_SHARE = Path(sys.prefix) / "share" / "dianxun"
-
-
-def _resource(repo_path: Path, installed_path: Path) -> Path:
-    return repo_path if repo_path.exists() else installed_path
-
-
-DEFAULT_DB_PATH = Path.cwd() / "demo" / "state" / "runtime.db"
-DEFAULT_SEED_PATH = _resource(
-    _ROOT / "demo" / "state" / "seed.json",
-    _SHARE / "demo" / "state" / "seed.json",
-)
-DEFAULT_POLICY_PATH = _resource(
-    _ROOT / "config" / "policies" / "coldchain-demo.v1.json",
-    _SHARE / "config" / "policies" / "coldchain-demo.v1.json",
-)
-DEFAULT_SCENARIO_DIR = _resource(
-    _ROOT / "demo" / "state" / "scenarios",
-    _SHARE / "demo" / "state" / "scenarios",
-)
+DEFAULT_DB_PATH = output_path("demo", "state", "runtime.db")
+DEFAULT_SEED_PATH = resource_path("demo", "state", "seed.json")
+DEFAULT_POLICY_PATH = resource_path("config", "policies", "coldchain-demo.v1.json")
+DEFAULT_SCENARIO_DIR = resource_path("demo", "state", "scenarios")
 DEFAULT_SCENARIO_PATH = DEFAULT_SCENARIO_DIR / "coldchain-compressor-failure.json"
 
 

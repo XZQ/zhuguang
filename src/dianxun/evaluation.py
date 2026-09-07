@@ -11,10 +11,10 @@ from typing import Any
 
 from . import trace
 from .adapters import LocalDemoAdapter
+from .resources import output_path, resource_path
 
-ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SCENARIO_DIR = ROOT / "demo" / "state" / "scenarios"
-DEFAULT_EVIDENCE_DIR = ROOT / "evidence" / "m4"
+DEFAULT_SCENARIO_DIR = resource_path("demo", "state", "scenarios")
+DEFAULT_EVIDENCE_DIR = output_path("evidence", "m4")
 P0_SCENARIO_FILES = (
     "coldchain-compressor-failure.json",
     "coldchain-sensor-false-positive.json",

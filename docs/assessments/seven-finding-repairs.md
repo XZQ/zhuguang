@@ -24,7 +24,17 @@ CAS 的旧程序并行覆盖。回滚须停写、备份数据库，再在独立�
 
 ## 后续项
 
-3. Docker 输入与安装后资源解析。
+## 3. 安装资源
+
+Docker COPY 包含根 skills/；wheel 打包六个 Skill 的完整文件并在安装模式继续校验摘要。
+resource_path 统一解析只读资源；output_path 将安装后的评测/Trace/运行文件写到工作目录，
+可由 DIANXUN_OUTPUT_DIR 覆盖。源码模式保留仓库内确定性产物路径。
+`python scripts/check_installed_distribution.py --docker-inputs` 按 Docker COPY 清单构造临时
+源目录、构建 wheel、安装到仓库外虚拟环境，再以隔离 Python 执行 evaluate 和 demo-run。
+本机没有 Docker 引擎；镜像实际构建和容器烟测由第 7 项 CI 门禁执行，不能标为本地已通过。
+
+## 后续项
+
 4. Worker 运行时协调和领域桥接。
 5. HTTP 请求边界与就绪探测。
 6. 门户真实状态与可复现构建。

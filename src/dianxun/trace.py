@@ -25,11 +25,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .resources import output_path
+
 _DEFAULT_DB_PATH = (
     Path(
         os.environ.get(
             "DIANXUN_TRACE_DB",
-            Path(__file__).resolve().parent.parent.parent / "data" / "trace.db",
+            output_path("data", "trace.db"),
         )
     )
     .expanduser()

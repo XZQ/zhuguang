@@ -7,9 +7,9 @@ from collections.abc import Callable
 from dataclasses import asdict, is_dataclass
 from enum import Enum
 from functools import cache, wraps
-from pathlib import Path
 from typing import Any
 
+from ..resources import resource_path
 from ..validation import validate_json
 
 
@@ -19,8 +19,7 @@ class SkillOutputContractError(ValueError):
 
 @cache
 def _output_schema(skill_name: str) -> dict[str, Any]:
-    repository_root = Path(__file__).resolve().parents[3]
-    path = repository_root / "skills" / skill_name / "output.schema.json"
+    path = resource_path("skills", skill_name, "output.schema.json")
     if not path.is_file():
         raise SkillOutputContractError(f"Missing output contract for Skill {skill_name}: {path}")
     schema = json.loads(path.read_text(encoding="utf-8"))

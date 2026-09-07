@@ -8,13 +8,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .resources import output_path, resource_path
 from .validation import validate_json
 
-_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SCHEMA = _ROOT / "schemas" / "agentteams-run-evidence.v1.schema.json"
-DEFAULT_CHECKSUM = _ROOT / "dist" / "dianxun-worker.zip.sha256"
-DEFAULT_PROVENANCE = _ROOT / "dist" / "dianxun-worker.provenance.json"
-DEFAULT_FACTS = _ROOT / "config" / "project-facts.json"
+DEFAULT_SCHEMA = resource_path("schemas", "agentteams-run-evidence.v1.schema.json")
+DEFAULT_CHECKSUM = output_path("dist", "dianxun-worker.zip.sha256")
+DEFAULT_PROVENANCE = output_path("dist", "dianxun-worker.provenance.json")
+DEFAULT_FACTS = resource_path("config", "project-facts.json")
 
 _WORKERS = {"orchestrator", "sentry", "diagnoser", "executor", "auditor"}
 _WORKER_ACTORS = {

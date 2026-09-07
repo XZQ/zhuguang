@@ -6,18 +6,17 @@ import hashlib
 import json
 import os
 import re
-import sys
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 from typing import Any
 
+from ..resources import resource_path
 from ..validation import validate_json
 
-_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_REGISTRY = _ROOT / "skills" / "registry.json"
-DEFAULT_SCHEMA = _ROOT / "schemas" / "skill-registry.v1.schema.json"
-DEFAULT_SKILL_ROOT = _ROOT / "skills"
+DEFAULT_REGISTRY = resource_path("skills", "registry.json")
+DEFAULT_SCHEMA = resource_path("schemas", "skill-registry.v1.schema.json")
+DEFAULT_SKILL_ROOT = resource_path("skills")
 TEXT_SUFFIXES = {".json", ".md", ".py", ".toml", ".yaml", ".yml"}
 _SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
@@ -266,13 +265,5 @@ def _runtime_locations() -> tuple[Path, Path, Path, bool]:
         skill_root = (
             Path(os.environ.get("DIANXUN_SKILL_ROOT", registry_path.parent)).expanduser().resolve()
         )
-        return registry_path, schema_path, skill_root, skill_root.is_dir()
-    if DEFAULT_REGISTRY.is_file():
-        return DEFAULT_REGISTRY, DEFAULT_SCHEMA, DEFAULT_SKILL_ROOT, True
-    share = Path(sys.prefix) / "share" / "dianxun"
-    return (
-        share / "skills" / "registry.json",
-        share / "schemas" / "skill-registry.v1.schema.json",
-        share / "skills",
-        False,
-    )
+        return registry_path, schema_path, skill_root, True
+    return DEFAULT_REGISTRY, DEFAULT_SCHEMA, DEFAULT_SKILL_ROOT, True

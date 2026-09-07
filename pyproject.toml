@@ -45,6 +45,12 @@ package-dir = { "" = "src" }
 "share/dianxun/demo/state/scenarios" = ["demo/state/scenarios/*.json"]
 "share/dianxun/schemas" = ["schemas/*.json"]
 "share/dianxun/skills" = ["skills/registry.json", "skills/LIFECYCLE.md"]
+"share/dianxun/skills/anomaly-detect" = ["skills/anomaly-detect/*"]
+"share/dianxun/skills/coldchain-risk-assess" = ["skills/coldchain-risk-assess/*"]
+"share/dianxun/skills/rootcause-drilldown" = ["skills/rootcause-drilldown/*"]
+"share/dianxun/skills/work-order-dispatch" = ["skills/work-order-dispatch/*"]
+"share/dianxun/skills/outcome-verify" = ["skills/outcome-verify/*"]
+"share/dianxun/skills/review-report" = ["skills/review-report/*"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

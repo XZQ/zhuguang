@@ -3,25 +3,19 @@
 from __future__ import annotations
 
 import json
-import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ..domain.enums import WorkOrderStatus
+from ..resources import resource_path
 from ..state import StateStoreProtocol
 from ..validation import validate_json
 
 if TYPE_CHECKING:
     from ..mcp.p0 import MCPService
 
-_ROOT = Path(__file__).resolve().parents[3]
-_SHARE = Path(sys.prefix) / "share" / "dianxun"
-_SCENARIO_SCHEMA = (
-    _ROOT / "schemas" / "scenario.v1.schema.json"
-    if (_ROOT / "schemas" / "scenario.v1.schema.json").exists()
-    else _SHARE / "schemas" / "scenario.v1.schema.json"
-)
+_SCENARIO_SCHEMA = resource_path("schemas", "scenario.v1.schema.json")
 _EVENT_REQUIRED_FIELDS = {
     "set_device_state": {"device_id"},
     "append_device_reading": {"device_id", "temp_c"},

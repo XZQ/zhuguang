@@ -6,13 +6,12 @@ pending candidate.  It never auto-publishes knowledge into retrieval results.
 
 from __future__ import annotations
 
-from pathlib import Path
-
+from ..resources import output_path
 from ..state import SQLiteStateStore
 from .embeddings import HashEmbeddingProvider
 from .repository import KnowledgeService
 
-_DB = Path(__file__).resolve().parents[3] / "data" / "knowledge.db"
+_DB = output_path("data", "knowledge.db")
 _TENANT = "legacy-demo"
 
 
