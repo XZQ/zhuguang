@@ -852,10 +852,10 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
   <!-- Top Navigation Bar -->
   <header class="header-bar">
     <div class="brand-group">
-      <div class="brand-badge">GOAI 2026</div>
+      <div class="brand-badge">GOAI 2026 TOP 15</div>
       <div class="brand-titles">
-        <h1>店巡 Agent <span style="font-size:14px; font-weight:400; color:var(--cyan);">(逐光队 · 赛道一 Agent Infra)</span></h1>
-        <div class="sub">基于 AgentTeams v1.2.3 的连锁便利店异常安全闭环基础设施</div>
+        <h1>店巡 Agent｜Verifiable Multi-Agent Runtime <span style="font-size:13px; font-weight:400; color:var(--cyan);">(逐光队 · 新智基道 TOP 15)</span></h1>
+        <div class="sub">面向物理实体业务的可验证执行 (Anti-Self-Verification) · 异步 Human Tool 协议 · 持续演进基础设施</div>
       </div>
     </div>
     <div class="header-actions">
@@ -871,8 +871,8 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         📖 答辩全景手册
       </button>
-      <a class="header-btn" href="./defense-master.pdf" target="_blank" download>
-        ⬇️ 手册 PDF
+      <a class="header-btn" href="./defense.html" target="_blank">
+        🖥️ 独立大纲网页
       </a>
       <a class="header-btn primary" href="https://github.com/XZQ/zhuguang" target="_blank">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -884,10 +884,10 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
   <!-- Match Context Banner -->
   <div class="match-banner">
     <div class="match-info">
-      <div class="match-tag">参赛队伍：<b>逐光（第 3 组｜第 13 队）</b></div>
-      <div class="match-tag">作品名称：<b>店巡 Agent</b></div>
-      <div class="match-tag">答辩时间：<b>2026-09-04 14:08—14:16</b> (候场 13:58 前)</div>
-      <div class="match-tag">时长：<b>8 分钟</b> (陈述3m + Demo1m + 问答3m + 评分1m)</div>
+      <div class="match-tag">参赛队伍：<b>逐光（GOAI 全国总决赛 15 强）</b></div>
+      <div class="match-tag">系统全称：<b>店巡 Agent｜Verifiable Multi-Agent Runtime</b></div>
+      <div class="match-tag">验证场景：<b>Reference Scenario 01 · 连锁冷链物理资产零事故</b></div>
+      <div class="match-tag">总决赛时间：<b>2026-09-22—23 (杭州云谷中心)</b></div>
     </div>
     <div class="match-time-pill">
       <div class="pulse-dot"></div>
@@ -899,39 +899,39 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
   <div class="redlines-bar">
     <div class="redline-item">
       <span>🛡️</span>
-      <div><b>红线一（职责分离）：</b>执行者不能自证成功，Auditor 必须独立重查设备与商品事实</div>
+      <div><b>核心机制一（Anti-Self-Verification 反自验）：</b>执行者不能自证成功，Auditor 独立重查客观传感器与外部事实</div>
     </div>
     <div class="redline-item">
-      <span>🔒</span>
-      <div><b>红线二（双重状态）：</b>设备恢复 ≠ 商品安全，工单完成 ≠ 事件关闭，严禁直接放行</div>
+      <span>⚡</span>
+      <div><b>核心机制二（Human-as-a-Physical-Tool）：</b>将不可数字化的物理上门动作抽象为标准异步工具，纳入状态机与超时重验</div>
     </div>
   </div>
 
   <!-- Core KPIs Grid -->
   <div class="kpi-grid">
     <div class="kpi-card">
+      <div class="kpi-val">Anti-Self</div>
+      <div class="kpi-lbl">反自验执行机制 (红线)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">Human Tool</div>
+      <div class="kpi-lbl">物理异步工具协议</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">Verified Close</div>
+      <div class="kpi-lbl">客观事实安全关闭</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">AgentLoop</div>
+      <div class="kpi-lbl">持续评测与版本演进</div>
+    </div>
+    <div class="kpi-card">
       <div class="kpi-val">6 / 6</div>
       <div class="kpi-lbl">场景通过率 (100%)</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-val">5 + 1</div>
-      <div class="kpi-lbl">业务 Agent + Manager</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val">6 个</div>
-      <div class="kpi-lbl">P0 核心 Skill (九要素)</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val">0 / 0</div>
-      <div class="kpi-lbl">错误关闭 / 错误放行</div>
-    </div>
-    <div class="kpi-card">
       <div class="kpi-val">45 / 45</div>
       <div class="kpi-lbl">完整 Evidence 链</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-val">26 / 26</div>
-      <div class="kpi-lbl">阶段 Trace 覆盖</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-val">qwen3.8-max</div>
@@ -976,11 +976,12 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
     <div class="demo-controller">
       <div class="demo-header">
         <div>
-          <h2 style="font-size: 19px; color:#fff; display:flex; align-items:center; gap:8px;">
-            ⚡️ 1 分钟高光 Demo 演练：冷柜失温五阶段闭环
+          <h2 style="font-size: 19px; color:#fff; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span>⚡️ 1 分钟高光演练：Verifiable Agent Execution 真实物理闭环</span>
+            <span style="font-size:11px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:4px; font-weight:700;">Reference Scenario 01 · 连锁冷链零事故</span>
           </h2>
           <p style="color:var(--text-secondary); font-size:12.5px; margin-top:2px;">
-            专为复赛答辩 1 分钟 Demo 设计：涵盖 5 个 Agent 协同、核心 Skill 调用、停售遏制、HITL 审批与 Auditor 独立重查
+            面向物理实体业务的可验证闭环：Sentry 实时异常熔断 ➔ Executor 调度 Human Tool (上门维修) ➔ Auditor 独立无污染重查 (Anti-Self-Verification) ➔ Verified Close
           </p>
         </div>
         <div class="demo-timer-box">
@@ -1704,28 +1705,28 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
       <!-- CHAPTER 1 -->
       <section id="d-ch1" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
         <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>01</span> 为什么做这个项目？痛点透视与传统监控三大致命盲区
+          <span>01</span> 赛道核心命题：Agent 步入物理世界的执行可信危机与三大断层
         </h3>
         <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          连锁便利店（如 7-Eleven、罗森、美宜佳）和生鲜门店高度依赖物理冷链。但现有的动环系统普遍存在三大断层：
+          当 Agent 从纯文本与代码生成的“数字虚拟空间”走向企业级实体业务时，行业普遍面临三大致命断层。冷链与连锁门店，正是检验 Agent Infra 执行鲁棒性最严苛的<b>极限压力试验场（Reference Scenario 01）</b>：
         </p>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
           <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">1. 告警风暴与假闭环（如智感温盾）</b>
+            <b style="color:#fca5a5; font-size:13px;">1. 自验自放漏洞（Anti-Self-Verification 缺失）</b>
             <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              传统监控只做单点硬阈值报警，全网每天上千条报警风暴（现实中单日活跃告警达 608 条），店员麻木疲劳；系统提供的唯一处置方式竟然只有敷衍的【标记已解决】按钮，形成“告警已读，事故未消”的严重形式主义。
+              业界普遍存在“执行者自己宣布自己成功”的逻辑漏洞。Agent 执行了操作便直接结案，缺乏独立第三方重查真实外部事实。冷柜温度降回 4.8°C，系统显示变绿，但鲜奶超温暴露 42 分钟已彻底变质！没有独立验真，就会引发重大灾难。
             </p>
           </div>
           <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">2. 设备恢复 ≠ 商品安全（行业最大盲区）</b>
+            <b style="color:#fca5a5; font-size:13px;">2. 物理世界无法数字化的断层（Human Tool 缺失）</b>
             <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              冷柜跳闸 2 小时后重新来电，温度降回了 4.8°C。传统系统显示设备变绿，但柜内巴氏鲜奶在常温下超温暴露超过 30 分钟早已不可逆变质！现有系统缺乏商品暴露时长积分追踪，导致变质牛奶流向收银台。
+              纯软件 Agent 只能调用秒级返回的 API 和 MCP。但现实物理世界存在大量不可数字化的人工作业（如拧螺丝、换继电器、物理隔离货品）。传统系统在人到前 45 分钟“全网裸奔”，且无法将高延迟、易超时的人工动作纳入确定性状态机。
             </p>
           </div>
           <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">3. 执行与验收一体（自验漏洞）</b>
+            <b style="color:#fca5a5; font-size:13px;">3. 告警风暴与假闭环（缺乏动力学定损）</b>
             <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              报修、维修、验收由同一个人或同一家外包商闭环，“执行者自己宣布自己修好了”就能结案，缺乏独立第三方查证客观事实的制约机制。
+              传统动环监控单点硬阈值报警频发（单日超 600 条），店员麻木疲劳，“标记已解决”成为形式主义。缺乏微生物动力学热暴露积分计算，导致要么盲目全扔造成巨额货损，要么误售变质品面临严苛法律制裁。
             </p>
           </div>
         </div>
@@ -1734,31 +1735,29 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
       <!-- CHAPTER 2 -->
       <section id="d-ch2" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
         <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>02</span> 项目核心定位与量化商业收益（四大 ROI 维度）
+          <span>02</span> Verifiable Multi-Agent Runtime：三大核心抽象与架构范式
         </h3>
         <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          <b>核心定位</b>：交付的不是一条冷冰冰的告警日志，而是一份<b>“责任清晰、证据完备、通过安全门禁的五阶段闭环包”</b>。
+          <b>核心定位</b>：我们构建的不是单点业务脚本，而是一套<b>面向物理实体流程的可验证多智能体运行时（Verifiable Multi-Agent Runtime）</b>，以三大基座级技术抽象重塑企业对 Agent 的信任底线：
         </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:12px;">
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">0 容忍</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">食品安全事故发生率</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">20s 自动施加 POS 停售锁</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
+          <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:12px;">
+            <b style="color:#38bdf8; font-size:13px;">★ 抽象一：反自验机制 (Anti-Self-Verification)</b>
+            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              执行者（Executor）仅拥有 L1/L2 受控写权限，<b>绝对无权自证成功</b>；唯有隔离上下文的 Auditor 独立重查客观传感器与事实凭证后，IncidentService 单一事实源方可将事件标记为 Verified Close。
+            </p>
           </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">60%+</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">精细化定损减亏比例</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">鲜奶报损 · 熟食调拨放行</div>
+          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px;">
+            <b style="color:#34d399; font-size:13px;">★ 抽象二：物理异步工具 (Human-as-a-Physical-Tool)</b>
+            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              将不可数字化的人工物理操作（维修技工上门）定义为标准 Human Tool。支持小时级异步挂起、超时重试、凭据回传与独立复验，填补数字 Agent 与物理原子世界的鸿沟。
+            </p>
           </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">90%+</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">时序告警降噪率</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Westgard 法则过滤开门抖动</div>
-          </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">100%</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">合规穿透审计率</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">SHA-256 哈希 + 只增审计</div>
+          <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
+            <b style="color:#c4b5fd; font-size:13px;">★ 抽象三：持续进化闭环 (AgentLoop Evolution)</b>
+            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              每一次物理异常处置的全量 Trace 自动回流至 AgentLoop 评测流；结合 Bad Case 评估与消融实验，自动化驱动 Prompt 模板、Policy 门禁与 Skill 语义版本自适应升级。
+            </p>
           </div>
         </div>
       </section>
@@ -1900,19 +1899,19 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P01 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【封面】逐光 · 店巡 Agent 异常闭环基础设施</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【封面】店巡 Agent｜Verifiable Multi-Agent Runtime</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:00 - 00:10 (10秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“独立闭环”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“可信闭环”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “各位评委老师下午好！我们是第 13 队‘逐光’，今天汇报的作品是面向连锁门店的物理异常闭环基础设施——<b>店巡 Agent</b>。<br>
-              在连锁冷链中，面对单柜失温等物理突发事件，我们的核心立意是：<b>先遏制风险，再诊断决策，最后基于客观证据实现独立闭环</b>。”
+              “各位评委老师好！我们是第 13 队‘逐光’，今天汇报的作品是面向物理实体流程的可验证多智能体运行时——<b>店巡 Agent</b>。<br>
+              当大部分 Agent 还在虚拟的代码和文本里打转时，我们深入到了物理世界最后一百米：<b>通过反自验执行机制 (Anti-Self-Verification) 与物理异步 Human Tool，为企业提供真正敢于放行的可信闭环！</b>”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：PPT 封面居中大标题与副标“先遏制风险，再诊断决策，最后验证闭环”。
+              👀 <b>画面焦点</b>：PPT 封面居中大标题 Verifiable Multi-Agent Runtime 与三大核心机制。
             </div>
           </div>
 
@@ -1921,20 +1920,20 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#ca8a04; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P02 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【01·场景价值】总部运营要的不是告警，而是可安全放行的闭环</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【01·第一性原理】企业敢用 Agent 的前提：执行者不能自证成功</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:10 - 00:30 (20秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“完整证据链”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“客观事实验证”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “连锁门店缺的从来不是监控告警。传统系统每天数百条告警轰炸（例如某温盾系统 608 条警报），店长只能麻木点击‘标记已解决’，这是典型的假闭环！<br>
-              更致命的是：<b>设备修好了、温度降回去了，不等于商品没变质！</b>误放行会导致严重食安事故，错关会导致追责断链。<br>
-              总部运营要的从来不是通知推送，而是<b>能够证明‘可以安全放行’的完整证据链</b>。”
+              “企业为什么不敢让 Agent 真正干脏活累活？核心痛点在于：<b>执行者不能自证成功！</b>如果由写操作的 Agent 自己宣布成功，系统立刻陷入自验自放的灾难黑盒。<br>
+              在连锁冷链这一极严苛参考场景下更为致命：冷柜恢复 4.8°C 变绿，但鲜奶超温暴露 42 分钟已彻底变质！传统报单在人到前裸奔 45 分钟，AI 乱放行则导致重大食安违法。<br>
+              总部运营要的从来不是文本建议，而是<b>经过独立无污染重查的‘客观事实验证’</b>。”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：左侧三大痛点、中间 4 类输入、右侧 OUTPUT + DONE 安全放行完成条件。
+              👀 <b>画面焦点</b>：左侧自验证漏洞、中间数字与物理边界、右侧 Verified Close 完成条件。
             </div>
           </div>
 
@@ -1943,21 +1942,21 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P03 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【02·系统架构】一个业务核心，两套可验证运行底座</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【02·三平面架构】将物理 Human 纳入可验证执行协议</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:30 - 00:48 (18秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“动态协同”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“三平面协同”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “为此，逐光构筑了‘一个业务核心，两套运行底座’：<br>
-              底层由 <b>IncidentService 状态机</b>提供全局唯一的单一事实源；<br>
-              在本地端，采用 SQLite 和固定随机种子，保证评测 100% 确定性复现、零外部依赖；<br>
-              在云端，无缝对接赛道指定的 <b>AgentTeams 平台与 PolarDB</b>，支撑 1 Manager + 5 Agent 生产级多 Worker 动态协同。”
+              “为此，我们设计了<b>三平面可验证执行架构</b>：<br>
+              ① <b>控制与治理平面</b>：AgentTeams 协同编排 + PolicyEngine 刚性门禁 + AgentLoop 闭环评估；<br>
+              ② <b>执行平面</b>：不仅提供 API 与 MCP Tool，更在业内首次将上门师傅定义为标准<b>异步 Human Tool</b>，支持高延迟挂起、超时与凭据回传；<br>
+              ③ <b>验证与事实平面</b>：IncidentService 状态机提供唯一事实源，Auditor 独立查验，决定 Verified Close。”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：中间黑色卡片 SINGLE SOURCE OF TRUTH，连接左右 SQLite 本地底座与 AgentTeams 云端底座。
+              👀 <b>画面焦点</b>：三平面布局，中间突出高亮的 Human Tool (物理世界上门)。
             </div>
           </div>
 
@@ -1966,7 +1965,7 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#059669; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P04 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【03·五 Agent 职责】五个角色，不共享“宣布成功”的权力</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【03·五 Agent 职责】五个角色，不共享“宣布成功”的权力 (Anti-Self-Verification)</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:48 - 01:06 (18秒)</span>
@@ -1974,12 +1973,12 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “在多 Agent 协同上，我们践行最小权限与职责分离原则，划分 5 个角色，<b>绝不共享‘宣布成功’的权力</b>：<br>
+              “在多 Agent 协同上，我们践行最小权限与反自验原则，5 个角色<b>绝不共享‘宣布成功’的权力</b>：<br>
               • <b>Orchestrator</b> 仅调度协调，无领域写权；<br>
               • <b>Sentry</b> 只读巡检全网设备与时序去噪；<br>
-              • <b>Diagnoser</b> 积分计算商品暴露风险与 Top-K 假设；<br>
-              • <b>Executor</b> 受控执行 POS 停售锁与急修工单；<br>
-              • <b>Auditor</b> 是核心守门员——<b>执行者绝不能自证成功</b>，必须由 Auditor 独立稽核！”
+              • <b>Diagnoser</b> 结合 Arrhenius 动力学积分计算商品暴露风险；<br>
+              • <b>Executor</b> 受控执行写操作，调度 Human Tool，但无权自验；<br>
+              • <b>Auditor</b> 独立查证客观传感器与账实凭据，拥有一票否决权！”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
               👀 <b>画面焦点</b>：五列角色并排，特别强调最右侧 05 INDEPENDENT Auditor 的独立守卫地位。
@@ -1991,18 +1990,20 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P05 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【04·五阶段闭环】从异常到关闭，每一步都有拒绝条件</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【04·五阶段闭环】将异步 Human Tool 纳入确定性状态机</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 01:06 - 01:22 (16秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“沉淀知识复盘”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“持续演进闭环”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “业务状态机分为严密的五阶段，每一步都有严苛拒绝条件：<br>
-              第一步‘发现与遏制’，首要动作不是报修，而是<b>立即在 POS 端下发停售锁保安全</b>；<br>
-              随后完成诊断与审批，派工维修；<br>
-              维修完成后进入第四步‘独立验证’，由 Auditor <b>核验温度恢复与商品批次双重事实</b>，才允许解除停售；最后沉淀知识复盘。”
+              “业务状态机分为严密的五阶段：<br>
+              第一步‘发现与遏制’，首要动作是毫秒级切断 POS 收银与外卖库存；<br>
+              第二步‘诊断’锁定根因与备件型号；<br>
+              第三步‘执行’将维修师傅作为<b>异步 Human Tool 调度上门</b>，状态机受控挂起；<br>
+              第四步‘独立验证’，由 Auditor 独立核验温度与商品双重事实，杜绝自验；<br>
+              第五步‘演进’，全量 Trace 回流至 AgentLoop 驱动持续评估与能力迭代！”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
               👀 <b>画面焦点</b>：横向 5 步流程卡片（01 DETECT → 02 DIAGNOSE → 03 EXECUTE → 04 VERIFY → 05 LEARN）。
@@ -2401,6 +2402,8 @@ button {{ font-family: inherit; cursor: pointer; border: none; background: none;
 
 
 
+
+
   <!-- Footer -->
   <footer class="portal-footer">
     <div>2026 世界人工智能开源大赛 (GOAI) · 赛道一 Agent Infra · 参赛队伍：逐光（第 3 组｜第 13 队）· 作品：店巡 Agent</div>
@@ -2498,9 +2501,9 @@ const DEMO_STEPS = [
   {{
     step: 3,
     time: "00:30 - 00:40",
-    title: "4. S03 店长移动端审批 (HITL) 与换件降温",
-    desc: "维修预算超限（¥680）且鲜奶报损属高风险资产处置，系统触发 L2 人工审批流（HITL）。S03 店长通过移动端完成两笔审批批准后，Executor 自动向驻场冷修服务商下发急修工单，维修工到场更换压缩机启动电容，冷柜迅速回落降温！",
-    agent: "Executor + Human (HITL 审批流)",
+    title: "4. Human Tool 物理世界异步调用与受控执行 (HITL 审批 + 物理技工换件)",
+    desc: "物理动作无法纯软件虚拟化！系统将线下维修工抽象为标准【Human-as-a-Physical-Tool】协议：具备确定性超时管理（SLA 30min）、结构化参数输入与现场凭据回传。预算超限触发店长移动端 HITL 审批后，异步调度物理技工到场换件，冷柜恢复降温！",
+    agent: "Executor + Human Tool (物理世界异步工具协议)",
     skill: "work-order-dispatch v1.0.0",
     mcp: "create_approval, create_workorder",
     evidence: "EVID-WO-REPAIR-8821 (Status: EXECUTED)",
@@ -2518,16 +2521,16 @@ const DEMO_STEPS = [
     terminal: [
       "[09:01:00] [Executor] POLICY_GATE: Repair budget ¥680 requires HITL approval",
       "[09:02:00] [HITL] Approval ticket #APPR-01 APPROVED by StoreManager S03",
-      "[09:02:05] [Executor] MCP_CALL: create_workorder(vendor='QuickColdService', code='COMP_CAPACITOR')",
-      "[09:05:00] [Vendor] Technician marked workorder as EXECUTED (capacitor replaced, cooling restored!)"
+      "[09:02:05] [Executor] INVOKE_TOOL: HumanTool.dispatch_technician(vendor='QuickCold', code='COMP_CAPACITOR', timeout=1800s)",
+      "[09:05:00] [HumanTool] CALLBACK: Technician completed physical repair with photo evidence (Status: EXECUTED)"
     ]
   }},
   {{
     step: 4,
     time: "00:40 - 00:50",
-    title: "5. Auditor 独立稽核 (双重红线高光阻断)",
-    desc: "核心安全红线生效！维修后冷柜温度已降至 4.8°C（设备完全恢复）。但系统绝不信任执行者自证：Auditor 独立重查设备与商品事实，判定鲜奶超标超温变质强制报损并维持停售；熟食转移冷库复验合格解除停售。严禁设备恢复直接放行变质商品！",
-    agent: "Auditor (独立稽核 · 职责分离)",
+    title: "5. Anti-Self-Verification 反自验门禁 (执行者不能自证成功 · 独立重查)",
+    desc: "核心安全底座红线：执行者绝不能宣告自身成功！技工完工工单不等于风险消除。Auditor 启动 Anti-Self-Verification，独立重查时序传感器与批次台账双重事实。判定设备降至 4.8°C 达标，但鲜奶超温超标强制报损并维持停售拦截；熟食转移复验放行。杜绝'报单即解决'的伪闭环！",
+    agent: "Auditor (Anti-Self-Verification 独立重验 · 职责分离)",
     skill: "outcome-verify v1.1.0",
     mcp: "query_device_context, query_inventory_batches",
     evidence: "EVID-AUDIT-VERIFY-001 (Verdict: CONDITIONAL_RESOLVED)",
@@ -2543,18 +2546,18 @@ const DEMO_STEPS = [
     showHold: true,
     showBlock: true,
     terminal: [
-      "[09:06:00] [Auditor] INDEPENDENT_CHECK: Device temp=4.8°C (Cooling RECOVERED -> PASS)",
-      "[09:06:01] [Auditor] REDLINE_CHECK: BATCH-DAIRY-001 was >8°C for 42min (>30m limit!)",
-      "[09:06:02] [Auditor] RELEASE_GUARD: BATCH-DAIRY-001 CANNOT BE RELEASED! (Remain HOLD & SCRAP)",
-      "[09:06:03] [Auditor] RELEASE_GUARD: BATCH-FRESH-001 Transfer confirmed -> RELEASE_PERMITTED"
+      "[09:06:00] [Auditor] ANTI_SELF_VERIFY: Rejecting self-reported completion, querying objective ground truth...",
+      "[09:06:01] [Auditor] SENSOR_TRUTH: Device temp=4.8°C (Cooling RECOVERED -> Hardware PASS)",
+      "[09:06:02] [Auditor] ASSET_GUARD: BATCH-DAIRY-001 exposure 42min (>30m limit!) -> VETO RELEASE! Remain HOLD & SCRAP",
+      "[09:06:03] [Auditor] ASSET_GUARD: BATCH-FRESH-001 cold-transfer confirmed -> RELEASE_PERMITTED"
     ]
   }},
   {{
     step: 5,
     time: "00:50 - 00:60",
-    title: "6. Orchestrator 复盘沉淀与全网安全复归",
-    desc: "在确保变质鲜奶销毁报损、熟食转移、1 号柜温控持续平稳后，Orchestrator 推进至 LEARN 阶段。Auditor 调用 review-report 生成结构化复盘报告与知识候选条目，通过安全门禁后事件安全关闭，全网 512 台设备重归全绿守护！",
-    agent: "Orchestrator + Auditor (复盘归档)",
+    title: "6. Verified Close 事实驱动关闭与 AgentLoop 持续演化",
+    desc: "唯有客观世界风险归零，状态机才允许推进至 Verified Close！全链路执行 Trace 自动输入 AgentLoop 进化管道：Auditor 生成结构化复盘日志，自动优化冷柜失温诊断规则与处置策略，沉淀新 Skill 候选，实现越跑越准的基座进化闭环！",
+    agent: "Orchestrator + AgentLoop (事实驱动关闭 · 运行时持续演化)",
     skill: "review-report v1.1.0",
     mcp: "IncidentService, search_knowledge",
     evidence: "EVID-REVIEW-LEARN-001 (State: CLOSED)",
@@ -2570,10 +2573,11 @@ const DEMO_STEPS = [
     showHold: false,
     showBlock: false,
     terminal: [
-      "[09:07:00] [Orchestrator] PHASE_TRANSITION: VERIFY -> LEARN",
-      "[09:07:05] [Auditor] INVOKE_SKILL: review-report (Generated postmortem & knowledge candidate)",
-      "[09:07:10] [Orchestrator] FINAL_STATUS: Incident CLOSED safely (0 violations, 100% evidence)",
-      "[09:07:11] [System] 60-SECOND DEMO COMPLETED SUCCESSFULLY! ★★★★★"
+      "[09:07:00] [Orchestrator] VERIFIED_CLOSE: All physical risks eliminated. Moving to AGENT_LOOP.",
+      "[09:07:05] [AgentLoop] INGEST_TRACE: trace-diag-fa4416ba ingested into continuous learning engine.",
+      "[09:07:08] [Auditor] INVOKE_SKILL: review-report (Generated postmortem & knowledge candidate)",
+      "[09:07:10] [Orchestrator] FINAL_STATUS: Incident CLOSED (Anti-Self-Verification verified, 0 violations, 100% evidence)",
+      "[09:07:11] [System] 60-SECOND DEMO COMPLETED: Verifiable Multi-Agent Runtime in Action! ★★★★★"
     ]
   }}
 ];

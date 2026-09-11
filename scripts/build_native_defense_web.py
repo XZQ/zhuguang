@@ -60,28 +60,28 @@ DOSSIER_HTML = """
       <!-- CHAPTER 1 -->
       <section id="d-ch1" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
         <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>01</span> 为什么做这个项目？痛点透视与传统监控三大致命盲区
+          <span>01</span> 赛道核心命题：Agent 步入物理世界的执行可信危机与三大断层
         </h3>
         <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          连锁便利店（如 7-Eleven、罗森、美宜佳）和生鲜门店高度依赖物理冷链。但现有的动环系统普遍存在三大断层：
+          当 Agent 从纯文本与代码生成的“数字虚拟空间”走向企业级实体业务时，行业普遍面临三大致命断层。冷链与连锁门店，正是检验 Agent Infra 执行鲁棒性最严苛的<b>极限压力试验场（Reference Scenario 01）</b>：
         </p>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
           <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">1. 告警风暴与假闭环（如智感温盾）</b>
+            <b style="color:#fca5a5; font-size:13px;">1. 自验自放漏洞（Anti-Self-Verification 缺失）</b>
             <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              传统监控只做单点硬阈值报警，全网每天上千条报警风暴（现实中单日活跃告警达 608 条），店员麻木疲劳；系统提供的唯一处置方式竟然只有敷衍的【标记已解决】按钮，形成“告警已读，事故未消”的严重形式主义。
+              业界普遍存在“执行者自己宣布自己成功”的逻辑漏洞。Agent 执行了操作便直接结案，缺乏独立第三方重查真实外部事实。冷柜温度降回 4.8°C，系统显示变绿，但鲜奶超温暴露 42 分钟已彻底变质！没有独立验真，就会引发重大灾难。
             </p>
           </div>
           <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">2. 设备恢复 ≠ 商品安全（行业最大盲区）</b>
+            <b style="color:#fca5a5; font-size:13px;">2. 物理世界无法数字化的断层（Human Tool 缺失）</b>
             <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              冷柜跳闸 2 小时后重新来电，温度降回了 4.8°C。传统系统显示设备变绿，但柜内巴氏鲜奶在常温下超温暴露超过 30 分钟早已不可逆变质！现有系统缺乏商品暴露时长积分追踪，导致变质牛奶流向收银台。
+              纯软件 Agent 只能调用秒级返回的 API 和 MCP。但现实物理世界存在大量不可数字化的人工作业（如拧螺丝、换继电器、物理隔离货品）。传统系统在人到前 45 分钟“全网裸奔”，且无法将高延迟、易超时的人工动作纳入确定性状态机。
             </p>
           </div>
           <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">3. 执行与验收一体（自验漏洞）</b>
+            <b style="color:#fca5a5; font-size:13px;">3. 告警风暴与假闭环（缺乏动力学定损）</b>
             <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              报修、维修、验收由同一个人或同一家外包商闭环，“执行者自己宣布自己修好了”就能结案，缺乏独立第三方查证客观事实的制约机制。
+              传统动环监控单点硬阈值报警频发（单日超 600 条），店员麻木疲劳，“标记已解决”成为形式主义。缺乏微生物动力学热暴露积分计算，导致要么盲目全扔造成巨额货损，要么误售变质品面临严苛法律制裁。
             </p>
           </div>
         </div>
@@ -90,31 +90,29 @@ DOSSIER_HTML = """
       <!-- CHAPTER 2 -->
       <section id="d-ch2" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
         <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>02</span> 项目核心定位与量化商业收益（四大 ROI 维度）
+          <span>02</span> Verifiable Multi-Agent Runtime：三大核心抽象与架构范式
         </h3>
         <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          <b>核心定位</b>：交付的不是一条冷冰冰的告警日志，而是一份<b>“责任清晰、证据完备、通过安全门禁的五阶段闭环包”</b>。
+          <b>核心定位</b>：我们构建的不是单点业务脚本，而是一套<b>面向物理实体流程的可验证多智能体运行时（Verifiable Multi-Agent Runtime）</b>，以三大基座级技术抽象重塑企业对 Agent 的信任底线：
         </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:12px;">
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">0 容忍</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">食品安全事故发生率</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">20s 自动施加 POS 停售锁</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
+          <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:12px;">
+            <b style="color:#38bdf8; font-size:13px;">★ 抽象一：反自验机制 (Anti-Self-Verification)</b>
+            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              执行者（Executor）仅拥有 L1/L2 受控写权限，<b>绝对无权自证成功</b>；唯有隔离上下文的 Auditor 独立重查客观传感器与事实凭证后，IncidentService 单一事实源方可将事件标记为 Verified Close。
+            </p>
           </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">60%+</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">精细化定损减亏比例</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">鲜奶报损 · 熟食调拨放行</div>
+          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px;">
+            <b style="color:#34d399; font-size:13px;">★ 抽象二：物理异步工具 (Human-as-a-Physical-Tool)</b>
+            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              将不可数字化的人工物理操作（维修技工上门）定义为标准 Human Tool。支持小时级异步挂起、超时重试、凭据回传与独立复验，填补数字 Agent 与物理原子世界的鸿沟。
+            </p>
           </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">90%+</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">时序告警降噪率</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Westgard 法则过滤开门抖动</div>
-          </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; text-align:center;">
-            <div style="font-size:24px; font-weight:900; color:var(--green); font-family:var(--font-mono);">100%</div>
-            <div style="font-size:12px; font-weight:700; color:#fff; margin-top:4px;">合规穿透审计率</div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">SHA-256 哈希 + 只增审计</div>
+          <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
+            <b style="color:#c4b5fd; font-size:13px;">★ 抽象三：持续进化闭环 (AgentLoop Evolution)</b>
+            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
+              每一次物理异常处置的全量 Trace 自动回流至 AgentLoop 评测流；结合 Bad Case 评估与消融实验，自动化驱动 Prompt 模板、Policy 门禁与 Skill 语义版本自适应升级。
+            </p>
           </div>
         </div>
       </section>
@@ -256,19 +254,19 @@ DOSSIER_HTML = """
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P01 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【封面】逐光 · 店巡 Agent 异常闭环基础设施</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【封面】店巡 Agent｜Verifiable Multi-Agent Runtime</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:00 - 00:10 (10秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“独立闭环”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“可信闭环”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “各位评委老师下午好！我们是第 13 队‘逐光’，今天汇报的作品是面向连锁门店的物理异常闭环基础设施——<b>店巡 Agent</b>。<br>
-              在连锁冷链中，面对单柜失温等物理突发事件，我们的核心立意是：<b>先遏制风险，再诊断决策，最后基于客观证据实现独立闭环</b>。”
+              “各位评委老师好！我们是第 13 队‘逐光’，今天汇报的作品是面向物理实体流程的可验证多智能体运行时——<b>店巡 Agent</b>。<br>
+              当大部分 Agent 还在虚拟的代码和文本里打转时，我们深入到了物理世界最后一百米：<b>通过反自验执行机制 (Anti-Self-Verification) 与物理异步 Human Tool，为企业提供真正敢于放行的可信闭环！</b>”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：PPT 封面居中大标题与副标“先遏制风险，再诊断决策，最后验证闭环”。
+              👀 <b>画面焦点</b>：PPT 封面居中大标题 Verifiable Multi-Agent Runtime 与三大核心机制。
             </div>
           </div>
 
@@ -277,20 +275,20 @@ DOSSIER_HTML = """
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#ca8a04; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P02 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【01·场景价值】总部运营要的不是告警，而是可安全放行的闭环</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【01·第一性原理】企业敢用 Agent 的前提：执行者不能自证成功</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:10 - 00:30 (20秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“完整证据链”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“客观事实验证”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “连锁门店缺的从来不是监控告警。传统系统每天数百条告警轰炸（例如某温盾系统 608 条警报），店长只能麻木点击‘标记已解决’，这是典型的假闭环！<br>
-              更致命的是：<b>设备修好了、温度降回去了，不等于商品没变质！</b>误放行会导致严重食安事故，错关会导致追责断链。<br>
-              总部运营要的从来不是通知推送，而是<b>能够证明‘可以安全放行’的完整证据链</b>。”
+              “企业为什么不敢让 Agent 真正干脏活累活？核心痛点在于：<b>执行者不能自证成功！</b>如果由写操作的 Agent 自己宣布成功，系统立刻陷入自验自放的灾难黑盒。<br>
+              在连锁冷链这一极严苛参考场景下更为致命：冷柜恢复 4.8°C 变绿，但鲜奶超温暴露 42 分钟已彻底变质！传统报单在人到前裸奔 45 分钟，AI 乱放行则导致重大食安违法。<br>
+              总部运营要的从来不是文本建议，而是<b>经过独立无污染重查的‘客观事实验证’</b>。”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：左侧三大痛点、中间 4 类输入、右侧 OUTPUT + DONE 安全放行完成条件。
+              👀 <b>画面焦点</b>：左侧自验证漏洞、中间数字与物理边界、右侧 Verified Close 完成条件。
             </div>
           </div>
 
@@ -299,21 +297,21 @@ DOSSIER_HTML = """
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P03 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【02·系统架构】一个业务核心，两套可验证运行底座</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【02·三平面架构】将物理 Human 纳入可验证执行协议</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:30 - 00:48 (18秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“动态协同”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“三平面协同”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “为此，逐光构筑了‘一个业务核心，两套运行底座’：<br>
-              底层由 <b>IncidentService 状态机</b>提供全局唯一的单一事实源；<br>
-              在本地端，采用 SQLite 和固定随机种子，保证评测 100% 确定性复现、零外部依赖；<br>
-              在云端，无缝对接赛道指定的 <b>AgentTeams 平台与 PolarDB</b>，支撑 1 Manager + 5 Agent 生产级多 Worker 动态协同。”
+              “为此，我们设计了<b>三平面可验证执行架构</b>：<br>
+              ① <b>控制与治理平面</b>：AgentTeams 协同编排 + PolicyEngine 刚性门禁 + AgentLoop 闭环评估；<br>
+              ② <b>执行平面</b>：不仅提供 API 与 MCP Tool，更在业内首次将上门师傅定义为标准<b>异步 Human Tool</b>，支持高延迟挂起、超时与凭据回传；<br>
+              ③ <b>验证与事实平面</b>：IncidentService 状态机提供唯一事实源，Auditor 独立查验，决定 Verified Close。”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：中间黑色卡片 SINGLE SOURCE OF TRUTH，连接左右 SQLite 本地底座与 AgentTeams 云端底座。
+              👀 <b>画面焦点</b>：三平面布局，中间突出高亮的 Human Tool (物理世界上门)。
             </div>
           </div>
 
@@ -322,7 +320,7 @@ DOSSIER_HTML = """
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#059669; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P04 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【03·五 Agent 职责】五个角色，不共享“宣布成功”的权力</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【03·五 Agent 职责】五个角色，不共享“宣布成功”的权力 (Anti-Self-Verification)</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 00:48 - 01:06 (18秒)</span>
@@ -330,12 +328,12 @@ DOSSIER_HTML = """
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “在多 Agent 协同上，我们践行最小权限与职责分离原则，划分 5 个角色，<b>绝不共享‘宣布成功’的权力</b>：<br>
+              “在多 Agent 协同上，我们践行最小权限与反自验原则，5 个角色<b>绝不共享‘宣布成功’的权力</b>：<br>
               • <b>Orchestrator</b> 仅调度协调，无领域写权；<br>
               • <b>Sentry</b> 只读巡检全网设备与时序去噪；<br>
-              • <b>Diagnoser</b> 积分计算商品暴露风险与 Top-K 假设；<br>
-              • <b>Executor</b> 受控执行 POS 停售锁与急修工单；<br>
-              • <b>Auditor</b> 是核心守门员——<b>执行者绝不能自证成功</b>，必须由 Auditor 独立稽核！”
+              • <b>Diagnoser</b> 结合 Arrhenius 动力学积分计算商品暴露风险；<br>
+              • <b>Executor</b> 受控执行写操作，调度 Human Tool，但无权自验；<br>
+              • <b>Auditor</b> 独立查证客观传感器与账实凭据，拥有一票否决权！”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
               👀 <b>画面焦点</b>：五列角色并排，特别强调最右侧 05 INDEPENDENT Auditor 的独立守卫地位。
@@ -347,18 +345,20 @@ DOSSIER_HTML = """
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P05 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【04·五阶段闭环】从异常到关闭，每一步都有拒绝条件</span>
+                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【04·五阶段闭环】将异步 Human Tool 纳入确定性状态机</span>
               </div>
               <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
                 <span style="color:#38bdf8; font-weight:700;">⏱ 01:06 - 01:22 (16秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“沉淀知识复盘”按 [→] 翻页</span>
+                <span style="color:#fde047; font-weight:700;">👉 念完“持续演进闭环”按 [→] 翻页</span>
               </div>
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “业务状态机分为严密的五阶段，每一步都有严苛拒绝条件：<br>
-              第一步‘发现与遏制’，首要动作不是报修，而是<b>立即在 POS 端下发停售锁保安全</b>；<br>
-              随后完成诊断与审批，派工维修；<br>
-              维修完成后进入第四步‘独立验证’，由 Auditor <b>核验温度恢复与商品批次双重事实</b>，才允许解除停售；最后沉淀知识复盘。”
+              “业务状态机分为严密的五阶段：<br>
+              第一步‘发现与遏制’，首要动作是毫秒级切断 POS 收银与外卖库存；<br>
+              第二步‘诊断’锁定根因与备件型号；<br>
+              第三步‘执行’将维修师傅作为<b>异步 Human Tool 调度上门</b>，状态机受控挂起；<br>
+              第四步‘独立验证’，由 Auditor 独立核验温度与商品双重事实，杜绝自验；<br>
+              第五步‘演进’，全量 Trace 回流至 AgentLoop 驱动持续评估与能力迭代！”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
               👀 <b>画面焦点</b>：横向 5 步流程卡片（01 DETECT → 02 DIAGNOSE → 03 EXECUTE → 04 VERIFY → 05 LEARN）。
