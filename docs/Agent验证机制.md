@@ -260,7 +260,7 @@ tests/test_coldchain_workflow.py    # 六场景端到端验证链
 tests/test_knowledge_flywheel.py    # 知识人工发布边界
 ```
 
-当前全量门禁发现 105 项，其中 103 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
+当前全量门禁发现 112 项，其中 110 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
 六个 P0 Skill 运行时输出契约、12 个 P0 MCP registry/调用路径、六场景闭环和主要安全
 边界均有自动化证据。仓库尚未生成正式行/分支覆盖率，也没有多进程/高争用压测或
 真实 AgentTeams/PolarDB 运行证据，不能表述为“所有关键点 100% 覆盖”。

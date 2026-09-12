@@ -101,7 +101,7 @@ uv run python -m unittest discover -s tests -v
 | `evidence_records` | 45 / 45 |
 | `covered_trace_phases` | 26 / 26 |
 | `safety_violations` | 0 |
-| 单元测试 | 103 通过 / 2 条件跳过（共发现 105） |
+| 单元测试 | 110 通过 / 2 条件跳过（共发现 112） |
 
 > 以上均为**仓库内确定性行为**，不是模型效果或真实门店收益证明。
 
@@ -272,7 +272,7 @@ journalctl -u dianxun-mcp -f
 - [ ] `dianxun evaluate` → 6/6，`evidence/m4/report.md` 已重新生成
 - [ ] `dianxun ablation` → `gate.passed=true`，四变体结果与 Markdown 报告已重新生成
 - [ ] `dianxun command-center` → `evidence/m4/command-center.html` 已重新生成
-- [ ] 105 项测试完成（103 通过 + 2 条 PolarDB 条件跳过）
+- [ ] 112 项测试完成（110 通过 + 2 条 PolarDB 条件跳过）
 - [ ] `curl /health` 健康检查返回 `tools: 12`
 - [ ] `curl /metrics` 返回低基数 Counter/Histogram，且端点未暴露公网
 - [ ] `python scripts/recovery_drill.py --check` 通过

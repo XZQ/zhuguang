@@ -102,10 +102,13 @@ class WorkerRuntimeTests(unittest.TestCase):
         self.assertFalse(value["isError"], value)
         return json.loads(value["content"][0]["text"])
 
-    def prepare_execution(self):
+    def prepare_containment(self):
         detect = self.assign("Sentry")
         self.assertTrue(self.rpc("Sentry", "complete", **detect)["completed"])
-        contain = self.assign("Executor")
+        return self.assign("Executor")
+
+    def prepare_diagnosis(self):
+        contain = self.prepare_containment()
         self.tool(
             contain,
             "apply_sales_hold",
@@ -116,7 +119,10 @@ class WorkerRuntimeTests(unittest.TestCase):
             idempotency_key="runtime:hold",
         )
         self.assertTrue(self.rpc("Executor", "complete", **contain)["completed"])
-        diagnose = self.assign("Diagnoser")
+        return self.assign("Diagnoser")
+
+    def prepare_execution(self):
+        diagnose = self.prepare_diagnosis()
         self.assertTrue(self.rpc("Diagnoser", "complete", **diagnose)["completed"])
         execute = self.assign("Executor")
         self.tool(
@@ -177,6 +183,184 @@ class WorkerRuntimeTests(unittest.TestCase):
                 source="synthetic-recovery",
             )
         self.assertTrue(self.rpc("Executor", "complete", **execute)["completed"])
+        return execute
+
+    def test_receipt_storage_failure_rolls_back_writes_and_same_key_can_retry(self):
+        lease = self.prepare_containment()
+        before = self.snapshot()
+        arguments = dict(
+            action_id="hold",
+            store_id="S03",
+            batch_ids=before["incident"]["affected_batches"],
+            reason="coldchain",
+            idempotency_key="runtime:hold",
+        )
+        with self.store.transaction() as conn:
+            conn.execute("""CREATE TRIGGER reject_receipt BEFORE INSERT ON idempotency
+                BEGIN SELECT RAISE(ABORT, 'receipt persistence unavailable'); END""")
+        result = self.rpc("Executor", "tool", **lease, tool="apply_sales_hold", arguments=arguments)
+        self.assertTrue(result["isError"])
+        self.assertEqual(before, self.snapshot())
+        self.assertEqual([], self.store.list_actions(incident_id=self.incident))
+        self.assertEqual([], self.store.list_sales_holds(incident_id=self.incident))
+        with self.store.transaction() as conn:
+            self.assertEqual(0, conn.execute("SELECT COUNT(*) AS n FROM audit_log").fetchone()["n"])
+            conn.execute("DROP TRIGGER reject_receipt")
+        self.tool(lease, "apply_sales_hold", **arguments)
+        self.tool(lease, "apply_sales_hold", **arguments)
+        self.assertEqual(2, len(self.store.list_sales_holds(incident_id=self.incident)))
+        self.assertEqual(1, len(self.store.list_actions(incident_id=self.incident)))
+
+    def test_diagnosis_output_survives_lost_response_and_restart(self):
+        lease = self.prepare_diagnosis()
+        first = self.rpc("Diagnoser", "complete", **lease)
+        self.assertIn("exposure_assessment", first["output"]["risk_assessment"])
+        self.restart_runtime()
+        snapshot = self.snapshot()
+        checkpoint = snapshot["context"]["checkpoints"]["DIAGNOSE_DECIDE"]
+        self.assertEqual(first["output"], checkpoint["output"])
+        replay = self.rpc("Diagnoser", "complete", **lease)
+        self.assertTrue(replay["replayed"])
+        self.assertTrue(replay["output_available"])
+        self.assertEqual(first["output"], replay["output"])
+        self.assertEqual(snapshot, self.snapshot())
+
+    def test_legacy_checkpoint_without_output_is_not_fabricated(self):
+        lease = self.prepare_containment()
+        with self.store.transaction() as conn:
+            row = conn.execute("SELECT payload_json FROM runtime_contexts").fetchone()
+            context = json.loads(row["payload_json"])
+            del context["checkpoints"]["DETECT"]["output"]
+            conn.execute("UPDATE runtime_contexts SET payload_json = ?", (json.dumps(context),))
+        old = self.snapshot()["context"]["assignments"][0]
+        replay = self.rpc(
+            "Sentry",
+            "complete",
+            incident_id=self.incident,
+            assignment_id=old["assignment_id"],
+            expected_version=lease["expected_version"],
+        )
+        self.assertTrue(replay["replayed"])
+        self.assertFalse(replay["output_available"])
+        self.assertIsNone(replay["output"])
+
+    def test_recovery_requires_scope_version_and_complete_failed_audit(self):
+        self.prepare_execution()
+        before = self.snapshot()
+        args = dict(incident_id=self.incident, expected_version=before["context"]["version"])
+        for actor in ("Executor", "other-store"):
+            self.rpc(actor, "reopen", **args, expect_error=True)
+        self.rpc("Orchestrator", "reopen", **{**args, "expected_version": 1}, expect_error=True)
+        self.rpc("Orchestrator", "reopen", **args, expect_error=True)
+        self.assertEqual(before, self.snapshot())
+        partial = {"ok": False, "partial": True, "data": None, "error": {"code": "PARTIAL"}}
+        with patch.object(self.mcp, "query_workorder", return_value=partial):
+            self.rpc("Orchestrator", "reopen", **args, expect_error=True)
+        self.assertEqual(before, self.snapshot())
+
+    def assert_rework_closes(self, late):
+        old_execute = self.prepare_execution()
+        if late:
+            for role in ("Auditor", "Executor", "Auditor"):
+                self.assertTrue(self.rpc(role, "complete", **self.assign(role))["completed"])
+        batch = self.snapshot()["incident"]["affected_batches"][0]
+        with self.store.transaction() as conn:
+            conn.execute(
+                "UPDATE inventory_batches SET disposition = ?, safe_for_sale = 0 "
+                "WHERE batch_id = ?",
+                ("released" if late else "quarantined", batch),
+            )
+            if late:
+                conn.execute(
+                    "UPDATE sales_holds SET status = 'released' WHERE batch_id = ?", (batch,)
+                )
+        audit = self.assign("Auditor")
+        self.assertFalse(self.rpc("Auditor", "complete", **audit)["completed"])
+        before = self.snapshot()
+        args = dict(incident_id=self.incident, expected_version=before["context"]["version"])
+        from dianxun.runtime_context import RuntimeContextBus
+
+        with patch.object(
+            RuntimeContextBus, "commit", side_effect=ValueError("checkpoint failure")
+        ):
+            self.rpc("Orchestrator", "reopen", **args, expect_error=True)
+        self.assertEqual(before, self.snapshot())
+        reopened = self.rpc("Orchestrator", "reopen", **args)
+        self.assertEqual("DETECT_CONTAIN", reopened["incident"]["phase"])
+        self.assertEqual("CONTAIN", reopened["remaining_stages"][0])
+        archive = reopened["context"]["transitions"][-1]
+        self.assertEqual(
+            before["context"]["checkpoints"]["DIAGNOSE_DECIDE"],
+            archive["checkpoints"]["DIAGNOSE_DECIDE"],
+        )
+        self.restart_runtime()
+        self.rpc("Executor", "complete", **old_execute, expect_error=True)
+        self.rpc(
+            "Executor",
+            "tool",
+            **old_execute,
+            tool="apply_batch_disposition",
+            arguments={},
+            expect_error=True,
+        )
+        self.rpc("Auditor", "complete", **audit, expect_error=True)
+        contain = self.assign("Executor")
+        self.assertNotEqual(old_execute["assignment_id"], contain["assignment_id"])
+        if late:
+            self.assertEqual([batch], self.snapshot()["containment_required"])
+            self.tool(
+                contain,
+                "apply_sales_hold",
+                action_id="rework-hold",
+                store_id="S03",
+                batch_ids=[batch],
+                reason="renewed containment",
+                idempotency_key="rework-hold",
+            )
+            self.assertEqual([], self.snapshot()["containment_required"])
+        self.assertTrue(self.rpc("Executor", "complete", **contain)["completed"])
+        self.assertTrue(self.rpc("Diagnoser", "complete", **self.assign("Diagnoser"))["completed"])
+        execute = self.assign("Executor")
+        self.assertNotEqual(old_execute["assignment_id"], execute["assignment_id"])
+        assignment = self.snapshot()["context"]["assignments"][-1]
+        self.assertEqual(old_execute["assignment_id"], assignment["predecessor_assignment_id"])
+        self.assertEqual(2, assignment["attempt"])
+        approval = self.tool(
+            execute,
+            "create_approval",
+            action_id="rework",
+            subject="rework",
+            requested_action_type="apply_batch_disposition",
+            disposition="disposed",
+            timeout_minutes=30,
+            idempotency_key="rework-approval",
+        )
+        self.mcp.decide_approval(
+            approval_id=approval["data"]["approval_id"],
+            decision="approved",
+            actor="Human",
+            idempotency_key="rework-human",
+            reason="test fixture",
+        )
+        self.tool(
+            execute,
+            "apply_batch_disposition",
+            action_id="rework",
+            batch_ids=[batch],
+            disposition="disposed",
+            approval_id=approval["data"]["approval_id"],
+            idempotency_key="rework-dispose",
+        )
+        self.assertTrue(self.rpc("Executor", "complete", **execute)["completed"])
+        for role in ("Auditor", "Executor", "Auditor", "Auditor"):
+            self.assertTrue(self.rpc(role, "complete", **self.assign(role))["completed"])
+        self.assertEqual("CLOSED", self.snapshot()["incident"]["incident_status"])
+
+    def test_failed_audit_can_recontain_reexecute_and_close(self):
+        self.assert_rework_closes(late=False)
+
+    def test_failed_final_learning_check_can_recover_and_close(self):
+        self.assert_rework_closes(late=True)
 
     def test_real_http_workflow_recovers_after_restart_and_closes_independently(self):
         self.prepare_execution()

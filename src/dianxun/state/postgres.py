@@ -186,7 +186,8 @@ class PostgresStateStore(SQLiteStateStore):
     def transaction(self):
         current = self._transaction_connection.get()
         if current is not None:
-            yield current
+            with self._savepoint(current):
+                yield current
             return
         connection = self.connect()
         token = self._transaction_connection.set(connection)

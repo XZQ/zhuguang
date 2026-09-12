@@ -164,12 +164,25 @@ class ContextCoordinator:
                 "普通 assign 不得生成无 predecessor 的新 attempt"
             )
         attempt = 1
+        predecessor = None
+        # Recovery archives superseded leases. Continue their identity chain without
+        # allowing any archived assignment to regain write authority.
+        for event in reversed(context.transitions):
+            if event.get("event") != "runtime_reopened":
+                continue
+            prior = [item for item in event["assignments"] if item["phase"] == phase]
+            if prior:
+                latest = max(prior, key=lambda item: item["attempt"])
+                attempt = latest["attempt"] + 1
+                predecessor = latest["assignment_id"]
+                break
         current_text = timestamp(current)
         assignment = WorkerAssignment(
-            assignment_id=self._assignment_id(task_id, phase, attempt),
+            assignment_id=self._assignment_id(task_id, phase, attempt, predecessor),
             phase=phase,
             worker=worker,
             attempt=attempt,
+            predecessor_assignment_id=predecessor,
             lease_expires_at=self._lease_expiry(current, lease_seconds),
             created_at=current_text,
             updated_at=current_text,
@@ -223,6 +236,7 @@ class ContextCoordinator:
         *,
         evidence_refs: list[str] | None = None,
         output_ref: str | None = None,
+        output: dict | None = None,
         expected_version: int | None = None,
         now: datetime | None = None,
     ) -> PhaseCheckpoint:
@@ -257,6 +271,7 @@ class ContextCoordinator:
             context_version=context.version + 1,
             evidence_refs=list(evidence_refs or []),
             output_ref=output_ref,
+            output=output,
         )
         context.checkpoints[assignment.phase] = checkpoint
         if all(phase in context.checkpoints for phase in self.phase_order):
@@ -383,3 +398,32 @@ class ContextCoordinator:
         context = self.bus.get(task_id, now=self._now(now))
         completed = self._checkpoint_prefix_length(context)
         return list(self.phase_order[completed:])
+
+    def restart_from(self, task_id, phase, *, reason, expected_version, now=None):
+        """Archive a superseded suffix after the runtime has verified a recovery need."""
+        self._assert_phase(phase)
+        current = self._now(now)
+        context = self.bus.get(task_id, now=current)
+        prefix = set(self.phase_order[: self.phase_order.index(phase)])
+        if not prefix <= context.checkpoints.keys():
+            raise AssignmentStateError("Recovery requires the preceding checkpoints")
+        snapshot = context.snapshot()
+        context.transitions.append(
+            {
+                "event": "runtime_reopened",
+                "at": timestamp(current),
+                "reason": reason,
+                "restart_from": phase,
+                "context_version": context.version,
+                "assignments": [a for a in snapshot["assignments"] if a["phase"] not in prefix],
+                "checkpoints": {
+                    key: value
+                    for key, value in snapshot["checkpoints"].items()
+                    if key not in prefix
+                },
+            }
+        )
+        context.assignments = [a for a in context.assignments if a.phase in prefix]
+        context.checkpoints = {k: v for k, v in context.checkpoints.items() if k in prefix}
+        context.coordination_status = "active"
+        return self.bus.commit(context, expected_version=expected_version, now=current)

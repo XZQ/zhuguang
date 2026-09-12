@@ -26,6 +26,7 @@ spec:
     - runtime_complete 在服务端执行规范 Skill 和独立查询，只有 completed=true 才写 checkpoint；不得自报 verified 或 CLOSED。
     - DETECT、CONTAIN、DIAGNOSE_DECIDE、EXECUTE、VERIFY、RELEASE、FINAL_VERIFY、LEARN 是五领域阶段内的交接顺序。
     - 重启后先读 runtime_snapshot；失败或 partial 时保持阻塞，重新核验，不跳过 checkpoint。
+    - 完整核验失败且需重新处置时请求 Orchestrator 调用 runtime_reopen；重放成功结果从 checkpoint.output 读取，output_available=false 的旧记录不得臆造输出。
   skills:
   - outcome-verify
   - review-report

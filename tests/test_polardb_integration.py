@@ -30,6 +30,19 @@ class PolarDBIntegrationTests(unittest.TestCase):
         cls.store.initialize_from_file(DEFAULT_SEED_PATH, reset=True)
 
     def test_same_scenario_has_sqlite_and_postgres_state_parity(self) -> None:
+        # Exercise a real PostgreSQL error: the outer transaction must remain usable.
+        from dianxun.state.protocols import StoreIntegrityError
+
+        with self.store.transaction() as conn:
+            self.store.set_meta("savepoint-outer", "kept")
+            with self.assertRaises(StoreIntegrityError):
+                with self.store.transaction():
+                    self.store.set_meta("savepoint-inner", "discarded")
+                    conn.execute(
+                        "INSERT INTO meta(key, value) VALUES('savepoint-outer', 'duplicate')"
+                    )
+            self.assertIsNone(self.store.get_meta("savepoint-inner"))
+        self.assertEqual("kept", self.store.get_meta("savepoint-outer"))
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             sqlite_result = LocalDemoAdapter(

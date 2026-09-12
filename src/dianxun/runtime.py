@@ -149,10 +149,16 @@ class RuntimeService:
 
     def snapshot(self, *, principal, incident_id):
         case, bus, coordinator = self._context(principal, incident_id)
+        held = {
+            row["batch_id"]
+            for row in self.store.list_sales_holds(incident_id=incident_id)
+            if row["status"] == "active"
+        }
         return {
             "incident": case.to_dict(),
             "context": bus.get(incident_id, now=self.clock()).snapshot(),
             "remaining_stages": coordinator.resume_plan(incident_id, now=self.clock()),
+            "containment_required": sorted(set(case.affected_batches) - held),
         }
 
     def assign(self, *, principal, incident_id, worker_id, expected_version):
@@ -246,6 +252,8 @@ class RuntimeService:
             actor=principal.actor,
             service=self.mcp,
         )
+        if result.get("isError"):
+            return result
         # The aggregate receives persisted receipts, never caller-supplied action status.
         case = self.incidents.get(incident_id)
         case.actions = [
@@ -271,7 +279,14 @@ class RuntimeService:
         previous = existing_coordinator._find_assignment(existing, assignment_id)
         existing_coordinator._assert_worker(previous, principal.worker_id)
         if previous.status == "succeeded":
-            return {"completed": True, "replayed": True, "context_version": existing.version}
+            checkpoint = existing.checkpoints[previous.phase]
+            return {
+                "completed": True,
+                "replayed": True,
+                "output": checkpoint.output,
+                "output_available": checkpoint.output is not None,
+                "context_version": existing.version,
+            }
         case, bus, coordinator, assignment = self._assignment(
             principal, incident_id, assignment_id, expected_version
         )
@@ -387,7 +402,8 @@ class RuntimeService:
                 assignment_id,
                 principal.worker_id,
                 evidence_refs=self.incidents.get(incident_id).evidence_refs,
-                output_ref=f"incident:{incident_id}:{stage}",
+                output_ref=f"assignment:{assignment_id}",
+                output=output,
                 expected_version=expected_version,
                 now=self.clock(),
             )
@@ -396,6 +412,42 @@ class RuntimeService:
             "output": output,
             "context_version": bus.get(incident_id, now=self.clock()).version,
         }
+
+    def reopen(self, *, principal, incident_id, expected_version):
+        case, bus, coordinator = self._context(principal, incident_id)
+        if principal.actor != "Orchestrator":
+            raise PermissionError("Only Orchestrator can reopen work")
+        context = bus.get(incident_id, now=self.clock())
+        if context.version != expected_version:
+            raise ContextVersionConflict("Reload the current context version")
+        remaining = coordinator.resume_plan(incident_id, now=self.clock())
+        if (
+            case.phase not in {Phase.VERIFY, Phase.LEARN}
+            or not remaining
+            or remaining[0] not in {"VERIFY", "FINAL_VERIFY", "LEARN"}
+        ):
+            raise ValueError("Recovery is only allowed at an unfinished independent audit")
+        verification = outcome_verify(
+            service=self.mcp,
+            incident_id=incident_id,
+            trace_id=case.trace_id,
+            incidents=self.incidents,
+            policy=self.mcp.policy.policy,
+        )
+        if verification["partial_tools"] or verification["result"] in {"verified", "release_ready"}:
+            raise ValueError("Recovery requires a complete, failed independent verification")
+        reason = "Independent audit requires rework: " + ", ".join(
+            verification["failed_conditions"]
+        )
+        self.incidents.reopen(incident_id, reason=reason, recontain=True)
+        coordinator.restart_from(
+            incident_id,
+            "CONTAIN",
+            reason=reason,
+            expected_version=expected_version,
+            now=self.clock(),
+        )
+        return self.snapshot(principal=principal, incident_id=incident_id)
 
 
 def schema(properties, required):
@@ -415,6 +467,10 @@ _LEASE = {
     "expected_version": {"type": "integer", "minimum": 1},
 }
 RUNTIME_SCHEMAS = {
+    "runtime_reopen": schema(
+        {**_INCIDENT, "expected_version": {"type": "integer", "minimum": 1}},
+        ["incident_id", "expected_version"],
+    ),
     "runtime_open": schema({**_INCIDENT, "device_id": _TEXT}, ["incident_id", "device_id"]),
     "runtime_snapshot": schema(_INCIDENT, list(_INCIDENT)),
     "runtime_assign": schema(

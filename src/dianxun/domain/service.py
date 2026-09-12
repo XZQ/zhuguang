@@ -94,12 +94,17 @@ class IncidentService:
         )
         return self.save(case)
 
-    def reopen(self, incident_id: str, *, reason: str) -> IncidentCase:
+    def reopen(self, incident_id: str, *, reason: str, recontain: bool = False) -> IncidentCase:
         case = self.get(incident_id)
-        if case.phase is not Phase.VERIFY:
+        if case.incident_status is IncidentStatus.CLOSED:
+            raise InvalidTransition("A closed incident requires a new incident")
+        if case.phase is not Phase.VERIFY and not (recontain and case.phase is Phase.LEARN):
             raise InvalidTransition("Only VERIFY may reopen to DIAGNOSE_DECIDE")
-        case.phase = Phase.DIAGNOSE_DECIDE
-        case.incident_status = IncidentStatus.CONTAINED
+        if recontain:
+            case = self.recompute(incident_id)
+        case.phase = Phase.DETECT_CONTAIN if recontain else Phase.DIAGNOSE_DECIDE
+        if not recontain:
+            case.incident_status = IncidentStatus.CONTAINED
         case.work_status = WorkStatus.READY
         case.next_wakeup_at = None
         case.decisions.append(
@@ -107,7 +112,7 @@ class IncidentService:
                 decision_id=f"reopen:{len(case.decisions) + 1}",
                 policy_id="incident-phase-v1",
                 selected_hypothesis_ids=[],
-                proposed_actions=["re-diagnose"],
+                proposed_actions=["recontain", "re-diagnose"] if recontain else ["re-diagnose"],
                 risk_level="L1",
                 approval_required=False,
                 approvers=[],

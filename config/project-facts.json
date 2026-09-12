@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-12",
   "owner": "XZQ",
   "project_name": "逐光",
   "display_name": "逐光｜店巡 Agent",
@@ -272,8 +272,8 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 105,
-      "full_unittest_passed": 103,
+      "full_unittest_count": 112,
+      "full_unittest_passed": 110,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json",
@@ -314,7 +314,7 @@
         "report": "evidence/m4/ablation.md"
       },
       "command_center_html": "evidence/m4/command-center.html",
-      "unittest_verified_at": "2026-09-07",
+      "unittest_verified_at": "2026-09-12",
       "unittest_environment": "Windows_Python_3.12.13_Node_local_SQLite"
     },
     "operations_hardening": {

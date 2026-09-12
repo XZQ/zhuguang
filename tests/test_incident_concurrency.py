@@ -99,6 +99,24 @@ class IncidentConcurrencyTests(unittest.TestCase):
         with self.assertRaises(IncidentConflictError):
             self.service.save(IncidentCase.from_dict(raw))
 
+    def test_caught_inner_failure_preserves_outer_writes_but_outer_failure_rolls_back_all(self):
+        with self.store.transaction():
+            self.store.set_meta("outer", "saved")
+            with self.assertRaises(ValueError):
+                with self.store.transaction():
+                    self.store.set_meta("inner", "discarded")
+                    raise ValueError("inner failure")
+            self.assertIsNone(self.store.get_meta("inner"))
+        self.assertEqual("saved", self.store.get_meta("outer"))
+        with self.assertRaises(ValueError):
+            with self.store.transaction():
+                self.store.set_meta("outer", "discarded")
+                with self.store.transaction():
+                    self.store.set_meta("inner", "also discarded")
+                raise ValueError("outer failure")
+        self.assertEqual("saved", self.store.get_meta("outer"))
+        self.assertIsNone(self.store.get_meta("inner"))
+
 
 if __name__ == "__main__":
     unittest.main()

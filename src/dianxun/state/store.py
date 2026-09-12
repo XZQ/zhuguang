@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import uuid
 from collections.abc import Iterator
 from contextlib import closing, contextmanager, nullcontext
 from contextvars import ContextVar
@@ -319,10 +320,24 @@ class SQLiteStateStore:
         return conn
 
     @contextmanager
+    def _savepoint(self, conn):
+        """A caught inner failure must not commit its partial writes with the caller."""
+        name = f"nested_{uuid.uuid4().hex}"
+        conn.execute(f"SAVEPOINT {name}")
+        try:
+            yield conn
+        except BaseException:
+            conn.execute(f"ROLLBACK TO SAVEPOINT {name}")
+            raise
+        finally:
+            conn.execute(f"RELEASE SAVEPOINT {name}")
+
+    @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
         current = self._transaction_connection.get()
         if current is not None:
-            yield current
+            with self._savepoint(current):
+                yield current
             return
         conn = self.connect()
         token = self._transaction_connection.set(conn)

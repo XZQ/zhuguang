@@ -112,6 +112,7 @@ class PhaseCheckpoint:
     context_version: int
     evidence_refs: list[str] = field(default_factory=list)
     output_ref: str | None = None
+    output: dict | None = None
 
     @classmethod
     def from_snapshot(cls, value: dict) -> PhaseCheckpoint:

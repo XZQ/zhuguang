@@ -33,7 +33,7 @@ Get-FileHash dist/dianxun-worker.zip -Algorithm SHA256
 
 - 工作区无非预期改动；
 - 六场景 6/6；
-- 全量测试 105 项发现：103 项通过、2 项 PolarDB 条件集成测试跳过；
+- 全量测试 112 项发现：110 项通过、2 项 PolarDB 条件集成测试跳过；
 - 四变体消融门禁通过，`evidence/m4/command-center.html` 已确定性生成；
 - Ruff、格式、模拟数据和确定性 Worker 构建均通过；
 - ZIP SHA-256 为 `6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b`。
