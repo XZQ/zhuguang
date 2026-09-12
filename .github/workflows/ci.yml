@@ -93,9 +93,6 @@ jobs:
         run: |
           set -euo pipefail
           uv run python scripts/build_animated_svg.py
-          uv run python scripts/build_defense_guide_doc.py
-          uv run python scripts/build_illustrated_defense_guide.py
-          uv run python scripts/build_master_defense_dossier.py
           uv run python scripts/build_full_delivery_portal.py
 
       - name: Generated artifacts are current

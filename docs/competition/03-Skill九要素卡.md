@@ -106,7 +106,7 @@
 | 失败处理 | 证据不完整时标记 partial；知识候选保持 pending，不自动发布或宣称未来检索命中。 |
 | 安全边界 | 输出需脱敏；不得自动修改生产 Skill、Policy 或正式知识库。 |
 | 复用价值 | 可复用于任何需要审计复盘和人工治理的事件闭环。 |
-| 协同关系 | Auditor 生成报告；Orchestrator 只有在 `RESOLVED + LEARN` 后请求 `IncidentService` 迁移为 `CLOSED`。 |
+| 协同关系 | Auditor 生成报告；框架编排由 Orchestrator 请求合法迁移，实际 `/runtime` 在 Auditor 完成 LEARN 并再次核验后调用 `IncidentService` 关闭，角色均不能自报终态。 |
 
 ## 3. P1/P2 能力边界
 

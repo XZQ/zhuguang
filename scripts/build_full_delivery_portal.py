@@ -29,6 +29,20 @@ def build(output: Path, observations: Path | None = None):
         ROOT / "ppt", output / "ppt", dirs_exist_ok=True, ignore=shutil.ignore_patterns(".DS_Store")
     )
     write_status(output / "status.json", observations)
+    # Keep the original semifinal PDFs available as dated historical downloads.
+    for name in (
+        "2026-GOAI复赛答辩速查手册-逐光队.pdf",
+        "2026-GOAI复赛答辩图文全景手册-逐光队.pdf",
+        "2026-GOAI复赛答辩终极全景大纲-逐光队.pdf",
+    ):
+        shutil.copy2(ROOT / "docs" / "competition" / name, output / name)
+    # Reusing an old output directory must not keep retired semifinal handbooks.
+    for name in (
+        "defense-guide.html",
+        "defense-guide-illustrated.html",
+        "defense-master.html",
+    ):
+        (output / name).unlink(missing_ok=True)
 
 
 def main():

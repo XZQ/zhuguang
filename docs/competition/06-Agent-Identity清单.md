@@ -128,7 +128,7 @@ Manager 的 `state: Running` 是声明式期望状态；只有目标平台实际
 | 迁移事件阶段 | 否 | 经 IncidentService | 否 | 否 | 否 | 提供依据 | 否 |
 | 付款 | 否 | 否 | 否 | 否 | 否 | 否 | 不在本系统 |
 
-此矩阵描述的是业务授权，不是部署身份已经可信。当前 HTTP Adapter 只有在 `MCP_ACTOR_TOKENS_JSON` 将 Bearer Token 映射为 Actor 时，才能把网络调用者绑定到这里的角色；共享 `MCP_TOKEN` 只能认证请求，不能证明角色。AgentTeams 动态 `gatewayKey` 的映射与负向鉴权烟测仍为外部待验证。
+此矩阵描述业务授权。原 `/mcp` 通过 `MCP_ACTOR_TOKENS_JSON` 绑定 Actor，共享 `MCP_TOKEN` 仅支持只读。独立 `/runtime` 通过 `DIANXUN_RUNTIME_TOKENS_JSON` 绑定 Worker/actor/tenant/store，并校验版本、阶段和租约；另可绑定 Human 运维身份处理恢复和通知，不能领取 Worker 任务。详见[运行接口](../operations/worker-runtime.md)与[恢复手册](../operations/runtime-recovery.md)。真实 AgentTeams 动态身份注入与负向鉴权仍需目标平台证据。
 
 ## 7. 协作不变量
 

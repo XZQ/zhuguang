@@ -1,8 +1,8 @@
 # 逐光｜店巡 Agent — 腾讯云 Lighthouse 部署与验证手册
 
-> 版本对齐：`config/project-facts.json` @ 0.2.0.dev0（updated_at 2026-09-07）
+> 版本对齐：`config/project-facts.json` @ 0.2.0-dev（updated_at 2026-09-12）
 > 本手册所有命令与参数均取自仓库实际代码，不使用臆测值。
-> 编写日期：2026-08-30；仓库口径复核：2026-09-07（本地验证，不证明服务器已部署本次修复）。
+> 编写日期：2026-08-30；仓库口径复核：2026-09-12（本地验证，不证明服务器已部署本次修复）。
 
 ---
 
@@ -68,8 +68,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source "$HOME/.local/bin/env"
 
 # 核心无依赖；dev 组含 jsonschema / pyyaml / ruff，跑测试与评测需要
-uv sync --group dev
+uv sync --locked --group dev
 ```
+
+完整门户回归还需要 Node.js 22+；先安装受支持版本并用 `node --version` 核对。核心服务零运行依赖不代表测试与文档构建无需 Node。
 
 若后续要接 PolarDB，额外安装可选依赖：
 
@@ -79,18 +81,18 @@ uv sync --extra postgres
 
 ---
 
-## 4. 先跑通确定性门禁（不开端口，零风险）
+## 4. 本地隔离门禁与首次初始化
 
-这一层**不依赖任何网络监听**，是判断部署是否成功的第一道关。
+本地门禁使用临时数据库，HTTP 回归会监听回环端口；它验证仓库行为，不证明服务器已部署或目标平台已验收。
 
 ```bash
-uv run dianxun state-init                 # 从确定性种子重置 runtime.db
 uv run dianxun evaluate                   # M4 六场景门禁，期望 6/6
 uv run dianxun ablation                   # 四变体架构消融，期望 gate.passed=true
 uv run dianxun command-center             # 生成 evidence/m4/command-center.html
 uv run dianxun demo-run demo/state/scenarios/coldchain-compressor-failure.json
-uv run dianxun mcp-tools                  # 打印 P0(12) 与可选 P1(3) 工具
-uv run python -m unittest discover -s tests -v
+uv run dianxun mcp-tools                  # 默认打印 12 个 P0
+uv run dianxun mcp-tools --include-p1     # 查看 3 个可选 P1
+uv run python -W error::ResourceWarning -m unittest discover -v
 ```
 
 期望结果（对齐 `project-facts.json` 的 `m4_evaluation`）：
@@ -101,9 +103,22 @@ uv run python -m unittest discover -s tests -v
 | `evidence_records` | 45 / 45 |
 | `covered_trace_phases` | 26 / 26 |
 | `safety_violations` | 0 |
-| 单元测试 | 110 通过 / 2 条件跳过（共发现 112） |
+| 单元测试 | 与[测试覆盖矩阵](../测试覆盖矩阵.md)的最新日期/版本一致；PolarDB 条件跳过单独记录 |
 
 > 以上均为**仓库内确定性行为**，不是模型效果或真实门店收益证明。
+
+仅首次创建可重置的 Demo 数据库时使用 state-init。先检查目标不存在；升级已有服务不执行 reset：
+
+~~~bash
+# 仅在新的本地 Demo 目录执行，存在数据库时停止
+if [ ! -e runtime.db ]; then
+  uv run dianxun state-init --db runtime.db
+else
+  printf '%s\n' '数据库已存在：停止初始化，按升级流程处理。'
+fi
+~~~
+
+先备份业务库和配置再升级；运行时读取已有数据库，不能用重置种子代替迁移。托管数据库 reset 另需明确隔离环境与授权。
 
 ---
 
@@ -118,6 +133,8 @@ uv run python -m unittest discover -s tests -v
 | `MCP_TOKEN` | 空 | 共享 token，**只读** |
 | `MCP_ACTOR_TOKENS_JSON` | 空 | `{"<token>": "<actor>"}`，状态写必须用它 |
 | `DIANXUN_ENABLE_P1_TOOLS` | 未设 | 设为 `1` 才启用 3 个知识工具 |
+| `DIANXUN_RUNTIME_TOKENS_JSON` | 未设 | 独立 `/runtime` 身份映射：worker_id/actor/tenant_id/store_id；配置后启动恢复扫描器 |
+| `DIANXUN_EMERGENCY_CONTAINMENT` | 关闭 | 仅在隔离演练与明确业务授权后设为 `1`，不在通用部署步骤开启 |
 
 **硬约束**：`HOST` 非回环（`127.0.0.1` / `localhost` / `::1`）且两个 token 变量都为空时，
 进程直接 `SystemExit("Refusing a non-loopback MCP bind without authentication")` —— 起不来。
@@ -149,6 +166,8 @@ uv run dianxun-mcp
 # Dianxun MCP listening on http://127.0.0.1:8080 with 12 tools
 ```
 
+上面的命令仅启动原 `/mcp` 业务接口。Worker 联调还需按[运行接口](../operations/worker-runtime.md)将 runtime 身份通过同一秘密管理渠道注入；五个 Worker 启动后先 runtime_poll 登记在线，Human 运维凭证不注入模型。仅 runtime Token 不能代替非回环启动所要求的 MCP 认证配置。
+
 上面的 Token 每次启动随机生成，只适合本机烟测；不要输出到日志或录屏。常驻环境应由 Secret
 Manager、Kubernetes Secret 或权限为 600 的 root-owned `EnvironmentFile` 注入，并通过安全渠道
 把各角色 Token 分发给对应调用方。
@@ -156,8 +175,9 @@ Manager、Kubernetes Secret 或权限为 600 的 root-owned `EnvironmentFile` �
 健康检查：
 
 ```bash
-curl -s http://127.0.0.1:8080/health
-# {"service":"dianxun-mcp","version":"0.2.0","tools":12,"p0_tools":12,"p1_knowledge_enabled":false}
+curl -fsS http://127.0.0.1:8080/live   # 存活：alive=true
+curl -fsS http://127.0.0.1:8080/ready  # 就绪：ready=true；数据库/契约/扫描器故障为503
+curl -fsS http://127.0.0.1:8080/health # 与ready相同的就绪检查
 ```
 
 Prometheus 指标：
@@ -173,7 +193,7 @@ curl -s http://127.0.0.1:8080/metrics
 
 ### 5.3 传输安全（重要）
 
-服务是标准库 `ThreadingHTTPServer`，**明文 HTTP，无 TLS**。
+服务使用基于 `ThreadingHTTPServer` 的 `BoundedHTTPServer`，默认 32 连接、10 秒绝对截止、1 MiB body 上限；**明文 HTTP，无 TLS**。
 跨公网裸奔 8080 + Bearer Token 等于把凭据放明文里传输。三选一：
 
 1. **首选**：不开公网端口，用 SSH 隧道访问
@@ -272,14 +292,14 @@ journalctl -u dianxun-mcp -f
 - [ ] `dianxun evaluate` → 6/6，`evidence/m4/report.md` 已重新生成
 - [ ] `dianxun ablation` → `gate.passed=true`，四变体结果与 Markdown 报告已重新生成
 - [ ] `dianxun command-center` → `evidence/m4/command-center.html` 已重新生成
-- [ ] 112 项测试完成（110 通过 + 2 条 PolarDB 条件跳过）
-- [ ] `curl /health` 健康检查返回 `tools: 12`
+- [ ] 完整测试完成，结果与当前测试矩阵一致；条件跳过有明确原因
+- [ ] `/live` 存活；`/ready` 和 `/health` 返回就绪，故障时503；配置 runtime 时验证扫描器健康
 - [ ] `curl /metrics` 返回低基数 Counter/Histogram，且端点未暴露公网
 - [ ] `python scripts/recovery_drill.py --check` 通过
 - [ ] 非回环 + 空 token → 进程拒绝启动（反例留证）
 - [ ] 共享 `MCP_TOKEN` 调写工具 → 被拒（反例留证）
 - [ ] Executor 可创建审批但不能决定审批；Human 可决定审批与记录人工证据
-- [ ] systemd 重启后服务自恢复
+- [ ] systemd 重启后服务就绪，Worker poll/租约/回执恢复按[恢复手册](../operations/runtime-recovery.md)核对；不只检查进程存在
 - [ ] 防火墙未对 8080 放行 `0.0.0.0/0`
 - [ ] `/etc/dianxun/mcp.env` 权限 600，未进 Git
 - [ ] **无 API Key / 真实审批身份 / 顾客数据 / 含敏感内容 Trace 入仓**

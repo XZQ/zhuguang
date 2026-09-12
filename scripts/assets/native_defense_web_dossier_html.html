@@ -1,841 +1,95 @@
-
-
-    <div class="dossier-wrap" style="color:var(--text); max-width: 1100px; margin: 0 auto; space-y: 24px;">
-
-      <!-- Top Action & Navigation Banner -->
-      <div style="background: linear-gradient(135deg, rgba(3,105,161,0.2) 0%, rgba(15,23,42,0.8) 100%); border: 1px solid rgba(56,189,248,0.3); border-radius: 14px; padding: 20px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 8px; border-radius:4px;">GOAI 总决赛 15 强</span>
-              <h2 style="font-size:22px; font-weight:800; color:#fff; margin:0;">
-                📖 VeriAgent 决赛答辩图文全景大纲 (12大章节速查宝典)
-              </h2>
-            </div>
-            <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; margin-bottom:0;">
-              面向物理实体流程的可验证多智能体运行时 (Verifiable Runtime) · 三大物理公理 · 三层架构解耦 · 5-Agent 职责隔离 · 3 分钟发言稿与 Q&A 攻防库
-            </p>
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <a href="./defense.html" target="_blank" class="demo-btn" style="background:#0284c7; color:#fff; text-decoration:none; padding:8px 14px; font-size:12px; font-weight:700; border-radius:8px; display:flex; align-items:center; gap:6px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              全屏独立大纲网页
-            </a>
-            <a href="./ppt/" target="_blank" class="demo-btn secondary" style="text-decoration:none; padding:8px 14px; font-size:12px; border-radius:8px; display:flex; align-items:center; gap:6px;">
-              📑 打开 12 页方案 PPT
-            </a>
-            <button onclick="switchMainTab('demo')" class="demo-btn secondary" style="padding:8px 14px; font-size:12px; border-radius:8px; display:flex; align-items:center; gap:6px;">
-              ⚡️ 切回 1 分钟 Demo 演练
-            </button>
-          </div>
-        </div>
-
-        <!-- Sticky Quick Chapter Links -->
-        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1); font-size:11.5px;">
-          <a href="#d-ch1" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">1. 物理不可逆公理</a>
-          <a href="#d-ch2" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">2. 架构栈与基准</a>
-          <a href="#d-ch3" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">3. 512设备实跑</a>
-          <a href="#d-ch4" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">4. 三层解耦架构</a>
-          <a href="#d-ch5" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">5. 5-Agent协同</a>
-          <a href="#d-ch6" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">6. 执行不变式</a>
-          <a href="#d-ch7" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">7. 原语分级与审计</a>
-          <a href="#d-ch8" style="color:var(--cyan); background:rgba(56,189,248,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">8. 跨行业基准</a>
-          <a href="#d-ch9" style="color:#fde047; background:rgba(234,179,8,0.15); padding:3px 8px; border-radius:4px; text-decoration:none; font-weight:700;">★ 9. 3分钟发言稿</a>
-          <a href="#d-ch10" style="color:#f87171; background:rgba(239,68,68,0.15); padding:3px 8px; border-radius:4px; text-decoration:none; font-weight:700;">★ 10. 1分钟Demo表</a>
-          <a href="#d-ch11" style="color:#a78bfa; background:rgba(167,139,250,0.15); padding:3px 8px; border-radius:4px; text-decoration:none; font-weight:700;">★ 11. 评委Q&A</a>
-          <a href="#d-ch12" style="color:var(--green); background:rgba(16,185,129,0.1); padding:3px 8px; border-radius:4px; text-decoration:none;">12. 自检预案</a>
-        </div>
-      </div>
-
-      <!-- CHAPTER 1 -->
-      <section id="d-ch1" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>01</span> 赛道核心命题：物理实体流程的三大不可逆公理与软件假设的必然崩溃
-        </h3>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          当 Agent 从纯文本代码的虚拟空间步入物理实体业务时，传统的纯软件规则必然面临系统性崩溃。冷链与连锁门店，正是检验 Agent Infra 执行鲁棒性最严苛的<b>极限压力测试基准 01 (Reference Benchmark 01)</b>：
-        </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
-          <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">1. 公理一：状态不对称 (State Asymmetry)</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              <b>硬件恢复 ≠ 承载资产安全</b>。纯软件默认“环境变绿即任务完成”；但物理世界存在热力学惯性与生物动力学不可逆损伤。冷柜降温至 4.8°C，鲜奶暴露 42 分钟依然变质；机房降温但算力 Checkpoint 损坏；反应釜降温但药剂发生副反应。
-            </p>
-          </div>
-          <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">2. 公理二：执行不可逆 (Irreversible Actuation)</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              <b>物理动作无“代码假撤销”</b>。代码报错可一键 rollback；物理世界上门换件、零件拆装、切断电源、报损销毁产生真实物理成本与责任，必须通过刚性前置安全门禁 (HITL) 与幂等 Token 严格拦截。
-            </p>
-          </div>
-          <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">3. 公理三：反自验闭环 (Anti-Self-Verification)</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              <b>执行者绝无权自证成功</b>。大模型自查必然存在自证幻觉。Executor 写操作必须与验证权强物理隔离，唯有隔离上下文的外部 Auditor 重查客观物理传感器（Oracle）方可达成 Verified Close。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- CHAPTER 2 -->
-      <section id="d-ch2" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>02</span> VeriAgent 架构栈：通用多智能体内核与跨行业基准压力测试矩阵
-        </h3>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          <b>核心定位</b>：我们构建的不是单点业务脚本，而是一套<b>面向物理实体流程的可验证多智能体运行时 (VeriAgent Kernel)</b>，以三层解耦架构重塑企业对 Agent 的信任底线：
-        </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
-          <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#38bdf8; font-size:13px;">★ 顶层：无侵入领域配置插件 (Domain Profiles)</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              内核 0% 业务硬编码，纯通过 Profile DSL 驱动。挂载冷链 Profile 跑通零售食安保全；挂载医药 Profile 驱动 GSP 恒温疫苗出库验真；挂载 HPC Profile 驱动智算 GPU 热失控算力迁移。
-            </p>
-          </div>
-          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#34d399; font-size:13px;">★ 中层：VeriAgent 通用核心引擎 (Core Kernel)</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              Orchestrator 确定性非阻塞状态机 + Sentry 流式时序去噪 + Diagnoser 因果动力学定损 + Executor 受控执行 + Auditor 独立验真预言机 + AgentLoop 全量 Trace 自演进。
-            </p>
-          </div>
-          <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">★ 底层：物理-数字交互总线 (Actuation & Truth Bus)</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              API/MCP 毫秒数字拦截 + Human-as-a-Physical-Tool 异步工具规范 (带 SLA 悬挂与凭据回传) + 外部时序传感器真值 + Append-only 金融级不可篡改审计流。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- CHAPTER 3 -->
-      <section id="d-ch3" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>03</span> 多门店多设备分布式网络矩阵（128 店 · 512 台设备）
-        </h3>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          模拟连锁网络包含 128 家门店、512 台多温区冷链设备。Sentry Agent 以 30 秒周期轮询全网，排除正常设备波动，精准锁定异常单柜：
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:8px; padding:12px; font-size:12px; font-family:var(--font-mono);">
-          • <b>全网态势</b>：S01 深圳科技园店 (6台全绿) · S02 广州珠江新城店 (4台全绿) · S04 佛山千灯湖店 (5台全绿) · <b>S03 广州天河店 (1柜失温中)</b><br>
-          • <b>S03 店内矩阵</b>：1号鲜奶冷藏柜 (9.6°C 🚨 失温) · 2号冰淇淋冷冻柜 (-18.4°C 🟢) · 3号鲜食保温柜 (62.5°C 🟢) · 4号饮料冷藏柜 (3.8°C 🟢)<br>
-          • <b>核心价值</b>：Sentry 精准锁定 S03 店 1 号柜发起停售与闭环，其余 511 台正常设备丝毫不受影响，保证全网平稳运营！
-        </div>
-      </section>
-
-      <!-- CHAPTER 4 & 5 -->
-      <section id="d-ch4" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>04 & 05</span> 技术方案与 5-Agent 协同制衡设计（三权分立）
-        </h3>
-        <div style="overflow-x:auto;">
-          <table class="tbl" style="width:100%; font-size:12px; margin-top:8px;">
-            <thead>
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted);">
-                <th style="padding:8px; text-align:left;">Agent 角色</th>
-                <th style="padding:8px; text-align:left;">权限级别</th>
-                <th style="padding:8px; text-align:left;">核心职责与输入输出</th>
-                <th style="padding:8px; text-align:left;">硬性安全边界约束</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fff;">Orchestrator</td>
-                <td style="padding:8px; color:#38bdf8;">Leader (无写权)</td>
-                <td style="padding:8px;">全局目标拆解、五阶段状态流转推进、复盘沉淀</td>
-                <td style="padding:8px; color:#fca5a5;">无领域写权限，严禁越权修改任何设备或库存数据</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fff;">Sentry</td>
-                <td style="padding:8px; color:var(--green);">L0 只读权限</td>
-                <td style="padding:8px;">30s 并行巡检 512 台设备，Westgard 去噪，识别失温</td>
-                <td style="padding:8px; color:#fca5a5;">无执行权，仅能向总控发出 request_containment 遏制请求</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fff;">Diagnoser</td>
-                <td style="padding:8px; color:var(--green);">L0 只读权限</td>
-                <td style="padding:8px;">排查门磁/除霜，锁定压缩机；积分计算商品超温暴露时长</td>
-                <td style="padding:8px; color:#fca5a5;">无执行权，严禁把相关性作为确定事实，仅出具建议</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fff;">Executor</td>
-                <td style="padding:8px; color:#fcd34d;">L1/L2 受控写</td>
-                <td style="padding:8px;">下发 POS 停售锁、派发急修工单、生成报损审批</td>
-                <td style="padding:8px; color:#fca5a5;">受 Policy 拦截，全量写携带幂等键；严禁自验与越权付款</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fff;">Auditor</td>
-                <td style="padding:8px; color:var(--red);">独立稽核员</td>
-                <td style="padding:8px;">独立开辟干净上下文，重查两套事实，出具放行门禁判定</td>
-                <td style="padding:8px; color:#fca5a5;"><b>一票否决权！</b>执行者不能自证成功，商品变质强制阻断</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fff;">Policy / Guard</td>
-                <td style="padding:8px; color:#fcd34d;">安全门禁</td>
-                <td style="padding:8px;">拦截大额派修与商品报损，挂起触发店长移动端审批</td>
-                <td style="padding:8px; color:#fca5a5;">未经店长授权，Executor 无法获得执行令牌</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- CHAPTER 6 -->
-      <section id="d-ch6" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>06</span> 五大硬核技术亮点与底层创新壁垒
-        </h3>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:10px;">
-          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
-            <b style="color:#fff; font-size:12.5px;">1. 双重状态解耦模型（行业首创）</b>
-            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
-              显式解耦<b>物理设备状态（Device State）</b>与<b>商品资产安全状态（Asset State）</b>。打破“设备修好即事件结案”的传统漏洞。
-            </p>
-          </div>
-          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
-            <b style="color:#fff; font-size:12.5px;">2. 反自验独立稽核机制（Anti-Self-Verification）</b>
-            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
-              Auditor 拥有独立于执行者的全新上下文和专用只读接口，具备<b>一票否决权（阻断放行与回开 Reopen）</b>，消灭模型自证幻觉。
-            </p>
-          </div>
-          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
-            <b style="color:#fff; font-size:12.5px;">3. 临床级 Westgard 质控法则时序去噪</b>
-            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
-              将医学实验室 Westgard 法则（±3SD 阈值线、均值漂移）引入零售时序，消除 90% 虚假报警，精准识别持续失温。
-            </p>
-          </div>
-          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
-            <b style="color:#fff; font-size:12.5px;">4. Skill 九要素标准化契约治理</b>
-            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
-              6 个 P0 Skill 严格满足参赛九要素规范，解耦输入输出 Schema 与 MCP 工具，具备跨行业即插即用迁移能力。
-            </p>
-          </div>
-          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:8px; padding:12px;">
-            <b style="color:#fff; font-size:12.5px;">5. 金融级不可篡改审计流</b>
-            <p style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">
-              底层收回 `audit_log` 的 UPDATE/DELETE 权限，只允许 INSERT；全量操作附带客户端生成的 `idempotency_key`，杜绝重复派修扣款。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- CHAPTER 7: INVARIANTS & ACTION TAXONOMY -->
-      <section id="d-ch7" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>07</span> 六大执行鲁棒性不变式与物理-数字原语分级（四道安全闸）
-        </h3>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          系统视“失败为一等公民”，通过形式化不变式守住底线；所有动作前强制重查 5 大客观事实原语，实行三级分级管控：
-        </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:10px; margin-top:10px;">
-          <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:12px;">
-            <b style="color:#38bdf8; font-size:13px;">★ 三大安全关闭 (Verified Closed)</b>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
-              • <b>不变式 A</b>：硬件修复 + 资产安全双重验真达标放行<br>
-              • <b>不变式 B</b>：Westgard ±3SD 去除噪声毛刺，人工复核放行<br>
-              • <b>不变式 C</b>：物理开门/气流扰动排除，温度快速自愈放行
-            </div>
-          </div>
-          <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:8px; padding:12px;">
-            <b style="color:#fca5a5; font-size:13px;">★ 三大刚性阻断 (Contained / Blocked)</b>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
-              • <b>不变式 D</b>：HITL 移动端审批超时，坚决不盲派，升级上级<br>
-              • <b>不变式 E (核心红线)</b>：硬件降温但资产超温损坏，Auditor 一票否决阻断<br>
-              • <b>不变式 F</b>：MCP 接口 partial 或网络分区，阻断并回开 reopen
-            </div>
-          </div>
-          <div style="background:rgba(234,179,8,0.06); border:1px solid rgba(234,179,8,0.25); border-radius:8px; padding:12px;">
-            <b style="color:#fde047; font-size:13px;">★ 物理-数字动作分级</b>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
-              • <b>可逆数字动作</b>：解除停售/解除限流 (验真失败自动恢复熔断)<br>
-              • <b>跨系统物理动作</b>：技工派修/设备换件 (产生物理成本，对冲补偿)<br>
-              • <b>不可逆破坏动作</b>：整批报废/断电销毁 (HITL 刚性审批阻断，单向归档)
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CHAPTER 8: UNIVERSAL BENCHMARK MATRIX -->
-      <section id="d-ch8" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-          <h3 style="color:#38bdf8; font-size:16px; margin:0; display:flex; align-items:center; gap:8px;">
-            <span>08</span> 三大行业基准压力测试矩阵 (Universal Benchmark Matrix)
-          </h3>
-          <span style="font-size:11px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); padding:3px 8px; border-radius:4px; font-weight:700;">
-            100% 内核通用 · 零代码跨域复用
-          </span>
-        </div>
-        <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          VeriAgent Kernel 绝非针对单一冷柜的死规则，而是可验证执行基础设施。内核代码 0% 修改，仅需通过无侵入 Domain Profile DSL 驱动：
-        </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(310px, 1fr)); gap:12px; margin-top:12px;">
-          <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.4); border-radius:8px; padding:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <b style="color:#38bdf8; font-size:13px;">Benchmark 01 · 零售高敏冷链</b>
-              <span style="font-size:10px; background:#0284c7; color:#fff; padding:1px 6px; border-radius:3px; font-family:var(--font-mono);">512 设备实跑</span>
-            </div>
-            <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
-              • <b>承载资产</b>：巴氏鲜奶、鲜食便当、熟食肉品<br>
-              • <b>数字熔断</b>：500ms 锁定 POS 结算与外卖平台库存<br>
-              • <b>动力学模型</b>：Arrhenius 微生物增殖时间积分模型<br>
-              • <b>Human Tool</b>：商业冷修技工上门排查压缩机与温控板<br>
-              • <b>反自验判定</b>：降温至 4.8°C 变绿，但鲜奶超温暴露 42min，<b>Auditor 阻断放行并强制报损</b>
-            </div>
-          </div>
-          <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(16,185,129,0.4); border-radius:8px; padding:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <b style="color:#34d399; font-size:13px;">Benchmark 02 · 生物医药温控</b>
-              <span style="font-size:10px; background:#059669; color:#fff; padding:1px 6px; border-radius:3px; font-family:var(--font-mono);">2~8°C GSP/GMP</span>
-            </div>
-            <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
-              • <b>承载资产</b>：狂犬疫苗、单克隆抗体、胰岛素注射液<br>
-              • <b>数字熔断</b>：毫秒级锁定 WMS 医药仓储出库发运门禁<br>
-              • <b>动力学模型</b>：大分子蛋白质变性动力学失效应力积分<br>
-              • <b>Human Tool</b>：洁净室资质认证暖通工程师受控入场<br>
-              • <b>反自验判定</b>：库温恢复合格，但微观胶体已破乳，<b>Auditor 一票否决出库并锁定批号</b>
-            </div>
-          </div>
-          <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(167,139,250,0.4); border-radius:8px; padding:14px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <b style="color:#c4b5fd; font-size:13px;">Benchmark 03 · 智算机房 HPC</b>
-              <span style="font-size:10px; background:#7c3aed; color:#fff; padding:1px 6px; border-radius:3px; font-family:var(--font-mono);">40kW 液冷热失控</span>
-            </div>
-            <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
-              • <b>承载资产</b>：运行中千亿参数大模型 Checkpoint 与权重<br>
-              • <b>数字熔断</b>：毫秒级向 Slurm/K8s 下发 Pod 算力无损热迁移<br>
-              • <b>动力学模型</b>：GPU 芯片结温与热阻热容 RC 网络预测模型<br>
-              • <b>Human Tool</b>：数据中心驻场硬件工程师检修快换接头水阀<br>
-              • <b>反自验判定</b>：回水温度达标，但显存 ECC 校验和异常，<b>Auditor 阻断恢复并强制回滚</b>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CHAPTER 9: 3-MIN SPEECH (HIGH IMPACT - 12 SLIDES STEP-BY-STEP) -->
-      <section id="d-ch9" style="background: linear-gradient(180deg, rgba(234,179,8,0.12) 0%, rgba(15,23,42,0.95) 100%); border: 1.5px solid #eab308; border-radius:14px; padding:22px; margin-bottom:24px; box-shadow: 0 0 25px rgba(234,179,8,0.18);">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="background:#eab308; color:#0f172a; font-size:11px; font-weight:900; padding:2px 8px; border-radius:4px;">答辩必背核心</span>
-              <h3 style="color:#fde047; font-size:19px; margin:0; font-weight:800;">
-                ★ 09 【3 分钟项目陈述】12 页 PPT 逐页掐秒口播逐字稿（180 秒严格分秒版）
-              </h3>
-            </div>
-            <p style="font-size:12.5px; color:#cbd5e1; margin-top:5px; margin-bottom:0;">
-              全屏打开 <a href="./ppt/" target="_blank" style="color:#38bdf8; text-decoration:underline;">/zhuguang/ppt/</a>，右手按方向键 [→] 翻页，手机/副屏对照此稿口播，分秒不差！
-            </p>
-          </div>
-          <span style="font-size:12px; font-weight:700; color:#fde047; background:rgba(0,0,0,0.5); padding:6px 12px; border-radius:6px; border:1px solid rgba(253,224,71,0.3); font-family:var(--font-mono);">
-            总限时：180 秒（12 页，平均 15 秒/页）
-          </span>
-        </div>
-
-        <div style="space-y: 12px; font-size: 13px; line-height: 1.8;">
-
-          <!-- P01 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P01 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【封面】VeriAgent｜面向物理实体流程的可验证多智能体运行时</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 00:00 - 00:10 (10秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“可信闭环”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “各位评委老师好！我们是第 13 队‘逐光’，今天汇报的作品是面向物理实体流程的可验证多智能体运行时——<b>VeriAgent</b>。<br>
-              当绝大多数团队还在纯代码和文本等虚拟数字空间中打转时，VeriAgent 深入到了物理世界‘原子与比特交织’的最后一百米：<b>通过物理-数字三大不可逆公理、反自验执行机制 (Anti-Self-Verification) 与物理异步 Human Tool 协议，为企业实体业务提供真正敢于放行的确定性可信闭环！</b>本次我们以连锁高敏冷链 512 台设备作为极限压力基准集展开验证。”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：PPT 封面居中大标题 VeriAgent 与通用可验证运行时定位，右下角 Reference Benchmark 01 徽章。
-            </div>
-          </div>
-
-          <!-- P02 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(234,179,8,0.25); border-left:4px solid #eab308; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#ca8a04; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P02 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【01·第一性原理】物理实体流程的三大不可逆公理：软件假设在物理世界必然崩溃</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 00:10 - 00:30 (20秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“客观物理真值”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “企业为什么不敢让 Agent 真正涉足实体业务？因为纯软件的默认假设在物理世界完全失效：<br>
-              <b>公理一：状态不对称</b>。硬件恢复不等于资产安全！冷柜降温至 4.8°C，但鲜奶超温暴露 42 分钟已彻底变质，纯软件视变绿为完成必然酿成食安灾难；<br>
-              <b>公理二：执行不可逆</b>。物理动作没有‘代码假撤销’，上门拧螺丝、切断电源、报损销毁具备单向不可逆成本，必须受控于刚性门禁；<br>
-              <b>公理三：反自验闭环</b>。执行者绝无权自证成功！由执行写操作的 Agent 自己宣布结案，系统立刻陷入自验自放灾难，必须由带外独立外部预言机重查客观物理真值。”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：三大不可逆公理对比卡片，右侧强调高敏冷链极限压力基准 01。
-            </div>
-          </div>
-
-          <!-- P03 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P03 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【02·系统架构】VeriAgent 架构栈：内核与场景无侵入解耦</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 00:30 - 00:48 (18秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“三层解耦”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “为此，我们设计了三层解耦的 <b>VeriAgent 架构栈</b>：<br>
-              ① <b>顶层 Domain Profiles</b>：业务无侵入插件，通过 Profile DSL 驱动。挂载冷链跑通零售保全；挂载医药跑通 GSP 恒温疫苗验真；挂载 HPC 跑通智算 GPU 热失控算力迁移，内核 0% 业务硬编码；<br>
-              ② <b>中层 VeriAgent Kernel</b>：5 个通用 Agent 角色协同编排，驱动确定性状态机与反自验闭环；<br>
-              ③ <b>底层 Actuation & Truth Bus</b>：将 API 数字拦截、带 SLA 挂起的 Human Tool 与外部传感器客观真值紧密打通。”
-              <br>当前仓库验证范围：              底层由 <b>IncidentService 状态机</b>提供全局唯一的单一事实源；<br>
-              在本地端，采用 SQLite 和固定随机种子，保证评测 100% 确定性复现、零外部依赖；<br>
-              云端部署目标为 <b>AgentTeams 平台与 PolarDB</b>，支撑 1 Manager + 5 Agent 多 Worker 动态协同（目标环境待验收）。
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：三层架构栈，中间突出中层通用内核与底层物理-数字总线。
-            </div>
-          </div>
-
-          <!-- P04 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(16,185,129,0.25); border-left:4px solid #10b981; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#059669; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P04 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【03·五 Agent 职责】通用 5-Agent 运行时角色：职责硬隔离与反自验</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 00:48 - 01:06 (18秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“一票否决”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “在运行时多 Agent 协同上，我们践行最小权限与反自验原则，5 个角色<b>绝不共享‘宣布成功’的权力</b>：<br>
-              • <b>Orchestrator</b> 仅调度协调，无领域写权；<br>
-              • <b>Sentry</b> 只读巡检全网设备，通过 Westgard 走廊过滤时序毛刺；<br>
-              • <b>Diagnoser</b> 结合退化动力学因果分析资产暴露损伤；<br>
-              • <b>Executor</b> 受控执行写操作，调度 Human Tool，但<b>绝无权自验自结</b>；<br>
-              • <b>Auditor</b> 作为外部独立预言机重查物理真值，拥有一票否决权！”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：五列角色并排，最右侧 Auditor 独立预言机高亮守卫。
-            </div>
-          </div>
-
-          <!-- P05 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P05 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【04·五阶段闭环】通用物理-数字交互协议：五阶段确定性生命周期</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 01:06 - 01:22 (16秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“持续演进闭环”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “通用交互协议定义了严密的五阶段确定性生命周期：<br>
-              第一阶段‘数字熔断’，Sentry 发现异常后 500 毫秒内切断对外流通，掐死资产风险外溢；<br>
-              第二阶段‘动力学定损’，积分计算物理应力并锁定根因；<br>
-              第三阶段‘物理执行’，触发移动端 HITL 审批，将人工技工作为<b>异步 Human Tool 调度上门</b>并管理 SLA；<br>
-              第四阶段‘反自验重验’，Auditor 独立核验硬件与资产双重客观真值，杜绝自验；<br>
-              第五阶段‘演进’，Trace 全量回流至 AgentLoop 驱动持续评测与自迭代！”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：5 步流程卡片（01 DIGITAL INTERLOCK → 02 KINETICS → 03 ACTUATION → 04 VERIFY → 05 EVOLUTION）。
-            </div>
-          </div>
-
-          <!-- P06 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(239,68,68,0.25); border-left:4px solid #ef4444; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#b91c1c; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P06 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【05·执行鲁棒性】物理-数字系统的六大执行鲁棒性不变式</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 01:22 - 01:40 (18秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“绝不盲目关闭”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “在执行鲁棒性上，我们视<b>‘失败为一等公民’</b>，设立 A-F 六大刚性不变式：<br>
-              不变式 A 硬件与资产双重达标方可 Verified Closed；不变式 B/C 识别传感器噪声与瞬态气流扰动后合规放行；<br>
-              而面对不变式 D 审批超时、不变式 E 硬件恢复但资产受损（核心红线）、不变式 F 接口 partial，系统坚决保持阻断并回开事件，<b>宁可升级人工，绝不盲目关闭！</b>”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：6 宫格不变式，对比上方绿色 CLOSED 与下方灰色 CONTAINED / BLOCKED 的鲜明反差。
-            </div>
-          </div>
-
-          <!-- P07 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P07 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【06·Skill 工程】六个通用 P0 Skill：语义化契约治理与热插拔分发</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 01:40 - 01:55 (15秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“热插拔标准”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “在 Infra 规范性上，我们封装治理了 6 个通用 P0 Skill，全部具备 SemVer 语义化版本、输入输出 JSON Schema 强类型约束以及负向反例。<br>
-              所有 Skill 已通过自动化流水线打包装入 Worker ZIP，通过了本地静态契约校验，目标平台生产分发与热插拔仍需真实环境验证。”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：6 个版本化 Skill 条目与右侧 REGISTRY + PACKAGE 规范。
-            </div>
-          </div>
-
-          <!-- P08 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(234,179,8,0.25); border-left:4px solid #eab308; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#ca8a04; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P08 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【07·物理-数字原语】先重查客观事实，再决定写动作</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 01:55 - 02:10 (15秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“永久拉黑”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “在工具原语上，我们定义了 5 大 P0 事实重查工具与 7 类受控动作，强制遵循<b>‘先重查事实，再决定动作’</b>。<br>
-              建立四道安全闸：通过 Policy 拦截越权、写操作强加 Client-Token 幂等键、在 DB 底层剥夺审计修改权；<br>
-              不可逆破坏动作强制触发移动端 HITL 阻断，审批与人工凭据仅限人类授权，而资金支付对 Agent 永久拉黑！”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：左侧 5 P0 Queries 事实重查清单，右侧可逆、跨系统与不可逆操作分类与红线禁令。
-            </div>
-          </div>
-
-          <!-- P09 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(16,185,129,0.25); border-left:4px solid #10b981; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#059669; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P09 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【08·评测证据】所有本地 P0 门禁通过，口径可追溯</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 02:10 - 02:26 (16秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“架构的必要性”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “用数据说话：在本地评测门禁中，6 大不变式场景 100% 确定性通过，产出 45 份哈希校验的 Evidence 证据包与 26 段完整 Trace，违规放行率为零！<br>
-              消融实验更证实：<b>去掉 Auditor 独立稽核，将有 5 个失败场景被错误放行</b>，直接量化证明了多 Agent 职责隔离与反自验架构的不可替代性！”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：四大核心数字（6/6 不变式、45/45 证据、26/26 Trace、0 违规），底部 Ablation 消融数据。
-            </div>
-          </div>
-
-          <!-- P10 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(239,68,68,0.25); border-left:4px solid #ef4444; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#b91c1c; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P10 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【09·初赛反馈落地】反馈不写成口号，逐项落到可验证改造</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 02:26 - 02:40 (14秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“环境兜底”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “初赛评委的每一条宝贵建议，我们都落地为了仓库内可复现的代码与证据（如幻灯片标红列所示）：<br>
-              我们聚焦高敏冷链压力基准做透闭环；通过 Auditor 证伪了单 Agent 自验缺陷；所有工程声明都有 本地测试和安装烟测支持；Docker 实测需有引擎的环境，拒绝口号化。”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：标红的整改列（聚焦主线、多 Agent 增益、复现证据）。
-            </div>
-          </div>
-
-          <!-- P11 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.25); border-left:4px solid #38bdf8; padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#0284c7; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P11 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【10·基准矩阵】三大行业基准压力测试矩阵 (Universal Benchmark Matrix)</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 02:40 - 02:52 (12秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完“基准矩阵”按 [→] 翻页</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “VeriAgent 的核心价值在于跨行业通用性：<b>核心内核代码 0% 修改，仅通过 Profile DSL 驱动即可跨域开箱复用</b>！<br>
-              除基准 01 零售冷链外，我们已完成了基准 02 <b>生物医药 2~8°C GSP 疫苗防变质出库验真</b>，以及基准 03 <b>智算机房 40kW 液冷 GPU 热失控算力热迁移</b>。这证明了 VeriAgent 是真正面向物理实体业务的基础设施运行时！”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>画面焦点</b>：三大 Benchmark 矩阵对比卡片（零售冷链、生物医药、智算液冷）。
-            </div>
-          </div>
-
-          <!-- P12 -->
-          <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(167,139,250,0.25); border-left:4px solid #a78bfa; padding:12px 16px; border-radius:0 8px 8px 0;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:#7c3aed; color:#fff; font-size:11px; font-weight:800; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">P12 / 12</span>
-                <span style="color:#f8fafc; font-weight:700; font-size:13px;">【11·交付边界与总结】事件只有在证据闭环后才能关闭</span>
-              </div>
-              <div style="display:flex; gap:10px; font-size:11.5px; font-family:var(--font-mono);">
-                <span style="color:#38bdf8; font-weight:700;">⏱ 02:52 - 03:00 (8秒)</span>
-                <span style="color:#fde047; font-weight:700;">👉 念完致谢，投屏切至指挥中心</span>
-              </div>
-            </div>
-            <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
-              “最后重申 VeriAgent 的立项信念：<b>‘温度恢复不等于资产安全，Agent 的完成声明绝不等于业务事实！’</b><br>
-              VeriAgent 只做证据闭环。汇报完毕，感谢各位评委，请老师们批评指正！”
-            </div>
-            <div style="font-size:11.5px; color:#94a3b8;">
-              👀 <b>动作配合</b>：致谢鞠躬，切到浏览器标签页 2（指挥中心 `https://mazhi.icu/zhuguang/`），准备随时现场点触演练。
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- CHAPTER 10: 1-MIN DEMO TABLE (HIGH IMPACT) -->
-      <section id="d-ch10" style="background:var(--card); border: 1.5px solid var(--red); border-radius:14px; padding:20px; margin-bottom:20px;">
-        <h3 style="color:#f87171; font-size:18px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>★ 10</span> 【1 分钟 Demo 演示】60 秒全屏联动操作与解说词全对照表
-        </h3>
-        <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:10px;">
-          投屏打开指挥中心主页第一栏，点击绿色 <b>【一键演练 (60s)】</b>，对照执行以下台词：
-        </p>
-        <div style="overflow-x:auto;">
-          <table class="tbl" style="width:100%; font-size:12px;">
-            <thead>
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted);">
-                <th style="padding:8px; text-align:left; width:70px;">时间轴</th>
-                <th style="padding:8px; text-align:left; width:220px;">屏幕画面视觉联动</th>
-                <th style="padding:8px; text-align:left;">答辩解说台词（核心得分点）</th>
-                <th style="padding:8px; text-align:left; width:120px;">考核点对应</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#38bdf8;">00-10s</td>
-                <td style="padding:8px;"><b>全网动态轮询扫描</b>：快速扫过 S01/S02/S04 正常绿线，锁定 S03 店 1 号柜（9.6°C 飙升标红）</td>
-                <td style="padding:8px;">“Sentry 巡检全网 512 台设备，自动过滤常规开门波动，精准捕捉到 S03 天河店 1 号鲜奶柜突破 8°C 告警线，排除断流，向总控发出紧急遏制请求。<br><span style="color:#38bdf8; font-size:11px;">💡 <b>答辩技巧</b>：可当场点击 S01/S02/S04 门店卡片或【刷新采样】，向评委说明不同温区时序与高斯刷新属于模拟，用于演示交互，不是传感器证据！</span>”</td>
-                <td style="padding:8px; color:#38bdf8;">关键链路 · 异常发现</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fcd34d;">10-20s</td>
-                <td style="padding:8px;">1 号设备打上停售锁，图表弹出【🔒 停售锁已下发】</td>
-                <td style="padding:8px;">“食品安全第一！Executor 立即下发 L1 预授权动作，通过 MCP 切断 POS 收银结算，防止潜在变质品流向顾客。”</td>
-                <td style="padding:8px; color:#fcd34d;">Agent 协作 · 遏制</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#fcd34d;">20-30s</td>
-                <td style="padding:8px;">状态更新为压缩机故障，超温暴露累积至 35min</td>
-                <td style="padding:8px;">“Diagnoser 综合排查门磁与除霜，锁定压缩机电容老化（置信度 0.94）；同时计算鲜奶已超温暴露 35 分钟，建议强制报损，熟食调拨备用冷柜。”</td>
-                <td style="padding:8px; color:#fcd34d;">多源诊断 · 资产定损</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:#38bdf8;">30-40s</td>
-                <td style="padding:8px;">技工到店换件，<b>折线快速俯冲降温至 7.2°C</b></td>
-                <td style="padding:8px;">“维修预算触发店长手机端一键审批（HITL）。冷修技工到店换件，冷柜重新制冷，温度快速向下回落！”</td>
-                <td style="padding:8px; color:#38bdf8;">HITL 审批 · 闭环降温</td>
-              </tr>
-              <tr style="background:rgba(239,68,68,0.08);">
-                <td style="padding:8px; font-weight:900; color:var(--red);">40-50s<br>🔥高光</td>
-                <td style="padding:8px;">设备降温至 4.8°C 变绿，图表弹出深红徽章：<br><b>【🛡️ Auditor: 鲜奶超温变质阻断放行!】</b></td>
-                <td style="padding:8px; color:#fca5a5;"><b>“请评委老师重点关注核心安全红线：冷柜虽已降回 4.8°C，但 Auditor 独立重查判定鲜奶暴露 42 分钟已不可逆变质，坚决阻断放行、强制报损！彻底终结执行者自验自放！”</b></td>
-                <td style="padding:8px; color:var(--red); font-weight:700;">核心红线阻断 · 独立稽核</td>
-              </tr>
-              <tr>
-                <td style="padding:8px; font-weight:700; color:var(--green);">50-60s</td>
-                <td style="padding:8px;">鲜奶销毁熟食放行，<b>左上角 S03 店瞬间变绿</b></td>
-                <td style="padding:8px;">“熟食转移合规放行，变质鲜奶销毁报损。Orchestrator 沉淀电容老化知识条目，事件安全关闭，全网重归全绿守护，完成高可靠闭环！”</td>
-                <td style="padding:8px; color:var(--green);">知识沉淀 · 安全关闭</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- CHAPTER 11: Q&A DEFENSE (HIGH IMPACT) -->
-      <section id="d-ch11" style="background:var(--card); border: 1.5px solid #a78bfa; border-radius:14px; padding:20px; margin-bottom:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
-          <div>
-            <h3 style="color:#c4b5fd; font-size:18px; margin:0; display:flex; align-items:center; gap:8px;">
-              <span>★ 11</span> 【3 分钟评委问答】官方 4 大考核维度 8 大高频攻防题深度通关
-            </h3>
-            <p style="font-size:12px; color:var(--text-muted); margin-top:4px; margin-bottom:0;">
-              覆盖多智能体权限边界、实机运行凭证、幻觉防护、跨行业复制、物理维修与传统报单本质区别、端云协同推理、硬件接入 ROI 与 HITL 门禁
-            </p>
-          </div>
-          <span style="font-size:11px; background:rgba(167,139,250,0.15); color:#c4b5fd; border:1px solid rgba(167,139,250,0.4); padding:3px 8px; border-radius:4px; font-weight:700;">
-            8 大高价值攻防全覆盖
-          </span>
-        </div>
-
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(460px, 1fr)); gap:12px;">
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q1: 为什么用 AgentTeams 而非单 Agent + Prompt？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-              <b>靶向回答</b>：单 Agent 在物理世界无法做协议级权限硬隔离（L0 只读 vs L1/L2 写），且存在“自己干自己验收”自证漏洞。AgentTeams 实现了多 Worker 职责硬隔离与 Auditor 独立干净上下文重查客观事实。
-            </p>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q2: 怎么证明不是前端 Mock 而是真实可运行？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              <b>靶向回答</b>：证据分层：status.json 只报告独立观测；高斯曲线、门店切换与审批按钮为浏览器模拟；本地命令行 `uv run dianxun evaluate`，6 个场景评测；单元测试需另行执行 unittest discover。
-            </p>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q3: 大模型产生“幻觉”乱调工具乱花钱怎么办？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-              <b>靶向回答</b>：四道防御防线：① Policy 门禁强制挂起大额操作，触发店长移动端审批（HITL）；② 全量写强制携带 `idempotency_key` 幂等键防重试；③ Auditor 强制一票否决阻断；④ 数据库底层只增不可篡改审计。
-            </p>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q4: 除了便利店冷柜，还能拓展到什么领域？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-              <b>靶向回答</b>：VeriAgent 内核代码 <b>100% 通用无侵入</b>，纯通过 Profile DSL 驱动跨域适配。除基准 01 零售冷链外，我们已完成三大基准矩阵实证：<br>
-              ① <b>基准 02 生物医药疫苗温控</b>：2~8°C GSP/GMP 刚性监管，生物活性失效应力积分，防变质破乳疫苗出库，调度洁净室认证工程师；<br>
-              ② <b>基准 03 智算机房 HPC 液冷</b>：40kW 高密液冷 GPU 热失控预测，毫秒级算力任务无损热迁移，驻场水冷工程师排查快换阀。<br>
-              凡是符合<b>三大不可逆公理（状态不对称、执行不可逆、反自验闭环）</b>的物理实体场景均可开箱即用！
-            </p>
-          </div>
-
-          <!-- Q5: 核心杀手题 (全宽重点展示) -->
-          <div style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(234,179,8,0.09) 0%, rgba(167,139,250,0.09) 100%); border: 1.5px solid #eab308; border-radius: 10px; padding: 16px; margin-top: 4px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-              <b style="color:#fde047; font-size:14px; display:flex; align-items:center; gap:6px;">
-                <span style="background:#eab308; color:#0f172a; font-size:10.5px; font-weight:900; padding:2px 6px; border-radius:4px;">★ 决赛必考杀手题</span>
-                Q5: 物理修复仍需师傅人工到场拧螺丝，那这套系统和传统的工单/报单系统本质上有何区别？
-              </b>
-              <span style="font-size:11px; color:#cbd5e1; background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:4px; border:1px solid rgba(255,255,255,0.1);">
-                答辩定调：师傅修的是“机器”，VeriAgent 救的是“承载资产、业务连续性与法律生命线”
-              </span>
-            </div>
-
-            <p style="font-size:12.5px; color:#f1f5f9; line-height:1.7; margin-bottom:12px;">
-              <b>【靶向反击口播】</b>：“评委老师问到了最核心的本质！物理零件确实需要师傅的扳手，但若将其等同于传统报单，就忽略了整个事件中最关键的客体——<b>柜子里的商品和消费者</b>。传统报单在人到前的 45~120 分钟内<b>让企业处于完全裸奔状态</b>，变质商品持续流向顾客酿成食安灾难；而我们的 VeriAgent 架构实现了<b>四重根本性范式质变</b>：”
-            </p>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:14px;">
-              <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(56,189,248,0.3); border-radius:6px; padding:10px;">
-                <div style="color:#38bdf8; font-weight:700; font-size:12px;">① 遏制客体：秒级数字熔断</div>
-                <div style="font-size:11.5px; color:#cbd5e1; margin-top:4px; line-height:1.5;">
-                  传统报单在人到前毫无作为；Agent 在 <b>500 毫秒内</b>自动切断 POS 结算与外卖平台（Digital Containment），把食安事故掐死在萌芽。
-                </div>
-              </div>
-              <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:10px;">
-                <div style="color:#34d399; font-weight:700; font-size:12px;">② 作业性质：边端自愈免于人工</div>
-                <div style="font-size:11.5px; color:#cbd5e1; margin-top:4px; line-height:1.5;">
-                  传统系统分不清开门或化霜延时，无效派工率高达 40%（单次 80~150 元）；Agent 联动 IoT 协议下发自愈指令与语音提醒，<b>真坏才呼叫人工</b>。
-                </div>
-              </div>
-              <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(234,179,8,0.3); border-radius:6px; padding:10px;">
-                <div style="color:#fde047; font-weight:700; font-size:12px;">③ 派单质量：带靶向药直奔病灶</div>
-                <div style="font-size:11.5px; color:#cbd5e1; margin-top:4px; line-height:1.5;">
-                  传统盲派师傅常因缺备件二次返工（二次上门率 35%）；Diagnoser 输出 <b>87% 根因置信度 + 备件型号 + 排查 SOP</b>，一次修复率达 95% 以上。
-                </div>
-              </div>
-              <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(244,63,94,0.3); border-radius:6px; padding:10px;">
-                <div style="color:#fb7185; font-weight:700; font-size:12px;">④ 事后归宿：动力学定损与挽损</div>
-                <div style="font-size:11.5px; color:#cbd5e1; margin-top:4px; line-height:1.5;">
-                  传统管修不管货全凭店员盲猜；Agent 基于 <b>Arrhenius 微生物动力学积分</b>，受控短超温自动 3 折促销<b>挽回 70% 货值</b>，重度失温生成销毁凭据。
-                </div>
-              </div>
-            </div>
-
-            <!-- 对比全景表格 -->
-            <div style="overflow-x:auto; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px;">
-              <table style="width:100%; border-collapse:collapse; font-size:12px; color:#cbd5e1; text-align:left;">
-                <thead>
-                  <tr style="border-bottom:1px solid rgba(255,255,255,0.18); color:#fff;">
-                    <th style="padding:8px; width:13%;">对比维度</th>
-                    <th style="padding:8px; width:33%; color:#f87171;">传统工单/报单系统 (ERP/CRM/动环)</th>
-                    <th style="padding:8px; width:34%; color:#34d399;">VeriAgent 可验证闭环运行时</th>
-                    <th style="padding:8px; width:20%; color:#fde047;">核心本质质变</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <td style="padding:8px; font-weight:700; color:#fff;">风险暴露期</td>
-                    <td style="padding:8px;"><b>45~120 分钟完全裸奔</b>：师傅路上骑车，POS 和外卖继续售卖变质牛奶</td>
-                    <td style="padding:8px;"><b>500 毫秒秒级数字熔断</b>：Sentry 发现即刻指令 Executor 锁定停售</td>
-                    <td style="padding:8px; color:#fde047;">从事后追责 ➔ 事前资产风控</td>
-                  </tr>
-                  <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <td style="padding:8px; font-weight:700; color:#fff;">触发与有效性</td>
-                    <td style="padding:8px;"><b>盲目派单</b>：静态阈值易受开门进货干扰，无效上门率高达 40%</td>
-                    <td style="padding:8px;"><b>边端自愈</b>：走廊斜率分析 + IoT 反控重置化霜/变频补偿，自愈失败才派单</td>
-                    <td style="padding:8px; color:#fde047;">节约 40% 无效运维支出</td>
-                  </tr>
-                  <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <td style="padding:8px; font-weight:700; color:#fff;">维修与工时</td>
-                    <td style="padding:8px;"><b>盲人摸象</b>：师傅空手到店拆检才知缺件，二次上门率 35%，MTTR 4 小时</td>
-                    <td style="padding:8px;"><b>处方派单</b>：输出 87% 根因置信度 + 携带备件型号 + 排查 SOP，FTFR 95%</td>
-                    <td style="padding:8px; color:#fde047;">带药直奔病灶，缩短 60% MTTR</td>
-                  </tr>
-                  <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <td style="padding:8px; font-weight:700; color:#fff;">商品资产定损</td>
-                    <td style="padding:8px;"><b>管修不管货</b>：店员凭肉眼盲猜，要么盲目全扔造成巨亏，要么偷卖留雷</td>
-                    <td style="padding:8px;"><b>动力学挽损</b>：Arrhenius 模型积分，轻微受控 3 折促销挽回 70% 货值</td>
-                    <td style="padding:8px; color:#fde047;">兼顾食品安全与资产 ROI</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px; font-weight:700; color:#fff;">闭环真实性</td>
-                    <td style="padding:8px;"><b>自验漏洞</b>：师傅自己点“维修完成”即可结案，存在严重的“假闭环”</td>
-                    <td style="padding:8px;"><b>独立稽核</b>：Auditor 干净上下文重查客观时序传感器，一票否决才放行</td>
-                    <td style="padding:8px; color:#fde047;">职责分离的审计级真实凭据</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q6: 基座模型在垂直工业场景下，如何平衡推理成本与高并发时延？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-              <b>靶向回答</b>：采用<b>“端侧轻量过滤 + 云端基座深推”的双层分级架构</b>。边缘端运行 0.5B/1.5B 轻量时序模型处理高频 Westgard 走廊过滤与 IoT 协议反控，毫秒级响应且 0 Token 成本；云端调用 Qwen3.8-Max 处理复杂多源证据的 Top-K 根因微积分推断与合规审计，单次异常处理仅消耗约 0.025 元 Token，单店综合 ROI 极其突出。
-            </p>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q7: 存量老旧非标冷柜如何接入？综合成本与投资回收周期（ROI）多长？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-              <b>靶向回答</b>：采用<b>免破线外挂式 4G Cat.1 / BLE 探针与 Modbus 透传网关</b>，单柜硬件改造成本仅需 150~200 元，15 分钟施工即插即用。经济账本：单店年均减少 1 次食安客诉可挽回 2~5 万元，降低 40% 无效派工节省约 800 元，动力学折价挽回损耗约 3000 元，<b>单店静态投资回收期小于 3.5 个月</b>。
-            </p>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(167,139,250,0.3); border-radius:8px; padding:12px;">
-            <b style="color:#c4b5fd; font-size:13px;">Q8: HITL 人机协同安全边界在哪里？Agent 会不会由于误判导致业务瘫痪？</b>
-            <p style="font-size:12px; color:var(--text-secondary); margin-top:4px; line-height:1.6;">
-              <b>靶向回答</b>：四级特权刚性隔离：L0 只读（Sentry 无写权限）；L1 预授权可逆熔断（Executor 仅限临时停售与锁库存，若误触随时可一键解封，属安全兜底）；<b>L2 核心不可逆操作（整批报废销毁、大额索赔）强制触发店长移动端审批挂起（HITL 物理安全门禁）</b>。全量操作强制携带幂等键，且 Auditor 拥有干净上下文一票否决权。
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- CHAPTER 12 -->
-      <section id="d-ch12" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px;">
-        <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>12</span> 答辩现场双屏配置、自检清单与应急预案
-        </h3>
-        <div style="font-size:12.5px; color:var(--text-secondary); line-height:1.7;">
-          • <b>主屏幕（共享给评委）</b>：标签页 1 为 PPT 全屏演示 (`/zhuguang/ppt/`)，标签页 2 为指挥中心主页 (`/zhuguang/`)；<br>
-          • <b>副屏幕（手机/平板提词）</b>：打开本网页 (`/zhuguang/defense.html`)，随时看掐秒台词；<br>
-          • <b>备用网络</b>：如遇网络偶发波动，直接切换至备用镜像 `https://mazhi.icu/dianxun/`。
-        </div>
-      </section>
-
-    </div>
+<div class="dossier-wrap" style="color:var(--text);max-width:1100px;margin:0 auto">
+  <style>
+    .dossier-wrap .d-card {background:var(--card,#0f172a);border:1px solid var(--border,rgba(56,189,248,.2));border-radius:14px;padding:24px;margin:20px 0}
+    .dossier-wrap h2,.dossier-wrap h3 {line-height:1.4;margin-top:0}
+    .dossier-wrap p,.dossier-wrap li {line-height:1.8}
+    .dossier-wrap nav {display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+    .dossier-wrap a {color:var(--cyan,#38bdf8)}
+    .dossier-wrap .d-scroll {overflow:auto}
+    .dossier-wrap table {border-collapse:collapse;width:100%;min-width:520px}
+    .dossier-wrap th,.dossier-wrap td {text-align:left;padding:12px;border-bottom:1px solid var(--border-subtle,rgba(255,255,255,.1));vertical-align:top}
+    .dossier-wrap .d-note {border-left:4px solid #fbbf24;padding:12px 16px;background:rgba(251,191,36,.08)}
+    @media(max-width:600px){.dossier-wrap .d-card{padding:16px}}
+  </style>
+  <header class="d-card">
+    <p style="color:var(--cyan)">逐光队 · 决赛准备材料</p>
+    <h2>VeriAgent：受控执行与独立验收</h2>
+    <p>以冷柜失温为首个验证场景，将设备、商品、审批和处置事实关联到同一事件。</p>
+    <p class="d-note">本页基于仓库可复核的工程证据。外部设备、维修和审批在本地演练中均为模拟；正式决赛时长、真实平台证据与参赛版本仍待冻结。</p>
+    <p><a class="demo-btn" href="./ppt/finals.html" target="_blank" rel="noopener">12 页决赛工作稿</a>
+      <a class="demo-btn" href="./ppt/VeriAgent-GOAI-finals-draft.pdf" target="_blank" rel="noopener">09-12 准备稿 PDF</a></p>
+    <p>PDF 为带日期的独立快照，不随本页更新；最新讲稿与测试矩阵位于仓库 docs。</p>
+    <nav aria-label="答辩内容">
+      <a href="#d-ch1">问题</a><a href="#d-ch2">用户</a><a href="#d-ch3">架构</a><a href="#d-ch4">角色</a>
+      <a href="#d-ch5">闭环</a><a href="#d-ch6">场景</a><a href="#d-ch7">Skill</a><a href="#d-ch8">恢复</a>
+      <a href="#d-ch9">证据</a><a href="#d-ch10">演示</a><a href="#d-ch11">问答</a><a href="#d-ch12">下一步</a>
+    </nav>
+  </header>
+  <section id="d-ch1" class="d-card"><h3>01 · 要解决的问题</h3>
+    <p>冷柜修好后，柜里的商品是否已经满足放行条件？设备恢复、维修回执和商品验收是不同事实。系统以独立核验决定事件能否关闭，不能让执行者用一句“完成”代替验收。</p>
+  </section>
+  <section id="d-ch2" class="d-card"><h3>02 · 用户与业务价值</h3>
+    <p>总部运营、区域督导和店长需要在告警、群消息、工单和审批之间确认进展。目标是减少人工串联、误派工单和证据缺口；实际效率、损耗和处置成本需要合作方试点建立基线。目前没有真实收益百分比或投资回收期结论。</p>
+  </section>
+  <section id="d-ch3" class="d-card"><h3>03 · 实际架构</h3>
+    <p>IncidentService 是业务状态唯一入口；Policy 约束权限与审批；StateStore 提供事务和持久化。确定性本地流程和 /runtime Worker 接口共用业务核心。</p>
+    <p>独立 ContextBus 使用 WAL；运行上下文与领域变更在业务数据库事务中提交，版本冲突拒绝旧写入。生产 PolarDB、真实 AgentTeams、POS/WMS/IoT/维修接入仍需目标环境证据。</p>
+  </section>
+  <section id="d-ch4" class="d-card"><h3>04 · 五个业务角色</h3>
+    <div class="d-scroll"><table><thead><tr><th>角色</th><th>责任</th><th>边界</th></tr></thead><tbody>
+      <tr><td>Orchestrator</td><td>协调阶段和委派</td><td>不能自行判定业务成功</td></tr>
+      <tr><td>Sentry</td><td>检查数据质量、发现异常</td><td>不执行库存或解禁动作</td></tr>
+      <tr><td>Diagnoser</td><td>批次风险与证据关联诊断</td><td>建议不直接改变业务状态</td></tr>
+      <tr><td>Executor</td><td>按权限和审批执行</td><td>不能代替 Auditor 验收或自证关闭</td></tr>
+      <tr><td>Auditor</td><td>独立重查和复盘</td><td>证据不完整时保持限制</td></tr>
+    </tbody></table></div>
+    <p>外层还有 1 个 Framework Manager，不计入五个业务 Agent。Human 是独立审批/运维身份，不是额外业务 Agent。</p>
+  </section>
+  <section id="d-ch5" class="d-card"><h3>05 · 五阶段闭环</h3>
+    <p>发现与遏制 → 诊断与决策 → 处置执行 → 独立验证 → 复盘。先停售遏制，再诊断；受控处置先审批，执行后重新查询事实。</p>
+    <p>比赛策略下，维修金额大于 2000 元需要相应审批；转移、放行、报损与解除停售有独立审批约束。设备恢复不能替代商品核验，LEARN 后由 IncidentService 决定关闭。</p>
+    <p class="d-note">示例温控和暴露阈值只用于合成场景，不能直接判断真实食品已变质或可以售卖。</p>
+  </section>
+  <section id="d-ch6" class="d-card"><h3>06 · 六个合成场景</h3>
+    <div class="d-scroll"><table><thead><tr><th>场景</th><th>验证重点</th></tr></thead><tbody>
+      <tr><td>A 设备故障</td><td>遏制、审批、处置、独立核验和关闭</td></tr>
+      <tr><td>B 传感器疑点</td><td>数据质量与独立复测</td></tr>
+      <tr><td>C 柜门未关</td><td>证据关联根因与受控处置</td></tr>
+      <tr><td>D 审批超时</td><td>timeout 不等于批准，保持遏制</td></tr>
+      <tr><td>E 设备恢复但商品仍不安全</td><td>固定场景保持 CONTAINED</td></tr>
+      <tr><td>F 工单查询 partial</td><td>本地流程回到 EXECUTE/BLOCKED，不错误关闭</td></tr>
+    </tbody></table></div>
+    <p>F 是有状态替身的查询不完整分支，不是 MCP 崩溃或网络压力测试。实际 HTTP 的受控 reopen 还要求完整失败核验、正确身份和版本。</p>
+  </section>
+  <section id="d-ch7" class="d-card"><h3>07 · Skill 与工具契约</h3>
+    <p>六个 P0 Skill：anomaly-detect、coldchain-risk-assess、rootcause-drilldown、work-order-dispatch、outcome-verify、review-report。每个都有输入输出 Schema、权限与失败边界；Registry/Trace 记录名称、版本和摘要。</p>
+    <p>业务工具为 12 个 P0（5 查询、7 动作）及默认关闭的 3 个知识 P1；/runtime 协调工具另行枚举。目标模型配置为 @@MODEL@@，本地六场景评测不调用模型。</p>
+  </section>
+  <section id="d-ch8" class="d-card"><h3>08 · 安全与恢复</h3>
+    <p>受控写经过身份/scope、审批、幂等和事务。解禁要求新鲜的 Auditor 核验，核验后事实变化仍会阻断关闭。响应丢失可读取 checkpoint 原输出，旧租约不能继续写。</p>
+    <p>服务端扫描器提供硬截止、进展检查、有限重试、容量选择、审批/维修等待、回执核验与人工升级。未知外部结果不能直接重做；取消模型或 HTTP 不会撤销已经发生的外部操作。</p>
+    <p>本地恢复回归与真实平台恢复分开验收。通知 Outbox 协议不是短信、飞书或邮件已经接通的证据。</p>
+  </section>
+  <section id="d-ch9" class="d-card"><h3>09 · 可复核的证据</h3>
+    <p>@@TEST_DATE@@ 记录：@@TEST_COUNT@@ 项测试发现，@@TEST_PASSED@@ 通过，@@TEST_SKIPPED@@ 项 PolarDB 条件跳过。六场景 6/6，Evidence 45/45，适用阶段 Trace 26/26；结果只适用于本地合成验收范围。</p>
+    <p><strong>消融结论：</strong>移除 Auditor 后 5/6 场景停于 <strong>VERIFY/BLOCKED</strong>，0 放行尝试、0 错误关闭、0 不安全放行。它验证独立核验不可用时的安全阻断。</p>
+    <p>单身份消融体现当前 Policy 的受控写拒绝，不能外推所有单 Agent 架构均较差。测试通过率不是行覆盖率、模型准确率或生产安全保证。</p>
+  </section>
+  <section id="d-ch10" class="d-card"><h3>10 · 演示操作</h3>
+    <ol><li>展示 A 的事件、批次和初始状态，明确外部输入为模拟。</li>
+      <li>展示先遏制、审批对象、处置与 Auditor 回查，核对最终业务状态。</li>
+      <li>展示 E 的设备恢复与商品限制，解释为何保持 CONTAINED。</li>
+      <li>按需展示 F 的 partial 与阻断；不能把本地返回当作真实平台已经重执行。</li></ol>
+    <p>正式陈述、演示与问答时长待组委会通知。动画用于说明交互，实证来自实际命令、状态和原始记录。</p>
+  </section>
+  <section id="d-ch11" class="d-card"><h3>11 · 问答边界</h3>
+    <p><strong>是否形式化验证？</strong>当前为 Schema、规则、权限、事务与回归，没有形式化证明。</p>
+    <p><strong>支持多少设备、延迟多少？</strong>浏览器里的 128 店/512 设备是模拟布局；无真实规模或 P99 基准。默认 HTTP 32 连接、10 秒绝对截止不是吞吐承诺。</p>
+    <p><strong>是否可直接跨行业？</strong>可复用职责与验收方式；仍需替换领域契约、策略和接口并重建验证集。</p>
+    <p><strong>是否已经真实部署？</strong>本地证据、配置、目标平台日志和真实门店效果分别记录，不能互相替代。</p>
+  </section>
+  <section id="d-ch12" class="d-card"><h3>12 · 下一步与材料入口</h3>
+    <p>以 docs/competition/finals/02 为持续待办入口：目标平台身份与动态协作取证、真实数据和外部回执接入、试点基线、最终录屏与发布冻结。</p>
+    <p>当前讲稿见 docs/competition/finals/03，运行说明见 docs/operations。旧复赛稿与过期 PDF 已归档并附勘误，不作为本轮交付。</p>
+  </section>
+</div>

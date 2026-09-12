@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE - 2026-09-12. Current documentation and corrections: [archive index](README.md). Original source: docs/competition/02-方案PPT结构.md.
+
 # 逐光｜方案 PPT 结构（12 页）
 
 > 目标受众：GOAI Agent Infra 赛道评委。
@@ -147,4 +149,4 @@
 - [x] 安全页明确区分可逆动作、跨系统补偿和不可逆动作。
 - [x] 复制页包含至少一条跨业态和一条跨行业的具体替换及复验路径。
 - [x] 不把本地可选 Bearer 或业务角色门禁写成 AgentTeams 部署侧身份鉴权已闭环。
-- [x] 录屏使用 [`../demo/Demo视频脚本与证据清单.md`](../demo/Demo视频脚本与证据清单.md)，不得用静态截图冒充平台动态证据。
+- [x] 录屏使用 [`../demo/Demo视频脚本与证据清单.md`](../../demo/Demo视频脚本与证据清单.md)，不得用静态截图冒充平台动态证据。

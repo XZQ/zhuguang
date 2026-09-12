@@ -4,17 +4,19 @@
 
 ## 1. 可观测性接口
 
-MCP 服务提供两个只读端点：
+MCP 服务提供以下只读端点：
 
-- `GET /health`：进程与工具注册信息。
+- `GET /live`：存活，表示进程能够响应。
+- `GET /ready` 与 `GET /health`：就绪，检查数据库、必要表/初始化、Skill 契约；配置 runtime 时还检查后台扫描器，失败返回 503。
 - `GET /metrics`：Prometheus text format 0.0.4。
 
 ```bash
-curl -fsS http://127.0.0.1:8080/health
+curl -fsS http://127.0.0.1:8080/live
+curl -fsS http://127.0.0.1:8080/ready
 curl -fsS http://127.0.0.1:8080/metrics
 ```
 
-指标固定为：
+业务工具指标为：
 
 | 指标 | 类型 | 标签 | 含义 |
 |---|---|---|---|
@@ -23,6 +25,8 @@ curl -fsS http://127.0.0.1:8080/metrics
 | `dianxun_mcp_auth_failures_total` | Counter | 无 | 被拒绝的 Bearer 鉴权次数 |
 
 `tool` 只能取已声明的 12 个 P0、3 个 P1 工具或 `unknown`，`outcome` 只能取 `success/error`。tenant、incident、request、trace、actor、用户、Token 和自由文本不得作为标签。指标为进程内累计值，服务重启会清零；生产应由 Prometheus 持久抓取，不从单次 scrape 推断长期可用性。
+
+配置 runtime 后还有 `dianxun_recovery_*` 固定无标签指标：扫描健康/年龄/耗时/失败、排队年龄、容量/重试/业务等待、人工处置、未知回执与通知状态。默认 5 秒扫描，超过 15 秒没有成功扫描或扫描失败则不就绪；参数、告警 Outbox 与回滚以[恢复运行手册](runtime-recovery.md)为准。数据库失效时须由服务外监控告警，不能依赖库内 Outbox 通知自身故障。
 
 ## 2. SLO 口径
 
@@ -37,7 +41,7 @@ curl -fsS http://127.0.0.1:8080/metrics
 | 协调恢复 RTO | ≤ 5 分钟 | 本地演练验证恢复语义，但未计入真实部署启动/网络时间 | 未取得 |
 | 协调恢复 RPO | 最近一次成功提交 | SQLite 版本条件更新与 checkpoint 恢复通过 | 未验证磁盘损坏、备份或跨机恢复 |
 
-`docs/MCP延迟与可靠性.md` 中更激进的本地 SQLite 延迟数值仍是微基准设计目标；本表的 300 ms 是待目标环境确认的端到端初始目标，两者均不是已实测 SLA。
+本表 300 ms 是端到端初始目标，须在目标环境单独测量；当前工具 histogram 不包含模型和完整网络往返。现行传输限制见[MCP 可靠性](../MCP延迟与可靠性.md)。
 
 PromQL 参考：
 
@@ -86,9 +90,9 @@ uv run python scripts/recovery_drill.py --check
 
 ## 4. 故障处置顺序
 
-1. 先检查 `/health`、进程日志和 `/metrics` 的错误/鉴权增长；不要记录 Token。
+1. 先区分 `/live` 存活与 `/ready` 就绪，核对扫描器、进程日志和 `/metrics`；不要记录 Token。
 2. 若仅 MCP 进程失败，由进程管理器重启；重启后先执行只读查询，再允许受控写。
-3. 若协调进程中断，从持久化 checkpoint 计算 `resume_plan`；有效 lease 未过期前禁止重派，过期后必须走唯一 successor 流程。
+3. 独立 ContextBus 按 checkpoint 计算 resume_plan；生产入口 `/runtime` 由恢复扫描器按原始截止/预算、健康容量和回执补扫。未知回执或预算耗尽转人工，禁止刷新预算无限重派。
 4. 若 SQLite 文件或磁盘异常，停止写入并保存数据库、`-wal`、`-shm` 及日志副本；未验证备份完整性前不要覆盖原文件。
 5. PolarDB/OSS 故障必须使用目标环境 Runbook 和经审批的恢复流程；本地脚本不能替代。
 6. 恢复后核对 assignment/predecessor、checkpoint/context version、MCP 审计引用与业务 `IncidentService` 状态。Context `completed` 不能替代业务 `RESOLVED/CLOSED`。

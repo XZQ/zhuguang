@@ -1,3 +1,5 @@
+> HISTORICAL ARCHIVE - 2026-09-12. Current documentation and corrections: [archive index](README.md). Original source: docs/复赛QA预案.md.
+
 # 复赛 Q&A 回答预案
 
 > 本文档为复赛评委可能提出的问题准备回答边界。回答必须区分“仓库内已验证”、

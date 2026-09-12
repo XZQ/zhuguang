@@ -68,7 +68,7 @@
 
 1. `IncidentService` 在独立验证通过后聚合为 `RESOLVED`。
 2. Auditor 调用 `review-report` 生成时间线、批次关联、改进项和待审知识候选。
-3. Orchestrator 只有在 LEARN 完成后请求迁移 `CLOSED`。
+3. 框架编排由 Orchestrator 请求合法迁移；实际 `/runtime` 在 Auditor 完成 LEARN 并再次核验后调用 IncidentService 关闭。
 4. 知识候选只有经独立人工审核和脱敏通过后才进入可选检索；当前不宣称真实门店改善率，也不自动修改 Skill/Policy。
 
 ## 4. 八项要求如何嵌入五阶段
@@ -171,11 +171,14 @@ Agent 之间只传递最小必要引用：
 
 ### 7.1 Context 生命周期与恢复
 
+本节区分独立 ContextBus 演练与真实 HTTP 运行接口：`/runtime` 通过业务库中的 RuntimeContextBus 与领域状态共用事务，受控 reopen 需要完整失败核验，不能把 partial 当作新轮次授权。后台扫描器负责有限重派、硬截止、等待和回执核验；配置、Human 运维及最终验证见[恢复手册](../operations/runtime-recovery.md)。平台委派与真实外部系统仍单独验收。
+
+
 协调 Context 与业务 Incident 是两层状态：
 
 - `ContextBus(tenant_id=..., database_path=...)` 将 tenant 固定在仓储实例上，复合主键和所有查询都包含 tenant；跨租户读取返回不存在，跨租户提交明确拒绝。
 - Context 带 `version/updated_at/expires_at`。SQLite 持久化实际启用 WAL，提交使用 `WHERE version = expected_version`；stale writer 不能覆盖新 checkpoint。
-- assignment 保存 phase、worker、attempt、lease、heartbeat、状态和 predecessor。有效 lease 期间禁止重派；超时后并发 Orchestrator 通过版本冲突收敛到唯一 successor。
+- assignment 保存 phase、worker、attempt、lease、heartbeat、状态和 predecessor。独立控制面演练以 lease 为边界；实际 runtime 还限制硬截止、进展和恢复预算，由后台扫描器按容量与回执核验生成唯一后继。
 - Worker 成功与 phase checkpoint 在同一次 Context 版本提交中完成。重启后 `resume_plan` 只返回未完成阶段，避免重复外部副作用。
 - active Context 过期后默认拒绝读取但不自动删除；清理默认只删除终态过期记录。强制清理 active 需要显式参数。
 - `coordination_status=completed` 只说明委派与交接完成，不能直接设置 Incident 的 `RESOLVED/CLOSED`；后者仍由 `IncidentService` 聚合业务事实。
@@ -198,7 +201,7 @@ Agent 之间只传递最小必要引用：
 10. assignment heartbeat、lease 到期、唯一 successor 和 context version 连续可见；
 11. 至少一次重启从 checkpoint 恢复，且没有重做已完成副作用。
 
-静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足这 9 项。尤其不能把 AgentTeams 自动发送 Bearer Header 等同于 MCP 已验证该身份；必须取得服务端拒绝证据和审计 Actor 证据。
+静态 YAML、Worker ZIP 校验、本地 LocalDemo 和 `mcporter` 兼容烟测均不能单独满足上述 11 项。尤其不能把 AgentTeams 自动发送 Bearer Header 等同于 MCP 已验证该身份；必须取得服务端拒绝证据和审计 Actor 证据。
 
 ## 9. 模型与 Skill 生态边界
 

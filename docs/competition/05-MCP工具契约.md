@@ -92,9 +92,9 @@
 
 ### HTTP 身份边界
 
-协议 Adapter 提供两种可选 Bearer 模式：
+原 `/mcp` 业务接口提供两种 Bearer 模式；独立 `/runtime` 的身份配置见下文：
 
-- `MCP_ACTOR_TOKENS_JSON`：将每个 Token 映射到可信 Actor；Adapter 再按每个工具的角色白名单授权，错误角色即使持有有效 Token 也返回 `FORBIDDEN`。这是当前唯一能验证“调用身份 → 业务角色 → 工具权限”绑定的本地机制。
+- `MCP_ACTOR_TOKENS_JSON`：将每个 Token 映射到可信 Actor；Adapter 再按每个工具的角色白名单授权，错误角色即使持有有效 Token 也返回 `FORBIDDEN`。这是原 `/mcp` 的角色绑定方式；不是独立 `/runtime` 的身份配置。
 - `MCP_TOKEN`：只验证共享 Token，不能区分 Sentry、Diagnoser、Executor、Auditor 或 Human；HTTP 边界仅允许它调用只读工具，所有状态写返回 `FORBIDDEN`。
 
 两者均未配置时，Adapter 只为本机确定性 Demo 保留匿名兼容模式，工具使用契约中的默认 Actor；非回环监听会拒绝启动。
@@ -102,6 +102,12 @@
 当前 `agentteams/mcp/deployment.yaml` 已强制引用 `dianxun-agent-identities` Secret，Secret 缺失时 Pod 不会就绪。AgentTeams `v1.2.3` Worker 的 `gatewayKey` 是动态值，而 Worker CR 只能静态声明 `name/url/transport`；仍需在目标环境创建映射并完成正负向烟测。因此当前状态是：**部署默认失败关闭，动态 Worker 身份绑定仍为外部待验证**。
 
 目标环境必须在可信网关或 MCP Adapter 处完成动态身份映射，限制 Service 网络入口，并至少验证：无 Token 返回 401、错误 Token 返回 401、错误角色的受控动作被拒绝、正确角色写入可追溯 Actor、密钥可轮换和撤销。未取得这些证据前，不得宣称“AgentTeams → MCP 鉴权已闭环”。
+
+### 独立 Worker 运行接口
+
+`DIANXUN_RUNTIME_TOKENS_JSON` 将 Token 绑定为 worker_id、actor、tenant_id、store_id；运行接口再校验版本、assignment、租约和阶段权限。五个业务 Worker 与独立 Human 运维身份分开；Human 不能领取 Worker 任务，审批决策仍经业务接口执行。
+
+12 个 P0 和 3 个可选 P1 是业务工具计数，不包含 runtime_open/poll/assign/tool/complete、恢复与通知等协调工具。后者按服务端 runtime Schema 枚举，不在本文复制易漂移的总数。[运行接口](../operations/worker-runtime.md)和[恢复手册](../operations/runtime-recovery.md)是参数、等待/重派、回执与运维的唯一说明入口。
 
 ## 5. 幂等、审计与错误语义
 
@@ -133,7 +139,7 @@
 | `INVALID_STATE` | 幂等冲突或业务状态不允许 | 重读业务状态后重新规划 |
 | Envelope `status=partial` | 外部查询只有部分结果 | 保持遏制，禁止关闭 |
 
-当前 Adapter 的 Bearer 仅是比赛/本地接线能力，未实现生产级 OAuth/mTLS、密钥生命周期、熔断器和分布式重试；这些属于目标部署与真实系统接入层，文档不得写成已交付。
+当前 Adapter 的 Bearer 仅是比赛/本地接线能力，未完成生产级 OAuth/mTLS、密钥生命周期、通用熔断器及真实平台重试验收；本地 `/runtime` 已实现有限恢复重试；这些属于目标部署与真实系统接入层，文档不得写成已交付。
 
 ## 6. 直接验证
 

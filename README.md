@@ -8,20 +8,22 @@
 
 队名统一为**逐光**；作品名与产品能力统一为**店巡 Agent**，`dianxun` 保持为工程包、命令与资源前缀，仓库地址保持 `zhuguang`。
 
-## 2026 GOAI 复赛在线体验与评审入口
+## 历史复赛在线入口（部署版本须另行核验）
+
+当前材料见[文档中心](docs/README.md)与[决赛讲稿](docs/competition/finals/03-决赛逐页讲稿与问答.md)。09-12 准备稿中的 VeriAgent 为工作标题，不据此改变上面的仓库作品名。本地文档/门户重建不代表以下网站已同步发布。
 
 > **作品名称**：店巡 Agent  
 > **参赛队伍**：逐光（第 3 组｜第 13 队 · GOAI 赛道一 Agent Infra）  
-> **官方评审指挥中心**：[https://mazhi.icu/zhuguang/](https://mazhi.icu/zhuguang/)（备用镜像：[https://mazhi.icu/dianxun/](https://mazhi.icu/dianxun/)）
+> **历史展示入口**：[https://mazhi.icu/zhuguang/](https://mazhi.icu/zhuguang/)（备用镜像：[https://mazhi.icu/dianxun/](https://mazhi.icu/dianxun/)）
 
 | 体验通道 | 访问地址 | 说明 |
 | :--- | :--- | :--- |
-| 🌟 **官方评审与演示指挥中心** | **[https://mazhi.icu/zhuguang/](https://mazhi.icu/zhuguang/)** | 一体化评审平台，含实机集群拓扑、交互架构动画、Skill 九要素与六大场景 |
+| 🌟 **历史评审与演示入口** | **[https://mazhi.icu/zhuguang/](https://mazhi.icu/zhuguang/)** | 历史展示站，含模拟架构交互与场景资料；实际部署版本另核 |
 | 🌟 **店巡镜像备用入口** | **[https://mazhi.icu/dianxun/](https://mazhi.icu/dianxun/)** | 同步备用镜像地址 |
-| 📑 **方案 PPT 在线演示** | **[https://mazhi.icu/zhuguang/ppt/](https://mazhi.icu/zhuguang/ppt/)** | 15 页全屏交互演示稿（支持左右键翻页） |
-| ⬇️ **方案 PDF 官方文档** | **[https://mazhi.icu/zhuguang/ppt/店巡Agent方案.pdf](https://mazhi.icu/zhuguang/ppt/店巡Agent方案.pdf)** | 840KB 官方排版提交方案文档 |
-| 📊 **事故指挥台 (六场景完整版)** | **[https://mazhi.icu/zhuguang/command-center.html](https://mazhi.icu/zhuguang/command-center.html)** | A~F 六大场景真实温度变化 SVG 曲线、设备链、Auditor 独立验证矩阵 |
-| 🤖 **实机集群运行状态接口** | **[https://mazhi.icu/zhuguang/status.json](https://mazhi.icu/zhuguang/status.json)** | 广州服务器 AgentTeams v1.2.3 集群与 5 个 Worker 真实心跳与资源数据 |
+| 📑 **方案 PPT 在线演示** | **[https://mazhi.icu/zhuguang/ppt/](https://mazhi.icu/zhuguang/ppt/)** | 历史 PPT 地址；本地源为12页，线上版本本轮未核验 |
+| ⬇️ **历史方案 PDF** | **[https://mazhi.icu/zhuguang/ppt/店巡Agent方案.pdf](https://mazhi.icu/zhuguang/ppt/店巡Agent方案.pdf)** | 历史导出，不能代表当前稿或正式提交回执 |
+| 📊 **事故指挥台 (六场景完整版)** | **[https://mazhi.icu/zhuguang/command-center.html](https://mazhi.icu/zhuguang/command-center.html)** | A-F 合成场景的状态与证据展示，不能代替真实传感器数据 |
+| 🤖 **公开状态快照接口** | **[https://mazhi.icu/zhuguang/status.json](https://mazhi.icu/zhuguang/status.json)** | 必须核对原始观测时间、来源及版本；不能由配置推断当前在线 |
 
 ## 比赛命题与核心回答
 
@@ -94,7 +96,7 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 
 机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md)。
 
-2026-09-07 的七项修复及兼容说明见 [修复记录](docs/assessments/seven-finding-repairs.md)。当时完整本地回归为 105 项发现、103 通过、2 条件跳过；新增 CI 矩阵和 Docker 门禁尚未在 GitHub 运行。门户和手册 Markdown/HTML 从模板重建，既有 PDF 为历史版本。
+2026-09-07 的七项修复及兼容说明见 [修复记录](docs/assessments/seven-finding-repairs.md)。当时完整本地回归为 105 项发现、103 通过、2 条件跳过；新增 CI 矩阵和 Docker 门禁尚未在 GitHub 运行。当时门户/手册由模板重建；现行生成入口与历史归档见[门户维护](docs/operations/delivery-portal.md)。
 
 2026-09-12 完成[运行接口复核修复](docs/assessments/runtime-review-followup.md)，当时完整回归 112 项发现、110 通过、2 条件跳过。阶段输出恢复、失败事务回滚及重新处置闭环已纳入回归；远端 CI 和目标部署需另行按发布 SHA 验证。
 
@@ -187,7 +189,7 @@ uv run dianxun-mcp
 
 默认 Streamable HTTP / JSON-RPC Adapter 监听 `127.0.0.1:8080`。运行时数据库为 `demo/state/runtime.db`，已被 Git 忽略。
 
-健康与 Prometheus 指标分别位于 `GET /health`、`GET /metrics`。指标只使用固定 `tool/outcome` 标签，不包含租户、事故、请求、Trace、Actor 或 Token；完整 SLO 与恢复口径见 [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md)。
+`GET /live` 为存活，`GET /ready` 与 `/health` 为依赖/扫描器就绪；`GET /metrics` 提供工具及恢复指标。仅使用固定低基数标签，不包含租户、事故、请求、Trace、Actor 或 Token；完整 SLO 与恢复口径见 [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md)。
 
 默认未配置 Token 的模式只允许回环地址上的本地 Demo；非回环绑定会直接拒绝启动。`MCP_TOKEN` 是共享请求认证，只允许只读工具；所有状态写必须由 `MCP_ACTOR_TOKENS_JSON` 或可信网关完成 Token → Actor 映射。不要把工具默认 Actor 当作网络身份。
 
@@ -277,16 +279,16 @@ docs/
 | 文档 | 内容 |
 |---|---|
 | [`docs/competition/01-作品简介-500字.md`](docs/competition/01-作品简介-500字.md) | 500 字以内作品简介 |
-| [`docs/competition/02-方案PPT结构.md`](docs/competition/02-方案PPT结构.md) | 答辩叙事、规则必备内容与证据来源 |
+| [当前决赛讲稿](docs/competition/finals/03-决赛逐页讲稿与问答.md) | 当前口播、技术问答与证据边界 |
 | [`docs/competition/03-Skill九要素卡.md`](docs/competition/03-Skill九要素卡.md) | 9 个目标 Skill 与 6 个 P0 工程契约 |
 | [`docs/competition/04-模拟数据与场景说明.md`](docs/competition/04-模拟数据与场景说明.md) | 确定性 Seed、Scenario 与数据边界 |
 | [`docs/competition/05-MCP工具契约.md`](docs/competition/05-MCP工具契约.md) | 12 个 P0 MCP 函数、安全和失败语义 |
 | [`docs/competition/06-Agent-Identity清单.md`](docs/competition/06-Agent-Identity清单.md) | 1 Manager + 5 业务 Agent 的身份边界 |
 | [`docs/competition/07-多Agent协同设计.md`](docs/competition/07-多Agent协同设计.md) | 五阶段与赛事八项要求映射 |
-| [`docs/competition/08-复赛改造技术方案.md`](docs/competition/08-复赛改造技术方案.md) | 完整改造方案与里程碑记录 |
-| [`docs/competition/比赛要求符合性矩阵.md`](docs/competition/比赛要求符合性矩阵.md) | 官网/手册逐项核对、缺口和可提交口径 |
+| [复赛历史归档](docs/archive/2026-09-semifinals/README.md) | 旧方案、答辩稿、PDF 与勘误 |
+| [决赛准备清单](docs/competition/finals/02-决赛准备执行清单.md) | 当前待办与平台取证；正式规则另核 |
 | [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md) | 仓库事实、里程碑状态和证据边界 |
-| [`docs/assessments/真实门店差距与演进路线.md`](docs/assessments/真实门店差距与演进路线.md) | 与真实门店、HACCP、人员和企业系统的差距及灰度路线 |
+| [真实场景差距与产品路线](docs/competition/finals/07-待办02-真实场景差距与产品完善分析.md) | 当前差距、R0-R4、试点 KPI 与生产准入 |
 | [`docs/demo/Demo视频脚本与证据清单.md`](docs/demo/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
 | [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md) | Prometheus 指标、目标 SLO、恢复演练和生产验收边界 |
 

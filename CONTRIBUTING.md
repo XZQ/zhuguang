@@ -25,16 +25,13 @@ uv run python scripts/build_worker_package.py
 uv build
 uv run python scripts/check_installed_distribution.py --docker-inputs
 uv run python scripts/build_animated_svg.py
-uv run python scripts/build_defense_guide_doc.py
-uv run python scripts/build_illustrated_defense_guide.py
-uv run python scripts/build_master_defense_dossier.py
 uv run python scripts/build_full_delivery_portal.py
 git diff --check
 ```
 
 没有设置隔离的 `DIANXUN_TEST_POSTGRES_DSN` 时，两项 PolarDB 集成测试应明确显示 skipped；不得用 Mock 改成通过。
 
-新增测试后，先运行完整回归，再同步 `config/project-facts.json` 和当前测试材料；`check_quality_facts.py` 只核对发现数及文档，不能代替测试执行。历史带日期记录保留当时口径。门户状态逻辑和两次完整构建确定性属于单元门禁；三个 Markdown 手册和 SVG 必须从 `scripts/assets/` 重建，CI 检查生成物漂移。
+新增测试后，先运行完整回归，再同步 `config/project-facts.json` 和当前测试材料；`check_quality_facts.py` 只核对发现数及文档，不能代替测试执行。历史带日期记录保留当时口径。门户状态逻辑、旧输出清理和两次完整构建确定性属于单元门禁；现行门户和 SVG 从 `scripts/assets/` 重建，CI 检查生成物漂移。三套旧复赛手册已退役，历史源稿与 PDF 见 [归档](docs/archive/2026-09-semifinals/README.md)，不再运行旧生成器。
 
 有 Docker 引擎时执行以下容器门禁；CI 的独立 Linux job 会真实运行。烟测凭证随机生成，仅绑定回环端口，只清理本次创建的容器：
 
@@ -43,7 +40,7 @@ docker build -f packages/dianxun-mcp/Dockerfile -t dianxun-mcp:ci .
 python scripts/check_docker_image.py --image dianxun-mcp:ci
 ```
 
-没有 Docker 时须明确记录“镜像烟测未执行”。安装 wheel 的隔离烟测不代表容器已经通过。PDF 为显式可选产物，只有设置 `DIANXUN_PDF_BROWSER` 时才导出，未重建的既有 PDF 属于历史材料。
+没有 Docker 时须明确记录“镜像烟测未执行”。安装 wheel 的隔离烟测不代表容器已经通过。现行门户构建不导出 PDF，仅复制 PPT 目录中的既有制品和 docs/competition 原路径保留的三份复赛 PDF；新 PDF 需要显式导出与逐页核对。历史 PDF 保留原字节，不能声称随网页重建更新。
 
 ## 变更边界
 

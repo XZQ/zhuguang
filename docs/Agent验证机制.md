@@ -1,266 +1,55 @@
 # Agent 结果验证机制
 
-> 本文档说明逐光系统如何通过多层验证机制确保 Agent 输出正确性。
+> 复核日期：2026-09-12。本文描述结构契约、权限、事务、独立核验与人工审批组成的工程验证；不承诺所有输入语义正确，也不宣称形式化证明。
 
-## 1. 验证体系概览
+## 1. 验证层
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Agent 结果验证体系                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Layer 1: 结构化输出验证（Structured Output）                    │
-│  ├── JSON Schema 校验                                          │
-│  ├── 枚举值范围检查                                              │
-│  └── 必填字段验证                                                │
-│                                                                 │
-│  Layer 2: 策略合规检查（Policy Check）                          │
-│  ├── PolicyEngine.evaluate()                                   │
-│  ├── 风险等级判定                                               │
-│  └── 审批流触发                                                 │
-│                                                                 │
-│  Layer 3: 业务规则校验（Business Rules）                        │
-│  ├── 事件边界约束（ScopeViolation）                             │
-│  ├── 幂等性检查                                                 │
-│  └── 状态一致性验证                                             │
-│                                                                 │
-│  Layer 4: 交叉验证（Cross Validation）                          │
-│  ├── Diagnoser → Executor → Auditor 三方验证                    │
-│  ├── Auditor release_guard 独立验证                             │
-│  └── 知识库候选交叉确认                                          │
-│                                                                 │
-│  Layer 5: 人工审批（Human Approval）                            │
-│  ├── 高风险操作必须人工审批                                      │
-│  ├── 预算超限审批                                               │
-│  └── 批次处置审批                                               │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+| 层 | 当前约束 | 证据 |
+|---|---|---|
+| 输出 | 六个 P0 Skill 在真实函数返回路径校验 output Schema，拒绝字段、类型和枚举漂移 | [运行时契约](../src/dianxun/skills/contracts.py)、[正反例](../tests/test_skill_contracts.py) |
+| 策略 | 按版本化 action、allowed_actors、风险与审批判断，不按虚构等级推断 | [Policy](../config/policies/coldchain-demo.v1.json)、[PolicyEngine](../src/dianxun/domain/policy.py) |
+| 业务 | 事件/门店/批次/设备范围、指纹、action 唯一性、版本和事务 | [P0 工具](../src/dianxun/mcp/p0.py)、[安全回归](../tests/test_adversarial_hardening.py) |
+| 核验 | Auditor 重查当前设备、商品、停售与审批；Executor 不能自证关闭 | [闭环](../tests/test_coldchain_workflow.py)、[并发](../tests/test_incident_concurrency.py) |
+| 人工 | 受控处置/超阈值维修先审批，绑定动作、金额与批次；知识发布需审核脱敏 | [核心测试](../tests/test_stateful_core.py)、[知识测试](../tests/test_knowledge_flywheel.py) |
 
-## 2. 核心验证代码
+六个运行入口：detect_coldchain_event、coldchain_risk_assess、diagnose_coldchain_hypotheses、dispatch_stateful_workorder、outcome_verify、review_incident。结构合法不等于语义正确；真实输入质量与商品规则须另行验证。
 
-### 2.1 Skill 运行时输出契约
+## 2. Skill 和运行证据身份
 
-`src/dianxun/skills/contracts.py` 提供 `enforce_output_contract()` 装饰器。主线 Skill
-函数返回后，装饰器把 dataclass、Enum、tuple 等转换为 JSON-compatible 视图，并按各
-`skills/<name>/output.schema.json` 校验；缺字段、类型错误或额外字段会抛出
-`SkillOutputContractError`，不会把漂移结构继续传入下一阶段。
+[Registry](../skills/registry.json)固定 release 的 name/version/digest。Trace 记录 skill_name、skill_version、skill_digest、skill_channel、skill_registry_version。stable/canary 采用确定性摘要分桶；retired 不接受新路由；旧 Trace 行保留空版本，不伪造身份。
 
-当前已装饰六个 P0 入口：
+[AgentTeams 证据 Schema](../schemas/agentteams-run-evidence.v1.schema.json)为 1.3，[校验器](../src/dianxun/agentteams_evidence.py)将 Skill load、工具调用与 Worker provenance 比对，并检查：
 
-- `detect_coldchain_event`
-- `coldchain_risk_assess`
-- `diagnose_coldchain_hypotheses`
-- `dispatch_stateful_workorder`
-- `outcome_verify`
-- `review_incident`
+- 官方 Project/Room/Task ID、不可变包来源、模型运行披露；
+- Worker 与服务端 Actor、tenant/version/lease/checkpoint；
+- 时间须有明确时区并满足因果顺序；无时区时间和因果倒置均拒绝；
+- predecessor、超时 successor、checkpoint 恢复和最终状态来源；
+- 解除停售前后的 Auditor 独立重查。
 
-`tests/test_skill_contracts.py` 同时校验成功/失败静态样例和运行时反例；这解决的是结构
-契约，不证明 LLM 语义正确性。
+[证据测试](../tests/test_agentteams_runtime_evidence.py)验证格式和反伪造边界。静态 YAML/Schema 和本地校验通过，不等于真实平台产生了委派、身份或 Trace。
 
-### 2.2 Skill Registry 与 Trace 身份
+## 3. 协调与业务状态
 
-`skills/registry.json` 将每个 P0 release 固定为 `name + version + digest`。运行时进入
-`trace.span(..., kind="skill")` 时会解析 stable/canary release，并在 SQLite Span 中写入：
+独立 ContextBus 使用 WAL/expected_version；Worker runtime 通过业务库的 RuntimeContextBus 与领域动作共用事务。只有 IncidentService 能判断业务终态，Context completed 不能直接关闭事件。CAS/SAVEPOINT 见[一致性说明](分布式一致性方案.md)。
 
-- `skill_name`、`skill_version`、`skill_digest`；
-- `skill_channel`、`skill_registry_version`。
+/runtime 校验 Worker/tenant/store/role、版本和有效 assignment。恢复扫描器检查心跳、真实进展、硬截止、总预算和回执；空心跳不能无限延期，partial/未知结果不能写成功 checkpoint。参数与 Human 运维见[恢复手册](operations/runtime-recovery.md)。
 
-旧 Trace 数据库通过向后兼容的 `ALTER TABLE ADD COLUMN` 自动迁移；历史行保持空值，不伪造
-版本身份。canary 按 Skill 名和 trace/incident ID 的 SHA-256 固定分桶，重试不会漂移。
-AgentTeams 证据 Schema `1.2` 同时要求 Skill load 和每次工具调用携带 version/digest，校验器
-会与当前 Worker provenance 逐项比对。真实平台是否产生这些字段仍以导出 Trace 为准。
+## 4. 冷链验证顺序
 
-### 2.3 协调 Context 一致性
+1. Sentry 检查数据质量并发现异常。
+2. Executor 在预授权范围内先停售、遏制，避免诊断期间继续暴露风险。
+3. Diagnoser 按批次评估暴露并关联根因证据；建议不直接改变库存。
+4. 受控维修/处置先申请独立 Human 审批，再由 Executor 执行。比赛策略中维修金额大于 2000 元要求审批；transferred/released/disposed 和解除停售均有对应审批条件。
+5. Auditor 重查设备、商品和处置。设备恢复不等于商品可售，维修完成不等于事故关闭。
+6. 需要解禁时，Executor 使用有效审批与 Auditor release_guard；随后 Auditor 再核验当前事实。
+7. LEARN 再核验后由服务调用 IncidentService 关闭；知识候选经独立审核脱敏才发布。
 
-`ContextBus` 将 tenant 固定在仓储实例，SQLite 以 `(tenant_id, task_id)` 为主键并实际启用
-WAL。每次提交使用 `expected_version` 条件更新；版本不一致抛出
-`ContextVersionConflict`，不得覆盖较新的 assignment 或 checkpoint。
+审批超时是 timeout，不等同人工 rejected；保持遏制并按预算等待或升级。partial、无效审批、旧版本、失效租约不能当成功。受控 reopen 需要完整失败核验与授权，不能因查询不完整绕过检查开始新轮次。
 
-`ContextCoordinator` 对每个 Worker assignment 保存 attempt、lease、heartbeat 和 predecessor。
-有效 lease 禁止重派；超时后由乐观锁保证并发调用只留下一个 successor。Worker 完成状态与
-phase checkpoint 在同一次版本提交中持久化，重启后只返回未完成阶段。Context 的完成状态
-不是业务关闭信号，`IncidentService` 仍是业务事实唯一入口。
+## 5. 验证与答辩口径
 
-Schema 1.3 会拒绝缺少 AgentTeams Project/Room/Task ID、不可变包来源、运行时披露、
-Worker → MCP Actor 绑定、带时区或因果倒置的事件时间、最终状态证据、tenant/version/lease/checkpoint、非法 predecessor、
-没有 timeout successor、没有 checkpoint 恢复或没有放行前后 Auditor 双重重查的外部运行包。
-本地 10 项 lifecycle 测试不替代真实 AgentTeams heartbeat 与重启 Trace。
+执行命令、职责和最新汇总统一见[测试覆盖矩阵](测试覆盖矩阵.md)。本地使用临时真实 SQLite、真实 Policy、有状态外部替身和 HTTP；尚无正式行/分支覆盖率或生产高争用证明。
 
-### 2.4 策略合规检查
+[消融结果](../evidence/m4/ablation.md)中，移除 Auditor 后 5 个场景停于 VERIFY/BLOCKED，0 放行尝试、0 错误关闭、0 不安全放行。结论是验证者不可用时保持限制，不能写成“5 个场景被错误放行”。
 
-```python
-# src/dianxun/domain/policy.py
-key = f"{action_type}:{disposition}" if disposition else action_type
-rule = policy["actions"].get(key)
-if rule is None:
-    return PolicyDecision(allowed=False, risk_level="L3", ...)
-
-if actor not in rule["allowed_actors"]:
-    return PolicyDecision(
-        allowed=False,
-        risk_level=rule["risk_level"],
-        approval_required=False,
-        ...
-    )
-
-approval_required = rule.get("approval_required", False)
-threshold = rule.get("approval_required_above_amount")
-if threshold is not None and amount is not None:
-    approval_required = amount > threshold
-
-return PolicyDecision(
-    allowed=True,
-    risk_level=rule["risk_level"],  # 当前策略使用 L1-L3
-    approval_required=approval_required,
-    approvers=rule["approvers"] if approval_required else (),
-    ...
-)
-```
-
-PolicyEngine 不按虚构的 L1-L5 数值区间自动推断；它按版本化策略中的 action、
-`allowed_actors`、风险等级和审批条件逐项判断。
-
-### 2.5 事件边界约束
-
-```python
-# src/dianxun/mcp/p0.py
-class ScopeViolation(PermissionError):
-    """操作超出事件边界时抛出"""
-
-    pass
-
-
-def _require_incident_scope(
-    conn,
-    *,
-    incident_id: str,
-    store_id: str | None = None,
-    batch_ids: list[str] | None = None,
-    device_id: str | None = None,
-) -> None:
-    """
-    验证操作是否在事件边界内：
-    1. 门店必须在事件关联门店内
-    2. 批次必须在事件 affected_batches 内
-    3. 设备必须在事件 affected_assets 内
-    """
-    # 实现细节见 p0.py:_require_incident_scope
-```
-
-### 2.6 交叉验证（Auditor 独立验证）
-
-```python
-# src/dianxun/mcp/p0.py - release_sales_hold
-def release_sales_hold(self, *, verification_id: str, ...) -> dict:
-    """
-    释放销售冻结必须满足：
-    1. 审批通过 (approval_id)
-    2. Auditor 独立验证通过 (verification_id)
-    3. 验证必须在冻结之后创建
-    4. 验证必须覆盖所有目标批次
-    """
-
-    # 验证 Auditor 验证存在且有效
-    verification = conn.execute("""
-        SELECT * FROM verifications
-        WHERE verification_id = ?
-        AND result = 'passed'
-        AND verifier = 'Auditor'
-    """, (verification_id,)).fetchone()
-
-    if verification is None:
-        raise PermissionError("需要有效的 Auditor 验证")
-```
-
-## 3. 关键验证场景
-
-### 3.1 冷柜失温场景验证链
-
-```
-Sentry 发现异常
-    ↓ 报告设备上下文 (device_context)
-Diagnoser 诊断
-    ↓ 识别受污染批次 (affected_batches)
-Executor 处置
-    ↓ 申请销售冻结 (apply_sales_hold)
-    ↓ 申请批次处置 (apply_batch_disposition)
-    ↓ 创建维修工单 (create_workorder)
-人工审批
-    ↓ 食品安全 Owner 审批
-Auditor 独立验证
-    ↓ 验证批次已隔离 (release_guard)
-    ↓ 验证设备已修复
-知识沉淀
-    ↓ Auditor 创建知识候选 (create_knowledge_candidate)
-```
-
-### 3.2 验证检查点
-
-| 阶段 | 验证内容 | 失败处理 |
-|------|----------|----------|
-| Sentry | 温度数据有效性 | 标记为 partial quality |
-| Diagnoser | 批次状态一致性 | 拒绝越界操作 |
-| Executor | 策略合规 + 审批状态 | 阻止执行 |
-| Auditor | 独立验证存在且有效 | 阻止释放 |
-| 人工 | 审批决策 | 超时自动拒绝 |
-
-## 4. 评委问题回答
-
-### Q: 如何保证 Agent 结果正确性？
-
-**A**: 通过五层验证体系：
-
-1. **结构化输出**：六个 P0 主线 Skill 在实际返回路径校验 output JSON Schema
-2. **策略合规**：PolicyEngine 评估风险等级和审批需求
-3. **业务规则**：事件边界约束防止越界操作
-4. **交叉验证**：Auditor 独立验证 Executor 的处置结果
-5. **人工审批**：高风险操作必须人工确认
-
-### Q: 是否有 formal verification？
-
-**A**: 采用的是**工程化验证**而非形式化验证：
-
-| 方法 | 说明 | 适用场景 |
-|------|------|----------|
-| 形式化验证 | 数学证明 | 关键安全系统 |
-| LLM-as-Judge | AI 评估 | 开放域生成 |
-| 工程化验证 | 确定性规则 | 业务系统 ✅ |
-
-**理由**：冷链场景下，规则是明确的（温度阈值、批次状态），工程化验证比 LLM 评估更可靠、可解释、可测试。
-
-### Q: 关键操作有误操作风险？
-
-**A**: 有完善的保护机制：
-
-```python
-# 高风险操作示例：批次处置
-if decision.approval_required:
-    # 必须有有效审批才能执行
-    self._require_approval(conn, approval_id=approval_id, ...)
-else:
-    # 低风险操作自动放行，但仍然在事务内
-    self._ensure_new_action(conn, action_id=action_id, ...)
-
-# 幂等性保证：重复调用返回相同结果
-previous = store.idempotent_result(conn, idempotency_key=key)
-if previous:
-    return {**previous["data"], "idempotent_replay": True}
-```
-
-## 5. 测试覆盖
-
-```bash
-# 验证相关测试
-tests/test_skill_contracts.py       # 六个 Skill 静态与运行时输出契约
-tests/test_skill_registry.py        # Registry、SemVer、灰度、退役和 Trace 版本身份
-tests/test_stateful_core.py         # SQLite/Policy/MCP 状态与聚合门
-tests/test_adversarial_hardening.py # scope/审批/release guard/HTTP 边界
-tests/test_coldchain_workflow.py    # 六场景端到端验证链
-tests/test_knowledge_flywheel.py    # 知识人工发布边界
-```
-
-当前全量门禁发现 112 项，其中 110 通过、2 条 PolarDB 条件集成测试因无外部实例跳过。
-六个 P0 Skill 运行时输出契约、12 个 P0 MCP registry/调用路径、六场景闭环和主要安全
-边界均有自动化证据。仓库尚未生成正式行/分支覆盖率，也没有多进程/高争用压测或
-真实 AgentTeams/PolarDB 运行证据，不能表述为“所有关键点 100% 覆盖”。
+当前为工程回归与确定性门禁，未做形式化证明；不据此断言工程验证在所有场景优于形式化验证或所有模型判断。现行问答统一见[决赛讲稿](competition/finals/03-决赛逐页讲稿与问答.md)。

@@ -16,9 +16,16 @@ from scripts.portal_support import ROOT, project_facts
 
 class DeliveryPortalTests(unittest.TestCase):
     def test_complete_web_build_is_deterministic_and_does_not_rewrite_sources(self):
-        sources = {path: path.read_bytes() for path in (ROOT / "scripts").glob("*.py")}
+        source_paths = [
+            *(ROOT / "scripts").glob("*.py"),
+            *(path for path in (ROOT / "docs").rglob("*") if path.is_file()),
+        ]
+        sources = {path: path.read_bytes() for path in source_paths}
         with tempfile.TemporaryDirectory() as directory:
             first, second = Path(directory) / "first", Path(directory) / "second"
+            first.mkdir()
+            (first / "defense-guide.html").write_text("obsolete claims", encoding="utf-8")
+            (first / "2026-GOAI复赛答辩图文全景手册-逐光队.pdf").write_bytes(b"old export")
             build(first)
             build(second)
 
@@ -30,6 +37,11 @@ class DeliveryPortalTests(unittest.TestCase):
                 }
 
             self.assertEqual(hashes(first), hashes(second))
+            self.assertFalse((first / "defense-guide.html").exists())
+            for original_pdf in (ROOT / "docs" / "competition").glob("2026-GOAI复赛*.pdf"):
+                self.assertEqual(
+                    original_pdf.read_bytes(), (first / original_pdf.name).read_bytes()
+                )
             self.assertTrue(
                 {
                     "index.html",
@@ -47,6 +59,11 @@ class DeliveryPortalTests(unittest.TestCase):
             self.assertNotIn("@@", page)
             self.assertIn("运行状态未知", page)
             self.assertIn("均为模拟", page)
+            defense = (first / "defense.html").read_text(encoding="utf-8")
+            self.assertIn("VERIFY/BLOCKED", defense)
+            self.assertIn("ppt/finals.html", defense)
+            self.assertNotIn("5 个失败场景被错误放行", page)
+            self.assertNotIn("512 台设备实跑", page)
             self.assertEqual(
                 "not_observed", json.loads((first / "status.json").read_text())["source"]
             )
