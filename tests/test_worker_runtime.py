@@ -10,6 +10,7 @@ from http.server import ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
+from dianxun.context_bus import parse_timestamp
 from dianxun.domain import IncidentStatus, PolicyEngine, WorkOrderStatus
 from dianxun.mcp.p0 import DEFAULT_POLICY_PATH, MCPService
 from dianxun.mcp.server import MCPHandler
@@ -59,7 +60,10 @@ class WorkerRuntimeTests(unittest.TestCase):
     def restart_runtime(self):
         # Fresh service and context instances; persisted state is the only recovery source.
         self.server.runtime_service = RuntimeService(
-            self.mcp, self.principals.values(), clock=lambda: self.now
+            self.mcp,
+            self.principals.values(),
+            clock=lambda: self.now,
+            evidence_clock=lambda: parse_timestamp(self.store.now()),
         )
 
     def rpc(self, actor, operation, *, expect_error=False, **arguments):
@@ -84,6 +88,7 @@ class WorkerRuntimeTests(unittest.TestCase):
         return self.rpc("Orchestrator", "snapshot", incident_id=self.incident)
 
     def assign(self, role):
+        self.rpc(role, "poll")
         value = self.rpc(
             "Orchestrator",
             "assign",
@@ -100,6 +105,7 @@ class WorkerRuntimeTests(unittest.TestCase):
     def tool(self, lease, name, **arguments):
         value = self.rpc("Executor", "tool", **lease, tool=name, arguments=arguments)
         self.assertFalse(value["isError"], value)
+        lease["expected_version"] = value["context_version"]
         return json.loads(value["content"][0]["text"])
 
     def prepare_containment(self):
@@ -182,6 +188,7 @@ class WorkerRuntimeTests(unittest.TestCase):
                 quality="good",
                 source="synthetic-recovery",
             )
+        self.store.advance_time(minutes=2)
         self.assertTrue(self.rpc("Executor", "complete", **execute)["completed"])
         return execute
 
@@ -228,10 +235,15 @@ class WorkerRuntimeTests(unittest.TestCase):
     def test_legacy_checkpoint_without_output_is_not_fabricated(self):
         lease = self.prepare_containment()
         with self.store.transaction() as conn:
-            row = conn.execute("SELECT payload_json FROM runtime_contexts").fetchone()
+            row = conn.execute(
+                "SELECT payload_json FROM runtime_contexts WHERE task_id = ?", (self.incident,)
+            ).fetchone()
             context = json.loads(row["payload_json"])
             del context["checkpoints"]["DETECT"]["output"]
-            conn.execute("UPDATE runtime_contexts SET payload_json = ?", (json.dumps(context),))
+            conn.execute(
+                "UPDATE runtime_contexts SET payload_json = ? WHERE task_id = ?",
+                (json.dumps(context), self.incident),
+            )
         old = self.snapshot()["context"]["assignments"][0]
         replay = self.rpc(
             "Sentry",
@@ -401,6 +413,12 @@ class WorkerRuntimeTests(unittest.TestCase):
         self.rpc("Sentry", "complete", **lease, expect_error=True)
 
         successor = self.rpc("Orchestrator", "reassign", **lease)
+        self.assertIsNone(successor["assignment"])
+        self.assertEqual("retry_wait", successor["recovery"]["state"])
+        self.now += timedelta(seconds=31)
+        self.rpc("Sentry", "poll")
+        self.server.runtime_service.recovery.tick()
+        successor = {"assignment": self.snapshot()["context"]["assignments"][-1]}
         self.assertEqual(2, successor["assignment"]["attempt"])
         self.assertEqual(
             lease["assignment_id"], successor["assignment"]["predecessor_assignment_id"]

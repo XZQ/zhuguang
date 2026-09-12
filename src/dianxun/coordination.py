@@ -218,6 +218,13 @@ class ContextCoordinator:
         proposed = parse_timestamp(self._lease_expiry(current, lease_seconds))
         existing = parse_timestamp(assignment.lease_expires_at)
         assignment.lease_expires_at = timestamp(max(proposed, existing))
+        if assignment.hard_deadline:
+            assignment.lease_expires_at = timestamp(
+                min(
+                    parse_timestamp(assignment.lease_expires_at),
+                    parse_timestamp(assignment.hard_deadline),
+                )
+            )
         assignment.status = "running"
         assignment.last_heartbeat_at = timestamp(current)
         assignment.updated_at = timestamp(current)

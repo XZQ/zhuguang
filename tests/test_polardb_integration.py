@@ -64,6 +64,58 @@ class PolarDBIntegrationTests(unittest.TestCase):
             sqlite_result["phases"]["DIAGNOSE_DECIDE"]["hypotheses"][0]["label"],
             postgres_result["phases"]["DIAGNOSE_DECIDE"]["hypotheses"][0]["label"],
         )
+        self._assert_runtime_recovery_concurrency()
+
+    def _assert_runtime_recovery_concurrency(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from datetime import UTC, datetime, timedelta
+        from threading import Barrier
+
+        from dianxun.domain import PolicyEngine
+        from dianxun.mcp.p0 import DEFAULT_POLICY_PATH, MCPService
+        from dianxun.runtime import RuntimePrincipal, RuntimeService
+
+        now = [datetime.now(UTC)]
+        main = RuntimePrincipal("Orchestrator", "pg-main", "demo", "S03")
+        worker = RuntimePrincipal("Sentry", "pg-sentry", "demo", "S03")
+        mcp = MCPService(self.store, PolicyEngine(DEFAULT_POLICY_PATH))
+        services = [RuntimeService(mcp, [main, worker], clock=lambda: now[0]) for _ in range(2)]
+        runtime = services[0]
+        incident = "INC-PG-RECOVERY"
+        opened = runtime.call(
+            "runtime_open", {"incident_id": incident, "device_id": "FROST-S03"}, main
+        )
+        runtime.call("runtime_poll", {}, worker)
+        first = runtime.call(
+            "runtime_assign",
+            {
+                "incident_id": incident,
+                "worker_id": worker.worker_id,
+                "expected_version": opened["context"]["version"],
+            },
+            main,
+        )
+        now[0] += timedelta(seconds=61)
+        runtime.recovery.tick()
+        now[0] += timedelta(seconds=31)
+        runtime.call("runtime_poll", {}, worker)
+        barrier = Barrier(2)
+
+        def sweep(service):
+            barrier.wait(timeout=10)
+            return service.recovery.tick()
+
+        with ThreadPoolExecutor(2) as pool:
+            futures = [pool.submit(sweep, service) for service in services]
+            for future in futures:
+                future.result(timeout=30)
+        state = runtime.call("runtime_snapshot", {"incident_id": incident}, main)
+        successors = [
+            a
+            for a in state["context"]["assignments"]
+            if a["predecessor_assignment_id"] == first["assignment"]["assignment_id"]
+        ]
+        self.assertEqual(1, len(successors))
 
     @unittest.skipUnless(
         _READONLY_DSN,

@@ -272,8 +272,8 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 112,
-      "full_unittest_passed": 110,
+      "full_unittest_count": 134,
+      "full_unittest_passed": 132,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json",
@@ -376,7 +376,18 @@
       "open_source_governance": "implemented",
       "recorded_video": "pending_external_agentteams_runtime"
     },
-    "agentteams_runtime_evidence": "pending_external_validation"
+    "agentteams_runtime_evidence": "pending_external_validation",
+    "runtime_recovery": {
+      "status": "implemented_local_platform_pending",
+      "recovery_tests": 22,
+      "policy_version": 1,
+      "protocol_version": 2,
+      "new_database_tables": 0,
+      "runbook": "docs/operations/runtime-recovery.md",
+      "postgres_concurrency": "conditional_not_run",
+      "real_notification_channel": "not_connected",
+      "emergency_enabled_by_default": false
+    }
   },
   "schemas": {
     "incident": "schemas/incident-case.v1.schema.json",

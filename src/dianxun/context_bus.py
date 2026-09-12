@@ -28,7 +28,7 @@ TaskState = Literal[
     "failed",
 ]
 CoordinationStatus = Literal["active", "completed", "failed"]
-AssignmentStatus = Literal["assigned", "running", "succeeded", "failed", "expired"]
+AssignmentStatus = Literal["assigned", "running", "waiting", "succeeded", "failed", "expired"]
 
 _STATE_GRAPH: dict[str, list[str]] = {
     "created": ["detecting", "failed"],
@@ -92,13 +92,27 @@ class WorkerAssignment:
     updated_at: str = field(default_factory=lambda: timestamp(utc_now()))
     last_heartbeat_at: str | None = None
     error: str | None = None
+    hard_deadline: str | None = None
+    progress_deadline: str | None = None
+    last_progress_at: str | None = None
+    progress_fingerprint: str | None = None
 
     @classmethod
     def from_snapshot(cls, value: dict) -> WorkerAssignment:
         return cls(**value)
 
     def is_lease_expired(self, now: datetime) -> bool:
-        return parse_timestamp(self.lease_expires_at) <= now.astimezone(UTC)
+        return self.expiry_reason(now) is not None
+
+    def expiry_reason(self, now: datetime) -> str | None:
+        for reason, deadline in (
+            ("hard_timeout", self.hard_deadline),
+            ("progress_timeout", self.progress_deadline),
+            ("heartbeat_timeout", self.lease_expires_at),
+        ):
+            if deadline and parse_timestamp(deadline) <= now.astimezone(UTC):
+                return reason
+        return None
 
 
 @dataclass
@@ -142,6 +156,7 @@ class TaskContext:
     coordination_status: CoordinationStatus = "active"
     assignments: list[WorkerAssignment] = field(default_factory=list)
     checkpoints: dict[str, PhaseCheckpoint] = field(default_factory=dict)
+    recovery: dict = field(default_factory=dict)
     version: int = 1
     created_at: str = field(default_factory=lambda: timestamp(utc_now()))
     updated_at: str = field(default_factory=lambda: timestamp(utc_now()))

@@ -5,8 +5,8 @@
 通过 Worker YAML 的 agents 字段传入，不向包内复制 Python 实现。
 
 服务端从 `DIANXUN_RUNTIME_TOKENS_JSON` 读取 Token 到身份的映射。每个值必须包含
-`actor`、`worker_id`、`tenant_id`、`store_id` 四个非空字段。允许的角色为 Orchestrator、
-Sentry、Diagnoser、Executor、Auditor；一个 worker_id 不得绑定多个角色或门店。
+`actor`、`worker_id`、`tenant_id`、`store_id` 四个非空字段。Worker 角色为 Orchestrator、
+Sentry、Diagnoser、Executor、Auditor；另允许独立 Human 运维身份用于恢复与通知，不能领取 Worker 任务，也不注入模型。一个 worker_id 不得绑定多个角色或门店。
 使用秘密管理器配置 `dianxun-agent-identities/runtime-tokens-json`，并由 AgentTeams
 运行环境为对应 Worker 的 MCP 连接注入其 Bearer Token。Token 不写进 YAML、聊天或 Trace。
 运行接口不接受旧共享 Token，也不接受请求体自报角色。
@@ -17,15 +17,15 @@ Sentry、Diagnoser、Executor、Auditor；一个 worker_id 不得绑定多个角
    设备和批次范围由数据库校验；重复 open 只能读取同一设备的既有事故。
 2. runtime_snapshot 返回 incident、context、remaining_stages 和 containment_required。
    后者列出当前缺少有效停售记录的批次，Executor 在 CONTAIN 阶段只对这些批次补做停售。
-3. Orchestrator 用 runtime_assign(incident_id, worker_id, expected_version) 委派下一阶段。
+3. Worker 启动和空闲时先调用 runtime_poll 登记在线；Orchestrator 用 runtime_assign(incident_id, worker_id, expected_version) 委派下一阶段。
 4. Worker 用 runtime_heartbeat 延长租约；返回的新 context_version 用于后续请求。
 5. Executor 用 runtime_tool 调用当前 assignment 允许的业务工具。arguments 保留稳定的
-   action_id/idempotency_key；审批必须由独立 Human 身份经原业务接口作出。
+   action_id/idempotency_key；成功后采用返回的新 context_version。审批必须由独立 Human 身份经原业务接口作出。
 6. Worker 用 runtime_complete 提交交接。请求仅包含 incident_id、assignment_id、
    expected_version；不接受业务状态字段。检测、诊断、风险评估和审计由规范 Skill 执行。
 7. completed=false 表示核验或执行未满足条件，没有成功 checkpoint；修复外部事实后可重试。
    已完成请求重放返回 replayed=true 和原 output；快照中的 checkpoint.output 同样可读取。
-   超时由 Orchestrator runtime_reassign 创建唯一 successor。
+   超时由后台扫描器按预算自动恢复；runtime_reassign 可能返回 assignment=null 和等待原因。
 8. 审计确认需重新处置时，Orchestrator 调用 runtime_reopen(incident_id, expected_version)。
    服务端重新独立查询，只有完整且失败的核验才能重启；partial、核验通过、越权和旧版本均拒绝。
    流程从 CONTAIN 开始，再诊断、执行、审计和关闭。旧租约及 checkpoint 连同输出归档在
@@ -54,3 +54,7 @@ output_available=false、output=null，不重算或伪造历史结果。回退�
 `python -m unittest tests.test_worker_runtime -v` 使用实际本地 HTTP 和数据库，覆盖闭环、
 重启、幂等重放、partial 查询、事务回滚和身份/租约拒绝。设备读数和人工审批是测试 fixture。
 真实 AgentTeams 平台身份注入、Team Room、托管 PolarDB 和外部维修系统仍需要目标环境验收。
+
+## 故障恢复协议 v2
+
+见[故障恢复运行手册](runtime-recovery.md)，包含后台扫描器、在线与容量、分层截止、等待/唤醒、Human 运维、通知 Outbox、应急开关及兼容回滚。运行接口改造已进入本地实现验证，目标平台演练另行验收。

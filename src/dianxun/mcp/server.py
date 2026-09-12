@@ -687,7 +687,7 @@ class MCPHandler(BaseHTTPRequestHandler):
             result = {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "dianxun-runtime", "version": "1.0"},
+                "serverInfo": {"name": "dianxun-runtime", "version": "2.0"},
             }
         elif method == "tools/list":
             result = {
@@ -736,9 +736,10 @@ class MCPHandler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         if self.path == "/metrics":
+            scheduler = getattr(self.server, "recovery_scheduler", None)
             self._send_text(
                 200,
-                MCP_METRICS.render_prometheus(),
+                MCP_METRICS.render_prometheus() + (scheduler.metrics() if scheduler else ""),
                 "text/plain; version=0.0.4; charset=utf-8",
             )
             return
@@ -748,6 +749,9 @@ class MCPHandler(BaseHTTPRequestHandler):
             from ..skills.registry import load_skill_registry
 
             try:
+                scheduler = getattr(self.server, "recovery_scheduler", None)
+                if scheduler is not None and not scheduler.healthy():
+                    raise RuntimeError("Recovery scheduler unavailable")
                 service = getattr(self.server, "service", None) or default_service()
                 with closing(service.store.connect()) as conn:
                     row = conn.execute(
@@ -813,12 +817,26 @@ def main() -> None:
     service = default_service()
     server = BoundedHTTPServer((host, port), MCPHandler)
     server.service = service
+    from ..runtime import RuntimeService, load_principals
+    from ..scheduler import RecoveryScheduler
+
+    principals = load_principals(os.environ.get("DIANXUN_RUNTIME_TOKENS_JSON", "{}"))
+    scheduler = None
+    if principals:
+        runtime = RuntimeService(service, principals.values())
+        scheduler = RecoveryScheduler(runtime)
+        runtime.scheduler = scheduler
+        server.runtime_service = runtime
+        server.recovery_scheduler = scheduler
+        scheduler.start()
     print(f"Dianxun MCP listening on http://{host}:{port} with {len(enabled_tools())} tools")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        if scheduler:
+            scheduler.stop()
         server.server_close()
 
 
