@@ -38,7 +38,7 @@ spec:
     - EMERGENCY_CONTAIN 是独立保护分支，默认关闭，开启后也须经 runtime_emergency 服务端风险证据核验；只有 Executor 能执行指定批次的 apply_sales_hold，不得解禁、不写 DETECT 成功。
   skills:
   - anomaly-detect
-  package: https://raw.githubusercontent.com/XZQ/zhuguang/ac0bc213dd0a4108deba4474761a575c39cc2a94/dist/dianxun-worker.zip
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/5014ce872c81ff78c36a44c7c5f70b7bc29e2897/dist/dianxun-worker.zip
   mcpServers:
   - name: dianxun-mcp
     url: http://dianxun-mcp.dianxun.svc.cluster.local/runtime
