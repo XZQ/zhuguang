@@ -19,6 +19,7 @@ import os
 import subprocess
 from datetime import UTC, date, datetime
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 import mistune
 from reportlab.graphics.shapes import Drawing, Line, Rect, String
@@ -85,11 +86,15 @@ def inline(nodes: list[dict]) -> str:
             chunks.append(value)
         elif kind == "link":
             url = node["attrs"]["url"]
-            target = LINKS.get(Path(url.split("#")[0]).name)
-            if target:
-                chunks.append(f'<link href="#{target}" color="{TEAL}">{value}</link>')
-            elif url.startswith(("https://", "http://")):
+            parts = urlsplit(url)
+            if parts.scheme in ("https", "http"):
                 chunks.append(f'<link href="{html.escape(url, quote=True)}">{value}</link>')
+            elif (
+                not parts.scheme
+                and not parts.netloc
+                and (target := LINKS.get(Path(unquote(parts.path)).name))
+            ):
+                chunks.append(f'<link href="#{target}" color="{TEAL}">{value}</link>')
             else:
                 chunks.append(value)
         elif kind == "codespan":
@@ -327,6 +332,9 @@ def make_story(sources, facts, ablation, edition, commit, source_hashes):
     talk = sources["talk"]
     tech = sources["tech"]
     runtime = sources["runtime"]
+    speech = subsections(section(talk, "1. 逐页讲稿"))
+    if not speech:
+        raise ValueError("No speech sections in Markdown section: 1. 逐页讲稿")
 
     def chapter(key, title, subtitle):
         if story:
@@ -555,16 +563,15 @@ def make_story(sources, facts, ablation, edition, commit, source_hashes):
         ]
     )
 
-    speech = subsections(section(talk, "1. 逐页讲稿"))
-    for index in range(3):
+    for index, start in enumerate(range(0, len(speech), 4), 1):
         chapter(
-            f"script-{index + 1}",
-            f"07  逐页讲稿  {index * 4 + 1:02}-{index * 4 + 4:02}",
-            "对应 12 页决赛工作稿。正式陈述、演示与问答时长依组委会通知。",
+            f"script-{index}",
+            f"07  逐页讲稿  {start + 1:02}-{min(start + 4, len(speech)):02}",
+            f"对应 {len(speech)} 页决赛工作稿。正式陈述、演示与问答时长依组委会通知。",
         )
-        for title, nodes in speech[index * 4 : index * 4 + 4]:
+        for title, nodes in speech[start : start + 4]:
             story.append(KeepTogether([heading(title), *blocks(nodes), Spacer(1, 16)]))
-        if index == 0:
+        if index == 1:
             story.append(
                 note("VeriAgent 为讲稿工作标题；正式名称、PPT 版本和现场时长在交付时统一冻结。")
             )
@@ -587,8 +594,8 @@ def make_story(sources, facts, ablation, edition, commit, source_hashes):
         [
             Spacer(1, 12),
             note(
-                "原待办 01 的有界恢复已完成本地实现；原待办 02 的分析与 36 项验收要求已整理，"
-                "业务代码缺口仍需修复；原待办 03 的方案已制定，真实目标平台验收仍待执行。"
+                "完成项应在 docs/待办.md 记录完成日期与证据位置；状态变化后重新导出本手册，"
+                "确保纸面快照与现行清单一致。"
             ),
             Spacer(1, 8),
             paragraph(

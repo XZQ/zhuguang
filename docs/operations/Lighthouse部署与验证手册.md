@@ -141,6 +141,10 @@ uv run scripts/build_project_handbook.py
 
 脚本通过 PEP 723 声明固定版本的 ReportLab 和 Mistune，uv 使用隔离脚本环境，不增加 MCP 服务运行依赖。正文从现行 Markdown 的标题区段提取；测试数字、模型配置和消融结果读取结构化事实。Markdown 标题变化后应同步生成脚本，缺失区段会拒绝生成。
 
+讲稿每四段一组自动分页，尾组显示实际范围；空讲稿拒绝导出并保留已有 PDF。待办状态只从统一待办的执行清单取快照，完成结论不在生成器中重复维护。已映射的中文文档链接转为手册章节跳转，同名 HTTP/HTTPS 链接仍指向外部原地址。
+
+默认 unittest 门禁包含 6 项手册回归，可单独运行 `uv run python -m unittest -v tests.test_project_handbook`。开发依赖锁定同版本 ReportLab/Mistune，并使用 pypdf 检查临时 PDF 的内容与跳转；跨平台测试采用库自带字体，不能替代最终中文制品的逐页版式检查。
+
 Windows 默认读取并嵌入微软雅黑常规/粗体字体。其他系统通过 `--font <中文TrueType字体路径>` 与 `--bold-font <中文粗体TrueType字体路径>` 指定允许嵌入的字体；同日期、同源文件、同字体和工具版本可重复构建。可用 `--date YYYY-MM-DD` 固定资料日期、`--manifest <路径>` 保存来源哈希与页码记录。资料日期不替代正文独立记录的测试日期。
 
 导出后渲染全部页面，检查文字、表格、架构图、代码换行、目录跳转和证据口径，再执行完整门户构建复制新 PDF。三份复赛 PDF 不参与重写，目标路径也受生成脚本保护。已有 PPT/PDF 的修订与对外发布仍单独验收。
