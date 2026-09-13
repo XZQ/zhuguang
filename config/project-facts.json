@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-09-12",
+  "updated_at": "2026-09-13",
   "owner": "XZQ",
   "project_name": "店巡 Agent",
   "display_name": "逐光队｜店巡 Agent",
@@ -314,7 +314,7 @@
         "report": "evidence/m4/ablation.md"
       },
       "command_center_html": "evidence/m4/command-center.html",
-      "unittest_verified_at": "2026-09-12",
+      "unittest_verified_at": "2026-09-13",
       "unittest_environment": "Windows_Python_3.12.13_Node_local_SQLite"
     },
     "operations_hardening": {
@@ -370,7 +370,7 @@
       "documents": "implemented",
       "presentation_source": "implemented",
       "pdf": "implemented",
-      "competition_compliance_matrix": "implemented",
+      "competition_compliance_matrix": "historical_in_git",
       "real_store_gap_analysis": "implemented",
       "video_script": "implemented",
       "open_source_governance": "implemented",

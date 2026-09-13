@@ -28,13 +28,16 @@ def main() -> None:
     if count != recorded["full_unittest_count"] or count != passed + skipped:
         raise RuntimeError("Update the recorded test counts after a successful complete run")
     required = {
-        "README.md": f"{count} 项发现：{passed} 通过、{skipped} 个 PolarDB 条件集成测试",
-        "docs/测试覆盖矩阵.md": f"| unittest 发现数 | {count} |",
-        "agentteams/README.md": f"全量发现 {count} 项测试，其中 {passed} 项通过、{skipped} 项",
-        "docs/assessments/实现状态矩阵.md": f"{count} 发现 / {passed} 通过 / {skipped} 条件 skip",
+        "README.md": (f"{count} 项发现：{passed} 通过、{skipped} 个 PolarDB 条件集成测试",),
+        "docs/测试覆盖矩阵.md": (
+            f"| unittest 发现数 | {count} |",
+            f"{count} 发现 / {passed} 通过 / {skipped} 条件 skip",
+        ),
+        "agentteams/README.md": (f"全量发现 {count} 项测试，其中 {passed} 项通过、{skipped} 项",),
     }
-    for name, claim in required.items():
-        if claim not in (ROOT / name).read_text(encoding="utf-8"):
+    for name, claims in required.items():
+        content = (ROOT / name).read_text(encoding="utf-8")
+        if any(claim not in content for claim in claims):
             raise RuntimeError(f"Current test evidence is stale in {name}")
     print(
         f"QUALITY_FACTS_OK (discovered={count}; dated reference={passed} passed/{skipped} skipped)"

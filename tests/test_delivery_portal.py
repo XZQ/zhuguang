@@ -38,7 +38,7 @@ class DeliveryPortalTests(unittest.TestCase):
 
             self.assertEqual(hashes(first), hashes(second))
             self.assertFalse((first / "defense-guide.html").exists())
-            for original_pdf in (ROOT / "docs" / "competition").glob("2026-GOAI复赛*.pdf"):
+            for original_pdf in (ROOT / "docs" / "competition").glob("*.pdf"):
                 self.assertEqual(
                     original_pdf.read_bytes(), (first / original_pdf.name).read_bytes()
                 )
@@ -62,6 +62,7 @@ class DeliveryPortalTests(unittest.TestCase):
             defense = (first / "defense.html").read_text(encoding="utf-8")
             self.assertIn("VERIFY/BLOCKED", defense)
             self.assertIn("ppt/finals.html", defense)
+            self.assertIn('href="店巡Agent-项目与答辩手册.pdf"', defense)
             self.assertNotIn("5 个失败场景被错误放行", page)
             self.assertNotIn("512 台设备实跑", page)
             self.assertEqual(

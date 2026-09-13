@@ -75,7 +75,7 @@ kubectl -n dianxun rollout status deployment/dianxun-mcp
 kubectl -n dianxun get pod,service,pvc
 ```
 
-两个身份 JSON 文件必须位于仓库外并限制访问；不要把 Secret YAML、命令输出或真实 Token 保存到仓库和录屏中。`runtime-tokens.json` 的四字段身份格式和调用顺序见 [Worker 运行接口](../docs/operations/worker-runtime.md)。
+两个身份 JSON 文件必须位于仓库外并限制访问；不要把 Secret YAML、命令输出或真实 Token 保存到仓库和录屏中。`runtime-tokens.json` 的四字段身份格式和调用顺序见 [Worker 运行接口](../docs/operations/runtime-recovery.md)。
 
 在本地镜像已加载且名称不变时，可直接 apply 原始 `deployment.yaml`。MCP 以单副本运行并使用 PVC 保存 SQLite 状态与 Trace；空卷首次启动时从固定 Seed 初始化。Deployment 强制引用 `dianxun-agent-identities` Secret，未创建时 Pod 不会就绪。Service 的集群内地址为：
 
@@ -189,7 +189,7 @@ kubectl -n dianxun get deployment,pod,service,pvc
 10. 每次委派保留 tenant、context version、assignment、attempt、lease、heartbeat 和 checkpoint；lease 未过期不得重派，超时只生成一个 successor。
 11. 至少演示一次 Worker/Orchestrator 重启后从成功 checkpoint 恢复，跳过已完成副作用；Context completed 不得替代 IncidentService 的 CLOSED。
 
-建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/demo/Demo视频脚本与证据清单.md`](../docs/demo/Demo视频脚本与证据清单.md)。
+建议同时录制场景 F（`query_workorder` 返回 `partial`）：Auditor 必须阻断关闭，停售保持 active，事件停在 `CONTAINED / BLOCKED`。正常和失败分支的镜头、脱敏与证据门禁见 [`../docs/competition/决赛讲稿与问答.md`](../docs/competition/决赛讲稿与问答.md)。
 
 保存证据前必须脱敏。若当前机器没有 Docker、Kubernetes 或 AgentTeams，不得把 ZIP 校验、YAML 解析或本地 MCP 调用写成“真实 AgentTeams 已跑通”。
 

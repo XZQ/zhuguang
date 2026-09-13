@@ -29,8 +29,9 @@ def build(output: Path, observations: Path | None = None):
         ROOT / "ppt", output / "ppt", dirs_exist_ok=True, ignore=shutil.ignore_patterns(".DS_Store")
     )
     write_status(output / "status.json", observations)
-    # Keep the original semifinal PDFs available as dated historical downloads.
+    # Copy the explicitly exported current handbook and preserved historical PDFs.
     for name in (
+        "店巡Agent-项目与答辩手册.pdf",
         "2026-GOAI复赛答辩速查手册-逐光队.pdf",
         "2026-GOAI复赛答辩图文全景手册-逐光队.pdf",
         "2026-GOAI复赛答辩终极全景大纲-逐光队.pdf",

@@ -2,7 +2,7 @@
 
 复赛唯一事实口径为 9 个目标 Skill：P0 核心 6 个、P1 增强 1 个、P2 补充场景 2 个。只有根目录下 6 个同名目录是 P0 工程契约源；[`registry.json`](registry.json) 固定当前可路由版本和内容哈希，[`LIFECYCLE.md`](LIFECYCLE.md) 定义发布、灰度、兼容、升级、回滚与退役。规划说明和旧入口分区存放，避免与可装载 Skill 混淆。
 
-> 汇总材料见 [../docs/competition/03-Skill九要素卡.md](../docs/competition/03-Skill九要素卡.md)
+> 汇总材料见 [`../docs/技术说明.md`](../docs/技术说明.md)
 
 | Skill | 优先级 | Agent | 契约入口 |
 |---|---|---|---|

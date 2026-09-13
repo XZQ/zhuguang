@@ -10,7 +10,7 @@
 
 ## 历史复赛在线入口（部署版本须另行核验）
 
-当前材料见[文档中心](docs/README.md)与[决赛讲稿](docs/competition/finals/03-决赛逐页讲稿与问答.md)。09-12 准备稿中的 VeriAgent 为工作标题，不据此改变上面的仓库作品名。本地文档/门户重建不代表以下网站已同步发布。
+当前材料见[文档中心](docs/README.md)与[决赛讲稿](docs/competition/决赛讲稿与问答.md)。09-12 准备稿中的 VeriAgent 为工作标题，不据此改变上面的仓库作品名。本地文档/门户重建不代表以下网站已同步发布。
 
 > **作品名称**：店巡 Agent  
 > **参赛队伍**：逐光（第 3 组｜第 13 队 · GOAI 赛道一 Agent Infra）  
@@ -92,13 +92,13 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 - 证据等级：代码、测试和真实调用齐全才标记“已实现”；有状态外部替身标记“模拟实现”；必须在目标平台运行的能力标记“外部待验证”。
 - 模型：`qwen3.5-plus` 仅声明给目标 AgentTeams Manager/Worker；本地确定性 Demo、134 项测试和 M4 评测不调用 LLM。
 - Skill：当前 6 个 P0 均为自定义可复用 Skill；`skills/registry.json` 固定 stable/canary release，`skills/LIFECYCLE.md` 定义发布、兼容、升级、回滚和退役，本地 Span 记录 version/digest。目标 AgentTeams 中的发现、加载、调用和同字段 Trace 仍待动态验收；规则不要求指定云厂商 Skill。
-- 鉴权：非回环监听未配置认证时拒绝启动；共享 `MCP_TOKEN` 只读，业务写使用 Actor 映射。独立 [`/runtime` 运行接口](docs/operations/worker-runtime.md) 绑定 Worker/租户/门店/角色，将租约、checkpoint 与领域事务接通；真实 AgentTeams 身份注入仍需外部验收。
+- 鉴权：非回环监听未配置认证时拒绝启动；共享 `MCP_TOKEN` 只读，业务写使用 Actor 映射。独立 [`/runtime` 运行接口](docs/operations/runtime-recovery.md) 绑定 Worker/租户/门店/角色，将租约、checkpoint 与领域事务接通；真实 AgentTeams 身份注入仍需外部验收。
 
-机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md)。
+机器可读事实见 [`config/project-facts.json`](config/project-facts.json)，里程碑与限制见 [`docs/测试覆盖矩阵.md`](docs/测试覆盖矩阵.md)。
 
-2026-09-07 的七项修复及兼容说明见 [修复记录](docs/assessments/seven-finding-repairs.md)。当时完整本地回归为 105 项发现、103 通过、2 条件跳过；新增 CI 矩阵和 Docker 门禁尚未在 GitHub 运行。当时门户/手册由模板重建；现行生成入口与历史归档见[门户维护](docs/operations/delivery-portal.md)。
+2026-09-07 的七项修复及兼容说明见 [修复记录](docs/测试覆盖矩阵.md)。当时完整本地回归为 105 项发现、103 通过、2 条件跳过；新增 CI 矩阵和 Docker 门禁尚未在 GitHub 运行。当时门户/手册由模板重建；现行生成入口与历史归档见[门户维护](docs/operations/Lighthouse部署与验证手册.md)。
 
-2026-09-12 完成[运行接口复核修复](docs/assessments/runtime-review-followup.md)，当时完整回归 112 项发现、110 通过、2 条件跳过。阶段输出恢复、失败事务回滚及重新处置闭环已纳入回归；远端 CI 和目标部署需另行按发布 SHA 验证。
+运行接口的阶段输出恢复、失败事务回滚及重新处置闭环已纳入[测试矩阵](docs/测试覆盖矩阵.md)；远端 CI 和目标部署需另行按发布 SHA 验证。
 
 ## 为什么把冷柜失温作为主展示场景
 
@@ -189,7 +189,7 @@ uv run dianxun-mcp
 
 默认 Streamable HTTP / JSON-RPC Adapter 监听 `127.0.0.1:8080`。运行时数据库为 `demo/state/runtime.db`，已被 Git 忽略。
 
-`GET /live` 为存活，`GET /ready` 与 `/health` 为依赖/扫描器就绪；`GET /metrics` 提供工具及恢复指标。仅使用固定低基数标签，不包含租户、事故、请求、Trace、Actor 或 Token；完整 SLO 与恢复口径见 [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md)。
+`GET /live` 为存活，`GET /ready` 与 `/health` 为依赖/扫描器就绪；`GET /metrics` 提供工具及恢复指标。仅使用固定低基数标签，不包含租户、事故、请求、Trace、Actor 或 Token；完整 SLO 与恢复口径见 [`docs/operations/runtime-recovery.md`](docs/operations/runtime-recovery.md)。
 
 默认未配置 Token 的模式只允许回环地址上的本地 Demo；非回环绑定会直接拒绝启动。`MCP_TOKEN` 是共享请求认证，只允许只读工具；所有状态写必须由 `MCP_ACTOR_TOKENS_JSON` 或可信网关完成 Token → Actor 映射。不要把工具默认 Actor 当作网络身份。
 
@@ -266,35 +266,31 @@ evidence/operations/       确定性本地恢复演练证据
 .github/                   CI、Pull Request 与 Issue 模板
 ppt/                       HTML 演示稿源文件与导出 PDF
 docs/
-  competition/             连续的 01～08 比赛材料及符合性矩阵
-  assessments/             实现状态、真实门店差距与演进门禁
-  demo/                    Demo 视频脚本与证据清单
-  operations/              Metrics、SLO 与恢复演练
+  README.md                文档导航
+  待办.md                  唯一工作清单与验收标准
+  技术说明.md              角色、Skill、MCP、事务与场景
+  测试覆盖矩阵.md          当前实现和测试证据
+  competition/             现行讲稿、简介与原位保留的历史 PDF
+  operations/              部署、运行恢复与 Git 历史映射
+  assets/                  生成的架构 SVG
 ```
 
 完整文档导航见 [`docs/README.md`](docs/README.md)，交付包与业务源码的边界见 [`packages/README.md`](packages/README.md)。
 
 ## 文档索引
 
-| 文档 | 内容 |
+统一入口见 [docs/README.md](docs/README.md)。文档只保留一份待办，技术和运维说明描述当前用法。
+
+| 入口 | 内容 |
 |---|---|
-| [`docs/competition/01-作品简介-500字.md`](docs/competition/01-作品简介-500字.md) | 500 字以内作品简介 |
-| [当前决赛讲稿](docs/competition/finals/03-决赛逐页讲稿与问答.md) | 当前口播、技术问答与证据边界 |
-| [`docs/competition/03-Skill九要素卡.md`](docs/competition/03-Skill九要素卡.md) | 9 个目标 Skill 与 6 个 P0 工程契约 |
-| [`docs/competition/04-模拟数据与场景说明.md`](docs/competition/04-模拟数据与场景说明.md) | 确定性 Seed、Scenario 与数据边界 |
-| [`docs/competition/05-MCP工具契约.md`](docs/competition/05-MCP工具契约.md) | 12 个 P0 MCP 函数、安全和失败语义 |
-| [`docs/competition/06-Agent-Identity清单.md`](docs/competition/06-Agent-Identity清单.md) | 1 Manager + 5 业务 Agent 的身份边界 |
-| [`docs/competition/07-多Agent协同设计.md`](docs/competition/07-多Agent协同设计.md) | 五阶段与赛事八项要求映射 |
-| [复赛历史归档](docs/archive/2026-09-semifinals/README.md) | 旧方案、答辩稿、PDF 与勘误 |
-| [决赛准备清单](docs/competition/finals/02-决赛准备执行清单.md) | 当前待办与平台取证；正式规则另核 |
-| [`docs/assessments/实现状态矩阵.md`](docs/assessments/实现状态矩阵.md) | 仓库事实、里程碑状态和证据边界 |
-| [真实场景差距与产品路线](docs/competition/finals/07-待办02-真实场景差距与产品完善分析.md) | 当前差距、R0-R4、试点 KPI 与生产准入 |
-| [`docs/demo/Demo视频脚本与证据清单.md`](docs/demo/Demo视频脚本与证据清单.md) | 正常/失败分支录制脚本与真实性门禁 |
-| [`docs/operations/SLO与恢复演练.md`](docs/operations/SLO与恢复演练.md) | Prometheus 指标、目标 SLO、恢复演练和生产验收边界 |
+| [待办](docs/待办.md) | 工程、平台、业务验收与交付 |
+| [技术说明](docs/技术说明.md) | 角色、Skill、MCP、事务与场景 |
+| [测试矩阵](docs/测试覆盖矩阵.md) | 当前实现与本地证据 |
+| [运行与恢复](docs/operations/runtime-recovery.md) | Worker、监测、恢复与回滚 |
+| [部署与发布](docs/operations/Lighthouse部署与验证手册.md) | 服务、门户、PDF与发布边界 |
+| [比赛材料](docs/competition/README.md) | 讲稿、简介、历史 PDF与勘误 |
 
-协作与维护入口见 [`CONTRIBUTING.md`](CONTRIBUTING.md)、[`SECURITY.md`](SECURITY.md)、[`CHANGELOG.md`](CHANGELOG.md) 和 [GitHub Actions CI](.github/workflows/ci.yml)。
-
-模拟数据可执行入口为 [`scripts/generate_demo_data.py`](scripts/generate_demo_data.py)，不与 01～08 文档混放。
+协作入口：[CONTRIBUTING](CONTRIBUTING.md)、[SECURITY](SECURITY.md)、[CHANGELOG](CHANGELOG.md)、[CI](.github/workflows/ci.yml)。
 
 ## 安全与已知边界
 
@@ -311,4 +307,4 @@ docs/
 
 [MIT](LICENSE)
 
-2026-09-12 后续完成待办 01 的[多 Agent 故障恢复](docs/operations/runtime-recovery.md)：新增 22 项故障回归，全量 134 项发现、132 通过、2 项 PolarDB 条件跳过。目标平台、真实外部回执与通知渠道仍需独立验收。
+[多 Agent 故障恢复](docs/operations/runtime-recovery.md)已有 22 项专项回归；全量结果见[测试矩阵](docs/测试覆盖矩阵.md)。目标平台、真实外部回执与通知渠道的验收统一在[待办](docs/待办.md)维护。

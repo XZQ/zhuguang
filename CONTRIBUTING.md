@@ -31,7 +31,7 @@ git diff --check
 
 没有设置隔离的 `DIANXUN_TEST_POSTGRES_DSN` 时，两项 PolarDB 集成测试应明确显示 skipped；不得用 Mock 改成通过。
 
-新增测试后，先运行完整回归，再同步 `config/project-facts.json` 和当前测试材料；`check_quality_facts.py` 只核对发现数及文档，不能代替测试执行。历史带日期记录保留当时口径。门户状态逻辑、旧输出清理和两次完整构建确定性属于单元门禁；现行门户和 SVG 从 `scripts/assets/` 重建，CI 检查生成物漂移。三套旧复赛手册已退役，历史源稿与 PDF 见 [归档](docs/archive/2026-09-semifinals/README.md)，不再运行旧生成器。
+新增测试后，先运行完整回归，再同步 `config/project-facts.json` 和当前测试材料；`check_quality_facts.py` 核对发现数和测试矩阵中的完整统计，不能代替测试执行。所有待办只在 [docs/待办.md](docs/待办.md) 维护。门户状态逻辑、旧输出清理和两次完整构建确定性属于单元门禁；现行门户和 SVG 从 `scripts/assets/` 重建，CI 检查生成物漂移。旧复赛 Markdown 从 Git 历史追溯，原位保留的三份 PDF 与勘误见 [比赛材料](docs/competition/README.md)，不再运行旧生成器。
 
 有 Docker 引擎时执行以下容器门禁；CI 的独立 Linux job 会真实运行。烟测凭证随机生成，仅绑定回环端口，只清理本次创建的容器：
 
@@ -40,7 +40,7 @@ docker build -f packages/dianxun-mcp/Dockerfile -t dianxun-mcp:ci .
 python scripts/check_docker_image.py --image dianxun-mcp:ci
 ```
 
-没有 Docker 时须明确记录“镜像烟测未执行”。安装 wheel 的隔离烟测不代表容器已经通过。现行门户构建不导出 PDF，仅复制 PPT 目录中的既有制品和 docs/competition 原路径保留的三份复赛 PDF；新 PDF 需要显式导出与逐页核对。历史 PDF 保留原字节，不能声称随网页重建更新。
+没有 Docker 时须明确记录“镜像烟测未执行”。安装 wheel 的隔离烟测不代表容器已经通过。现行门户构建不导出 PDF，仅复制 PPT 既有制品、已导出的当前手册和原位保留的三份复赛 PDF。当前手册通过 `uv run scripts/build_project_handbook.py` 独立导出，并逐页核对；字体、来源和工具版本见[部署与发布](docs/operations/Lighthouse部署与验证手册.md)。历史 PDF 保留原字节，不能声称随网页重建更新。
 
 ## 变更边界
 

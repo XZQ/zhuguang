@@ -1,34 +1,26 @@
-# 逐光队｜文档中心
+# 店巡 Agent 文档
 
-队名为逐光，仓库作品名为店巡 Agent；09-12 决赛准备稿使用 VeriAgent 作为工作标题，尚未据此宣布正式更名。冷柜失温是首个验证场景，dianxun 是工程标识。决赛标题和发布版本在交付冻结时统一。
+复核日期：2026-09-13。队名为逐光，仓库作品名为店巡 Agent；VeriAgent 是决赛准备稿工作标题。代码、配置和实际执行证据优先于文档描述。
 
-事实优先级：实际代码与执行证据、config/project-facts.json、对应日期/版本的文档。当前说明和历史快照分开维护。
+## 阅读入口
 
-## 当前入口
-
-| 用途 | 文档 |
+| 需要做什么 | 文档 |
 |---|---|
-| 实现与证据 | [实现状态矩阵](assessments/实现状态矩阵.md)、[测试覆盖矩阵](测试覆盖矩阵.md) |
-| 验证机制 | [Agent 验证](Agent验证机制.md)、[状态一致性](分布式一致性方案.md)、[MCP 可靠性](MCP延迟与可靠性.md) |
-| 决赛材料 | [材料索引](competition/README.md)、[讲稿与问答](competition/finals/03-决赛逐页讲稿与问答.md)、[一页简介](competition/finals/04-项目一页简介.md) |
-| 持续待办 | [决赛准备执行清单](competition/finals/02-决赛准备执行清单.md) |
-| 业务差距 | [真实场景与产品分析](competition/finals/07-待办02-真实场景差距与产品完善分析.md)、[36 项验收计划](competition/finals/08-待办02-场景与验收清单.md) |
-| 运行接口 | [Worker runtime](operations/worker-runtime.md)、[故障恢复](operations/runtime-recovery.md)、[SLO/演练](operations/SLO与恢复演练.md) |
-| 部署与展示 | [Lighthouse](deployment/Lighthouse部署与验证手册.md)、[门户构建与模板](operations/delivery-portal.md)、[视频证据清单](demo/Demo视频脚本与证据清单.md) |
-| 历史记录 | [复赛归档与勘误](archive/2026-09-semifinals/README.md)、[七项修复](assessments/seven-finding-repairs.md)、[运行接口复核](assessments/runtime-review-followup.md) |
-| 架构资产 | [SVG](assets/architecture-flow.svg)，由模板生成，表示配置/流程，不证明在线状态 |
+| 看当前工作和验收缺口 | [待办](待办.md)：唯一进度入口，含原待办 01/02/03 的结论 |
+| 理解架构、角色、Skill、MCP、事务和场景 | [技术说明](技术说明.md) |
+| 看已实现能力、测试结果与证据边界 | [测试覆盖矩阵](测试覆盖矩阵.md) |
+| 接入 Worker、监测、恢复与回滚 | [运行与恢复](operations/runtime-recovery.md) |
+| 部署服务、构建网页与保留 PDF | [部署与发布](operations/Lighthouse部署与验证手册.md) |
+| 看当前手册、决赛材料和历史 PDF | [项目与答辩手册](competition/店巡Agent-项目与答辩手册.pdf) / [比赛材料](competition/README.md) |
+| 查历史提交的新旧 SHA | [Git 历史映射](operations/git-history-linearization-20260913.md) |
 
-## 工程入口
+docs 仅保留 operations、competition、assets 三个子目录。业务源码和契约仍在原目录维护：[src](../src/dianxun)、[Skill](../skills/README.md)、[AgentTeams](../agentteams/README.md)、[交付包](../packages/README.md)。
 
-- [根 README](../README.md)、[贡献约定](../CONTRIBUTING.md)、[安全策略](../SECURITY.md)
-- [AgentTeams/PolarDB 与平台取证](../agentteams/README.md)、[Skill](../skills/README.md)、[交付包](../packages/README.md)
-- [M4 评测](../evidence/m4/report.md)、[消融](../evidence/m4/ablation.md)、[协调演练](../evidence/operations/recovery-drill.json)
-- [决赛 PPT 工作稿](../ppt/finals.html)、[演示稿与历史 PDF](../ppt/)
+## 维护约定
 
-## 维护规则
-
-1. 数字变化先取得实际执行证据，再更新事实源与测试矩阵；其他说明优先链接权威入口。
-2. 发布声明区分本地实现/模拟、外部待验证、规划。静态配置、动画和单元测试不能代替平台或门店证据。
-3. 历史文档保留原日期/版本与勘误，不用全局替换数字改写历史；现行导航不再直接使用旧答辩稿。
-4. 门户/SVG 从现行模板重建。旧三套复赛手册生成器已停用；三份历史 PDF 保留在 competition 原路径，构建仅原样复制，不宣称已更新。
-5. 目录变更同步链接、生成入口和 CI，运行相关检查及完整门禁。提交、推送、发布仍需用户明确要求。
+1. 所有未完成工作只在待办.md 更新。方案完成、代码完成、本地通过、外部验收分别记录；没有证据不标成完成。
+2. 技术和运维文档描述当前用法，不再保存另一份待办列表。完成事项只保留结论与证据入口，过程从 Git 追溯。
+3. 测试数字只在事实源与测试矩阵维护；其他页面引用入口。更新日期不代表重新验证了服务器、平台或门店。
+4. 已被当前说明替代的复赛 Markdown、重复审查稿和阶段交付记录不再留存目录副本；三份历史 PDF 按原路径、原字节保留。
+5. 网页和 SVG 从模板生成；当前手册用独立脚本从现行 Markdown 与事实源导出并逐页检查。PPT/PDF/离线包是带日期的制品，修改 Markdown 不会自动更新它们。
+6. 修改目录时同步引用和检查脚本，执行[贡献约定](../CONTRIBUTING.md)中的相关门禁。
