@@ -745,6 +745,30 @@ class MCPHandler(BaseHTTPRequestHandler):
         self._send(200, {"jsonrpc": "2.0", "id": request.get("id"), "result": result})
 
     def do_GET(self) -> None:  # noqa: N802
+        if self.path in {"/operations", "/operations.js"}:
+            from importlib.resources import files
+
+            filename = "operations.html" if self.path == "/operations" else "operations.js"
+            body = files("dianxun").joinpath("assets", filename).read_bytes()
+            self.send_response(200)
+            self.send_header(
+                "Content-Type",
+                "text/html; charset=utf-8"
+                if filename.endswith("html")
+                else "text/javascript; charset=utf-8",
+            )
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header(
+                "Content-Security-Policy",
+                "default-src 'none'; script-src 'self'; "
+                "style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; "
+                "frame-ancestors 'none'; form-action 'none'",
+            )
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path == "/metrics":
             scheduler = getattr(self.server, "recovery_scheduler", None)
             self._send_text(

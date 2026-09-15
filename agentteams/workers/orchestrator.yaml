@@ -33,6 +33,10 @@ spec:
     - 重启后先读 runtime_snapshot；失败或 partial 时保持阻塞，重新核验，不跳过 checkpoint。
     - 审计完整失败且需要重新处置时调用 runtime_reopen(incident_id, expected_version)，从 CONTAIN 重走闭环；partial 只重试核验，不能跳过安全门。
 
+    ## 事件追溯协议
+    - 隔离场景由管理员初始化并开启桥接后，调用 runtime_ingest_scenario(scenario_id,event_id)，沿返回 incident_id 继续委派；内部 assignment 不能冒充 AT task。
+    - runtime_complete 的失败/partial 输出也保留并返回新 context_version；再次调用必须用新版本，历史失败不删除。平台关联只是待核对元数据。
+
     ## 服务端故障恢复协议 v2
     - 启动和空闲时每 10 秒调用 runtime_poll 登记在线与读取派发任务；仅配置 Token 不代表健康可用。进程离线后不再续心跳。
     - 心跳不代表进展；心跳不能延长 hard_deadline 或 progress_deadline；有效新进展只能延长后者。runtime_progress 只核验服务端新增事实，重复文本或同一回执不算进展。

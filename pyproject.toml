@@ -59,6 +59,7 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
+"dianxun" = ["assets/*.html", "assets/*.js"]
 "dianxun.state" = ["sql/*.sql"]
 
 [tool.ruff]

@@ -67,6 +67,26 @@ class PolarDBIntegrationTests(unittest.TestCase):
         self._assert_runtime_recovery_concurrency()
         self._assert_partition_guards()
         self._assert_pgvector_workflow()
+        self._assert_read_snapshot()
+
+    def _assert_read_snapshot(self):
+        from psycopg.errors import ReadOnlySqlTransaction
+
+        with self.store.read_snapshot() as conn:
+            self.assertEqual(
+                "on", conn.execute("SHOW transaction_read_only").fetchone()["transaction_read_only"]
+            )
+            self.assertEqual(
+                "repeatable read",
+                conn.execute("SHOW transaction_isolation").fetchone()["transaction_isolation"],
+            )
+            self.assertTrue(
+                conn.execute("SELECT pg_export_snapshot() AS snapshot").fetchone()["snapshot"]
+            )
+            with self.assertRaises(ReadOnlySqlTransaction):
+                with self.store.transaction():
+                    conn.execute("UPDATE meta SET value = value WHERE key = 'virtual_time'")
+            self.assertEqual(1, conn.execute("SELECT 1 AS healthy").fetchone()["healthy"])
 
     def _assert_partition_guards(self):
         from datetime import timedelta

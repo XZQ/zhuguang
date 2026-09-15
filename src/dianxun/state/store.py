@@ -357,6 +357,23 @@ class SQLiteStateStore:
             conn.executescript(_SCHEMA)
             conn.commit()
 
+    @contextmanager
+    def read_snapshot(self):
+        """A database-enforced read-only snapshot, without initializing the database."""
+        if self._transaction_connection.get() is not None:
+            raise ValueError("Read snapshots must start outside a write transaction")
+        conn = sqlite3.connect(self.path.resolve().as_uri() + "?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        token = self._transaction_connection.set(conn)
+        try:
+            conn.execute("PRAGMA query_only = ON")
+            conn.execute("BEGIN")
+            yield conn
+        finally:
+            conn.rollback()
+            self._transaction_connection.reset(token)
+            conn.close()
+
     def ensure_schema(self) -> None:
         """Create the local schema; remote backends only verify readiness."""
         self.create_schema()

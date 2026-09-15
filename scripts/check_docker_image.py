@@ -49,6 +49,10 @@ def verify_service(base: str, token: str, runtime_token: str) -> None:
         time.sleep(0.25)
     if request(base, "/live").get("alive") is not True:
         raise RuntimeError("Liveness check failed")
+    for asset in ("/operations", "/operations.js"):
+        with urllib.request.urlopen(base + asset, timeout=3) as response:
+            if response.status != 200 or not response.read():
+                raise RuntimeError("Operations console asset missing from image")
 
     query = {
         "jsonrpc": "2.0",

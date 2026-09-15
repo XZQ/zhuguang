@@ -233,6 +233,23 @@ def query_trace(trace_id: str) -> list[dict]:
     return [dict(zip(cols, r, strict=True)) for r in rows]
 
 
+def read_trace(trace_id: str, *, limit: int = 1001) -> dict:
+    """Inspect existing Trace without creating or migrating its SQLite database."""
+    path = _DB_PATH.get()
+    if not path.is_file():
+        return {"status": "unavailable", "rows": []}
+    conn = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    try:
+        records = conn.execute(
+            "SELECT * FROM spans WHERE trace_id = ? ORDER BY start_ms, span_id LIMIT ?",
+            (trace_id, limit),
+        ).fetchall()
+        return {"status": "available", "rows": [dict(row) for row in records]}
+    finally:
+        conn.close()
+
+
 def trace_summary(trace_id: str) -> str:
     """生成一次任务闭环的可读 Trace 摘要(用于 demo 输出/报告)。"""
     spans = query_trace(trace_id)

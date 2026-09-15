@@ -272,8 +272,8 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 148,
-      "full_unittest_passed": 146,
+      "full_unittest_count": 155,
+      "full_unittest_passed": 153,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json",
@@ -387,6 +387,15 @@
       "postgres_concurrency": "conditional_not_run",
       "real_notification_channel": "not_connected",
       "emergency_enabled_by_default": false
+    },
+    "runtime_operations": {
+      "status": "implemented_local_external_pending",
+      "console": "/operations",
+      "scenario_ingress": "runtime_ingest_scenario",
+      "platform_binding": "worker_submitted_not_platform_verified",
+      "runtime_capture": "scripts/capture_runtime.py",
+      "postgres_snapshot": "implemented_conditional_not_run",
+      "tests": 7
     }
   },
   "schemas": {

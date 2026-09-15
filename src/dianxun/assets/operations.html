@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>店巡 · 事件追溯</title>
+<style>
+:root{font:15px/1.6 system-ui;color:#18313d;background:#f3f6f8}body{margin:0}
+header{background:#173446;color:white;padding:24px max(24px,calc((100vw - 1200px)/2))}
+h1{font-size:26px;margin:0}main{max-width:1200px;margin:auto;padding:24px}
+form,.panel{background:white;border:1px solid #d7e1e6;border-radius:10px;padding:20px;margin-bottom:18px}
+label{display:inline-block;margin:0 14px 10px 0}input,button{font:inherit;padding:8px;border:1px solid #a7bdc7;border-radius:5px}
+button{cursor:pointer;background:#e7f3f3;color:#154b50}button:focus-visible,input:focus-visible{outline:3px solid #15959d}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.cards{display:flex;flex-wrap:wrap;gap:10px}.cards button{text-align:left;max-width:100%;overflow-wrap:anywhere}
+h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:12px 0 8px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{border-bottom:1px solid #e2e8eb;padding:8px;text-align:left;overflow-wrap:anywhere}
+.scroll{overflow:auto}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#f3f6f8;padding:12px}
+details{margin:8px 0}summary{cursor:pointer}.muted{color:#516a78}.error{color:#a22424}
+#status{min-height:24px}small{font-size:12px}a{color:#00787e}
+</style><script src="/operations.js" defer></script></head>
+<body><header><h1>店巡 · 事件追溯</h1><div>设备、商品、执行与复核，共用一份事件档案</div></header>
+<main>
+<form id="connect"><label>运行身份 Token <input id="token" type="password" autocomplete="off" required></label>
+<button type="submit">读取门店事件</button> <button id="disconnect" type="button">退出并清空</button>
+<div class="muted">使用服务器分配的独立身份；凭证仅保留在当前页面内存中。</div></form>
+<div id="status" role="status" aria-live="polite"></div>
+<section class="panel"><h2>门店事件</h2><div id="cases" class="cards"></div><button id="more" hidden>加载下一页</button></section>
+<section id="casefile" hidden></section>
+</main></body></html>

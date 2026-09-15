@@ -223,6 +223,22 @@ class PostgresStateStore(SQLiteStateStore):
     def create_schema(self) -> None:
         self.apply_profile("core")
 
+    @contextmanager
+    def read_snapshot(self):
+        if self._transaction_connection.get() is not None:
+            raise ValueError("Read snapshots must start outside a write transaction")
+        connection = self.connect()
+        token = self._transaction_connection.set(connection)
+        try:
+            # Session scope was configured in connect; end that setup transaction.
+            connection.commit()
+            connection.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            yield connection
+        finally:
+            connection.rollback()
+            self._transaction_connection.reset(token)
+            connection.close()
+
     def ensure_schema(self) -> None:
         connection = self.connect()
         try:

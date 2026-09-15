@@ -444,8 +444,12 @@ class WorkerRuntimeTests(unittest.TestCase):
         result = self.rpc("Auditor", "complete", **lease)
         self.assertFalse(result["completed"])
         self.assertNotIn("VERIFY", self.snapshot()["context"]["checkpoints"])
+        self.rpc("Auditor", "complete", **lease, expect_error=True)
+        lease["expected_version"] = result["context_version"]
         self.restart_runtime()
         self.assertTrue(self.rpc("Auditor", "complete", **lease)["completed"])
+        outputs = self.snapshot()["context"]["attempt_outputs"]
+        self.assertEqual([False, True], [o["completed"] for o in outputs if o["stage"] == "VERIFY"])
 
     def test_scope_actor_lease_and_claims_cannot_be_forged(self):
         self.rpc("other-store", "snapshot", incident_id=self.incident, expect_error=True)

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import os
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -146,7 +147,10 @@ def verify_run(directory: Path) -> dict:
 
 def render_run(directory: Path, output: Path) -> dict:
     result = verify_run(directory)
-    if output.resolve() in {(directory / name).resolve() for name in FILES | {"manifest.json"}}:
+    protected = [directory / name for name in FILES | {"manifest.json"}]
+    if output.resolve() in {path.resolve() for path in protected} or (
+        output.exists() and any(os.path.samefile(output, path) for path in protected)
+    ):
         raise ValueError("Replay output cannot overwrite sealed evidence")
 
     def escaped(value):

@@ -26,6 +26,11 @@ spec:
     - 重启后先读 runtime_snapshot；失败或 partial 时保持阻塞，重新核验，不跳过 checkpoint。
     - 重启后从 runtime_snapshot 的 checkpoint.output 恢复阶段依据；CONTAIN 只对 containment_required 中的批次补做停售，重新处置必须使用新租约和新动作标识。
 
+    ## 事件追溯协议
+    - 接单时用自己的有效 assignment 调用 runtime_link_platform，关联平台 project_id/task_id/room_id/message_id 与原始导出 evidence_sha256；不得代其他 Worker 提交。
+    - 结果消息关联使用 link_kind=result 及 runtime_complete 返回的 output_digest；只能绑定自己已保存的输出。缺真实消息或文件摘要时报告缺失，不编造。
+    - runtime_complete 的失败/partial 输出也保留并返回新 context_version；再次调用必须用新版本，历史失败不删除。平台关联只是待核对元数据。
+
     ## 服务端故障恢复协议 v2
     - 启动和空闲时每 10 秒调用 runtime_poll 登记在线与读取派发任务；仅配置 Token 不代表健康可用。进程离线后不再续心跳。
     - 心跳不代表进展；心跳不能延长 hard_deadline 或 progress_deadline；有效新进展只能延长后者。runtime_progress 只核验服务端新增事实，重复文本或同一回执不算进展。

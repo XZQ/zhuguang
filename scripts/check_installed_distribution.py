@@ -65,6 +65,9 @@ def main() -> None:
                 "-c",
                 "from dianxun.skills.registry import load_skill_registry; load_skill_registry(); "
                 "from dianxun.resources import IN_SOURCE_TREE; assert not IN_SOURCE_TREE; "
+                "from importlib.resources import files; "
+                "assert files('dianxun').joinpath('assets', 'operations.html').is_file(); "
+                "assert files('dianxun').joinpath('assets', 'operations.js').is_file(); "
                 "from dianxun.cli import main; raise SystemExit(main(['evaluate']))",
             ],
             root,

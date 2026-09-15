@@ -157,6 +157,9 @@ class TaskContext:
     assignments: list[WorkerAssignment] = field(default_factory=list)
     checkpoints: dict[str, PhaseCheckpoint] = field(default_factory=dict)
     recovery: dict = field(default_factory=dict)
+    source_events: list[dict] = field(default_factory=list)
+    platform_links: list[dict] = field(default_factory=list)
+    attempt_outputs: list[dict] = field(default_factory=list)
     version: int = 1
     created_at: str = field(default_factory=lambda: timestamp(utc_now()))
     updated_at: str = field(default_factory=lambda: timestamp(utc_now()))

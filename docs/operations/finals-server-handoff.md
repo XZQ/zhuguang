@@ -79,7 +79,36 @@ kubectl -n dianxun get pods,pvc,service
 
 ## 3. 同一门店事件的真实 AT 演示
 
-按照 [运行与恢复](runtime-recovery.md)配置真实 Worker 身份和阶段工具，使用隔离门店 `demo/S03`。ScenarioEngine 的 reset 会初始化测试状态；共享运行库有任务时禁止重置。当前没有自动把 ScenarioEngine 事件推送为 AT 任务的生产桥接器；F02 需要在目标平台完成接线和取证。
+按照 [运行与恢复](runtime-recovery.md)配置真实 Worker 身份和阶段工具，使用隔离门店 `demo/S03`。ScenarioEngine 的 reset 会初始化测试状态；共享运行库有任务时禁止重置。服务端已提供已应用场景事件→运行事件→Worker assignment 的入口，目标 AT 的 Manager 委派、真实房间消息与身份注入仍须实机接通，不能把内部 assignment 当作平台已创建的 task。
+
+### 3.1 场景进入 Worker 协议
+
+仅在全新隔离演示库启用 `DIANXUN_SCENARIO_BRIDGE_ENABLED=1`；固定历史时间的模拟读数还需 `DIANXUN_SCENARIO_VIRTUAL_CLOCK=1`。第二个开关只作用于通过场景入口创建的事件，租约和超时仍使用真实时钟，普通 runtime_open 事件仍检查真实证据时效。生产配置不要开启这两个演示开关。
+
+先停止该演示的服务写入，在全新本地隔离库应用 A 的零分钟事件：
+
+```bash
+uv run dianxun scenario-reset demo/state/scenarios/coldchain-compressor-failure.json \
+  --db /secure/demo-test/runtime.db
+```
+
+PolarDB 的初始化由管理员在已授权的独立测试库完成；使用仓库外 DSN 环境配置和 Python 的 create_state_store／ScenarioEngine.reset，避免把 DSN 作为进程参数。必须先确认数据库名、清空范围和无其他任务，不能对共享运行库 reset。启动 MCP 时指向同一状态库。
+
+Orchestrator 从 `/runtime` 调用以下工具参数：
+
+```json
+{"name":"runtime_ingest_scenario","arguments":{"scenario_id":"coldchain-compressor-failure","event_id":"001-device-fault"}}
+```
+
+工具仅接受安装目录中的场景、匹配初始化摘要且已应用的设备事件；由 Token 判断租户与门店，稳定派生 incident_id，同一事件重送返回已有结果。source_events 保存场景/事件摘要、输入和虚拟时间，不会把 ground_truth 根因送给 Worker。后续沿用 runtime_poll、runtime_assign、runtime_complete。记录返回的 incident_id；场景中后续审批和回执使用固定 Demo action_id，不能直接推进整份旧脚本冒充新任务的人工执行，必须按当前 runtime 的动作编号提交独立 Human 证据。
+
+### 3.2 绑定 AT／Element 原始记录
+
+Sentry、Diagnoser、Executor、Auditor 用自己的 assignment 调用 `runtime_link_platform`，参数包含 incident_id、assignment_id、最新 expected_version、project_id、task_id、room_id、message_id、原始脱敏导出文件的 evidence_sha256。`link_kind=assignment` 仅允许当前有效租约；同一 room/message 的原样重送幂等，修改绑定被拒。
+
+runtime_complete 返回 output、output_digest 和 context_version。失败/partial 也保存本次输出并推进版本，重试必须更新 expected_version。Worker 将自己的结果发布到平台后，以 `link_kind=result` 和该 output_digest 关联结果消息；结果关联允许已完成任务，但摘要必须匹配服务端保存的该 Worker 输出。Executor 和 Auditor 各自提交，不能互相代报。历史失败输出保留在 context.attempt_outputs，重做不会覆盖。
+
+消息 ID 和文件摘要属于 Worker 提交的关联元数据，状态始终是 worker_submitted_not_platform_verified；代码没有代替平台校验 sender、消息正文或文件真实性。队友需将原始导出与上述字段逐条对照，再形成最终验收报告。
 
 准备成功、失败两轮运行，各有独立 incident_id／trace_id；现行 AT 证据 schema 还要求两轮独立 project_id。业务门店相同，运行对象不能混用。人工确认必须来自独立 Human 入口，ScenarioEngine 自动审批只能标记为模拟。
 
@@ -129,7 +158,55 @@ uv run --no-sync python scripts/replay.py tmp/finals-case-e --html tmp/finals-ca
 
 包内包含 state.sqlite、trace.sqlite、逐条 audit.jsonl／trace.jsonl、result.json、scenario.json、policy.json、manifest.json 和 replay.html。回放器不调用模型、不执行动作，以只读 SQLite 校验哈希、数据库完整性、终态与逐条导出一致性。HTML 可断网打开，展开每条记录查看。哈希是完整性检查，不是外部真实性认证；生成时工作区有修改会在 provenance 标记 dirty_worktree=true，正式取证应在干净固定版本重新生成。
 
-运行 DB 和原始 Trace 不进入 Git。需要交付时将审阅后的证据包存放到权限受控制品区，并在验收记录填位置和哈希。真实 AT／PG 快照不适用当前 synthetic_local_run 格式：需在停止本次演示写入后保存 pg_dump、一致时间边界的 Trace 和房间导出，另做恢复／关联校验，见 F03。不能修改 source_kind 把合成包升级为平台证据。
+运行 DB 和原始 Trace 不进入 Git。需要交付时将审阅后的证据包存放到权限受控制品区，并在验收记录填位置和哈希。现有运行库使用下面的版本 2 格式；旧 synthetic_local_run 包仍按原格式验证。不能修改 source_kind 把合成包升级为平台证据。
+
+### 5.1 封存已有运行库（SQLite／PostgreSQL）
+
+`scripts/capture_runtime.py` 只读取已有数据库，不初始化、不迁移、不运行场景。先暂停本次演示的 Worker、外部写入和恢复调度，再使用 `--quiesced` 声明确已暂停。程序对比采集前后可见状态和 Trace，发生变化即拒绝封存；该检查不能证明所有未观测写入都已停止。输出目录须不存在。
+
+```bash
+uv run python scripts/capture_runtime.py \
+  --state /secure/demo-test/runtime.db --trace-db /secure/demo-test/trace.db \
+  --tenant demo --store S03 --incident INCIDENT_ID \
+  --output /secure/evidence/runtime-sqlite-run --quiesced
+
+# DIANXUN_CAPTURE_DSN 由秘密管理器注入；不在参数中展开 DSN。
+uv run --extra postgres python scripts/capture_runtime.py \
+  --database-env DIANXUN_CAPTURE_DSN --trace-db /secure/demo-test/trace.db \
+  --tenant demo --store S03 --incident INCIDENT_ID \
+  --output /secure/evidence/runtime-pg-run --quiesced --allow-isolated-dump
+```
+
+PostgreSQL 需要与服务器兼容的 pg_dump，可通过 `--pg-dump` 指定安装路径。只允许实际连接的数据库名包含 test 的专用隔离库，并要求显式全库导出 opt-in。迁移管理员/备份登录需具备读取整个测试库的权限；scope 只限定事件档案，pg_dump 和 SQLite 快照均包含整个源库。不可将共享多租户库仅改名后用于演示封存。
+
+PostgreSQL 事件记录和 pg_dump 共用 REPEATABLE READ、READ ONLY 事务导出的 snapshot；连接参数经子进程环境传递，原始错误诊断不打印。SQLite 使用当前读事务的 backup API。包内为数据库快照、casefile.json、audit.jsonl、trace.jsonl、manifest.json、replay.html。Trace 与业务库分开存储，不宣称跨库原子快照。
+
+```bash
+uv run --no-sync python scripts/replay.py /secure/evidence/runtime-pg-run \
+  --html /secure/evidence/runtime-pg-run/replay.html
+```
+
+离线校验检查哈希、事件/Trace 关联及逐条导出；SQLite 还与快照表内容核对。pg_dump 二进制在离线校验中仅验完整性，不等于已经成功恢复。来源固定为 runtime_database_capture，平台和物理真实性均需另验。
+
+### 5.2 恢复后的数据对账
+
+由 DBA 将 state.pgdump 恢复到另一个空的隔离测试库，使用对应 PostgreSQL 扩展与角色。pg_dump 不包含集群角色，需先在隔离目标预建源库策略引用的角色；不要在原库执行 restore。使用受控 PG 环境配置运行 `pg_restore --no-owner --no-acl --exit-on-error --single-transaction --dbname=RESTORE_TEST_DB /secure/evidence/runtime-pg-run/state.pgdump`，保存真实退出码和脱敏日志。目标失败时不得继续宣称已恢复。
+
+将目标 DSN 通过 DIANXUN_RESTORED_DSN 注入，然后执行只读对账：
+
+```bash
+uv run --extra postgres python scripts/capture_runtime.py \
+  --database-env DIANXUN_RESTORED_DSN --trace-db /secure/demo-test/trace.db \
+  --tenant demo --store S03 --check-restored /secure/evidence/runtime-pg-run
+```
+
+工具拒绝使用同一源库标识进行恢复对账，比较事件、上下文、设备、商品、审批、动作、回执、核验及审计内容；这是该事件的数据一致性检查，不代替全库恢复、托管切换或 RPO/RTO 验收。本地 SQLite 可以把 state.sqlite 复制到另一路径，用 `--state` 代替 `--database-env` 检查，已完成此本地回归。
+
+### 5.3 在线追溯页
+
+服务端 `/operations` 提供只读页面。使用受控网络的 HTTPS 入口或本机端口转发访问，输入独立 Human 或 Worker 运行身份；Token 仅留在页面内存，退出会清空事件内容。页面通过 `/runtime` 的 runtime_cases（游标分页）和 runtime_casefile 查询，租户/门店取自 Token，跨范围请求被拒，数据库连接本身为只读快照。
+
+页面分别展示设备、商品、销售限制、Worker 接单与租约、独立核验、平台消息关联、每次输出、恢复历史、审批/实物凭证、逐条审计和 Trace。当前规则/注册表与历史审计/Span 版本分别显示；来源、构建 SHA、业务时间和证据时钟明确列出。各类查询最多显示 1000 条，超限明确提示截断；封存上限为每类 100000 条，超限拒绝，不导出缺失内容。设备接口是否真实在线和平台状态仍以目标系统观测为准。
 
 ## 6. 分区、cron、归档与 P0001
 

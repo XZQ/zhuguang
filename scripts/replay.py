@@ -14,7 +14,15 @@ def main() -> int:
     parser.add_argument("bundle", type=Path)
     parser.add_argument("--html", type=Path)
     args = parser.parse_args()
-    result = render_run(args.bundle, args.html) if args.html else verify_run(args.bundle)
+    manifest = json.loads((args.bundle / "manifest.json").read_text(encoding="utf-8"))
+    if manifest.get("schema_version") == 2:
+        from dianxun.runtime_replay import render_runtime, verify_runtime
+
+        result = (
+            render_runtime(args.bundle, args.html) if args.html else verify_runtime(args.bundle)
+        )
+    else:
+        result = render_run(args.bundle, args.html) if args.html else verify_run(args.bundle)
     print(json.dumps(result, ensure_ascii=False))
     return 0
 

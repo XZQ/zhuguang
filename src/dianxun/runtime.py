@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, dataclass
 from typing import Any
 
@@ -24,6 +25,7 @@ from .domain import (
     Phase,
     Severity,
 )
+from .domain.models import stable_hash
 from .recovery import ACTIVE, FAILURES, RecoveryManager, after, digest
 from .runtime_context import RuntimeContextBus
 from .skills.anomaly_detect import detect_coldchain_event
@@ -108,6 +110,9 @@ class RuntimeService:
         errors = validate_json(arguments, RUNTIME_SCHEMAS[name])
         if errors:
             raise ValueError("; ".join(errors[:3]))
+        if name in {"runtime_casefile", "runtime_cases"}:
+            with self.store.read_snapshot():
+                return method(principal=principal, **arguments)
         # Business changes, receipts and checkpoints share one transaction.
         with self.store.transaction():
             self.recovery.lock_scope(principal)
@@ -135,6 +140,26 @@ class RuntimeService:
         context = bus.get(incident_id, allow_expired=True, now=self.clock())
         self.recovery.initialize(context, bus)
         return case, bus, ContextCoordinator(bus, phase_order=tuple(STAGES))
+
+    def ingest_scenario(self, *, principal, scenario_id, event_id):
+        from .runtime_links import ingest_scenario
+
+        return ingest_scenario(self, principal, scenario_id, event_id)
+
+    def link_platform(self, *, principal, **arguments):
+        from .runtime_links import link_platform
+
+        return link_platform(self, principal, **arguments)
+
+    def casefile(self, *, principal, incident_id):
+        from .operations import collect_casefile
+
+        return collect_casefile(self.mcp, principal, incident_id)
+
+    def cases(self, *, principal, after="", limit=50):
+        from .operations import list_incidents
+
+        return list_incidents(self.store, principal, after=after, limit=limit)
 
     def open(self, *, principal, incident_id, device_id):
         if principal.actor != "Orchestrator":
@@ -376,12 +401,16 @@ class RuntimeService:
                     "replayed": True,
                     "context_version": existing.version,
                     "output": existing.recovery["phases"][previous.phase]["output"],
+                    "output_digest": stable_hash(
+                        existing.recovery["phases"][previous.phase]["output"]
+                    ),
                 }
             checkpoint = existing.checkpoints[previous.phase]
             return {
                 "completed": True,
                 "replayed": True,
                 "output": checkpoint.output,
+                "output_digest": stable_hash(checkpoint.output),
                 "output_available": checkpoint.output is not None,
                 "context_version": existing.version,
             }
@@ -392,6 +421,13 @@ class RuntimeService:
         if stage == "EMERGENCY_CONTAIN":
             return self._complete_emergency(principal, case, bus, assignment)
         if stage in {"DETECT", "DIAGNOSE_DECIDE", "VERIFY", "FINAL_VERIFY", "LEARN"}:
+            evidence_now = self.evidence_clock()
+            if (
+                existing.source_events
+                and os.environ.get("DIANXUN_SCENARIO_BRIDGE_ENABLED") == "1"
+                and os.environ.get("DIANXUN_SCENARIO_VIRTUAL_CLOCK") == "1"
+            ):
+                evidence_now = parse_timestamp(self.store.now())
             readings = sorted(
                 self.store.list_device_readings(device_id=case.affected_assets[0]),
                 key=lambda row: parse_timestamp(row["observed_at"]),
@@ -401,7 +437,7 @@ class RuntimeService:
                 not latest
                 or latest["quality"] != "good"
                 or not 0
-                <= (self.evidence_clock() - parse_timestamp(latest["observed_at"])).total_seconds()
+                <= (evidence_now - parse_timestamp(latest["observed_at"])).total_seconds()
                 <= 300
             ):
                 result = self.fail(
@@ -413,8 +449,14 @@ class RuntimeService:
                 )
                 return {
                     **result,
-                    "completed": False,
-                    "output": {"partial": True, "reason": "stale_evidence"},
+                    **self._record_output(
+                        bus,
+                        principal,
+                        incident_id,
+                        assignment,
+                        {"partial": True, "reason": "stale_evidence"},
+                        False,
+                    ),
                 }
         common = dict(service=self.mcp, incident_id=incident_id, trace_id=case.trace_id)
         if stage == "DETECT":
@@ -537,9 +579,26 @@ class RuntimeService:
             context = bus.get(incident_id, now=self.clock())
             context.recovery["phases"][stage]["state"] = "completed"
             bus.commit(context, now=self.clock())
+        return self._record_output(bus, principal, incident_id, assignment, output, passed)
+
+    def _record_output(self, bus, principal, incident_id, assignment, output, passed):
+        context = bus.get(incident_id, now=self.clock())
+        context.attempt_outputs.append(
+            {
+                "assignment_id": assignment.assignment_id,
+                "worker_id": principal.worker_id,
+                "actor": principal.actor,
+                "stage": assignment.phase,
+                "completed": passed,
+                "recorded_at": timestamp(self.clock()),
+                "output": output,
+            }
+        )
+        bus.commit(context, now=self.clock())
         return {
             "completed": passed,
             "output": output,
+            "output_digest": stable_hash(output),
             "context_version": bus.get(incident_id, now=self.clock()).version,
         }
 
@@ -686,7 +745,7 @@ class RuntimeService:
             durable.status = "succeeded"
             phase.update({"state": "completed", "output": output})
             bus.commit(context, now=self.clock())
-        return {"completed": passed, "output": output, "context_version": context.version}
+        return self._record_output(bus, principal, case.incident_id, assignment, output, passed)
 
     def resume(self, *, principal, incident_id, expected_version, stage, reason):
         if principal.actor != "Human":
@@ -834,6 +893,27 @@ _LEASE = {
     "expected_version": {"type": "integer", "minimum": 1},
 }
 RUNTIME_SCHEMAS = {
+    "runtime_cases": schema(
+        {
+            "after": {"type": "string", "maxLength": 256},
+            "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+        },
+        [],
+    ),
+    "runtime_casefile": schema(_INCIDENT, list(_INCIDENT)),
+    "runtime_ingest_scenario": schema(
+        {"scenario_id": _TEXT, "event_id": _TEXT}, ["scenario_id", "event_id"]
+    ),
+    "runtime_link_platform": schema(
+        {
+            **_LEASE,
+            **{key: _TEXT for key in ("project_id", "task_id", "room_id", "message_id")},
+            "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            "link_kind": {"enum": ["assignment", "result"]},
+            "output_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        },
+        [*_LEASE, "project_id", "task_id", "room_id", "message_id", "evidence_sha256"],
+    ),
     "runtime_poll": schema({}, []),
     "runtime_emergency": schema(
         {**_INCIDENT, "expected_version": {"type": "integer", "minimum": 1}},

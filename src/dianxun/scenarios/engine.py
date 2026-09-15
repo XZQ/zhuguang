@@ -58,6 +58,9 @@ class ScenarioEngine:
             raise ValueError(f"Scenario seed file does not exist: {seed_path}")
         digest = self.store.initialize_from_file(seed_path, reset=True)
         self.store.set_meta("scenario_id", self.scenario["scenario_id"])
+        from ..domain.models import stable_hash
+
+        self.store.set_meta("scenario_digest", stable_hash(self.scenario))
         self.apply_due_events()
         return digest
 

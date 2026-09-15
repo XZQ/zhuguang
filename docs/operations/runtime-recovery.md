@@ -19,6 +19,8 @@ Sentry、Diagnoser、Executor、Auditor；另允许独立 Human 运维身份用�
 
 ## 调用顺序
 
+场景/平台关联与只读后台：隔离场景可用 runtime_ingest_scenario 接入本协议；专业 Worker 用 runtime_link_platform 关联接单及结果消息。runtime_complete 返回 output_digest，失败/partial 输出也保存并返回新 context_version，重试必须更新版本。/operations 经 runtime_cases / runtime_casefile 按身份范围只读查询；完整配置、取证和恢复对账见[交接手册第 3、5 节](finals-server-handoff.md)。旧上下文缺少 source_events/platform_links/attempt_outputs 时按空列表读取，无数据库列迁移。
+
 1. Orchestrator 调用 runtime_open(incident_id, device_id)。租户、门店从身份绑定获得，
    设备和批次范围由数据库校验；重复 open 只能读取同一设备的既有事故。
 2. runtime_snapshot 返回 incident、context、remaining_stages 和 containment_required。
