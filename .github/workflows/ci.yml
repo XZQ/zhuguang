@@ -14,14 +14,23 @@ concurrency:
 
 jobs:
   verify:
+    name: ${{ matrix.suite == 'tests' && 'verify' || 'artifacts' }} (${{ matrix.os }}, ${{ matrix.python }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             python: "3.11"
+            suite: tests
           - os: windows-latest
             python: "3.12"
+            suite: tests
+          - os: ubuntu-latest
+            python: "3.11"
+            suite: artifacts
+          - os: windows-latest
+            python: "3.12"
+            suite: artifacts
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     env:
@@ -56,39 +65,50 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Unit and conditional integration tests
+        if: matrix.suite == 'tests'
         run: uv run python -W error::ResourceWarning -m unittest discover -v
 
       - name: Test inventory and documented evidence agree
         run: uv run python scripts/check_quality_facts.py
 
       - name: M4 evaluation
+        if: matrix.suite == 'artifacts'
         run: uv run dianxun evaluate
 
       - name: Architecture ablation
+        if: matrix.suite == 'artifacts'
         run: uv run dianxun ablation
 
       - name: Command center
+        if: matrix.suite == 'artifacts'
         run: uv run dianxun command-center
 
       - name: Deterministic seed
+        if: matrix.suite == 'artifacts'
         run: uv run python scripts/generate_demo_data.py --check
 
       - name: Coordination recovery drill
+        if: matrix.suite == 'artifacts'
         run: uv run python scripts/recovery_drill.py --check
 
       - name: Deterministic Worker package
+        if: matrix.suite == 'artifacts'
         run: uv run python scripts/build_worker_package.py
 
       - name: Worker artifact contract
+        if: matrix.suite == 'artifacts'
         run: uv run python -m unittest -v tests.test_agentteams_artifacts
 
       - name: Build wheel and source distribution
+        if: matrix.suite == 'artifacts'
         run: uv build
 
       - name: Installed wheel outside the checkout with Docker COPY inputs
+        if: matrix.suite == 'artifacts'
         run: uv run python scripts/check_installed_distribution.py --docker-inputs
 
       - name: Rebuild presentation sources and full portal
+        if: matrix.suite == 'artifacts'
         shell: bash
         run: |
           set -euo pipefail
