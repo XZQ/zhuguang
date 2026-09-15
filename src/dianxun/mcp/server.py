@@ -12,6 +12,7 @@ from typing import Any
 
 from .. import trace
 from ..metrics import MCPMetrics
+from ..state.protocols import StorePolicyError
 from ..validation import validate_json
 from .p0 import MCPService, default_service
 
@@ -460,6 +461,11 @@ def _execute_tool_call(
                     }
             else:
                 result = fn(**clean_arguments)
+        except StorePolicyError as exc:
+            result = _adapter_error(
+                exc.code, "Database policy rejected the operation; do not retry"
+            )
+            result["error"].update(sqlstate=exc.sqlstate, retryable=exc.retryable)
         except (KeyError, TypeError, ValueError) as exc:
             result = _adapter_error(
                 "INVALID_ARGUMENT",
@@ -709,6 +715,10 @@ class MCPHandler(BaseHTTPRequestHandler):
                     "content": [{"type": "text", "text": json.dumps(data, ensure_ascii=False)}],
                     "isError": False,
                 }
+            except StorePolicyError as exc:
+                rejected = _adapter_error(exc.code, "Database policy rejected the operation")
+                rejected["error"].update(sqlstate=exc.sqlstate, retryable=exc.retryable)
+                result = _tool_result(rejected)
             except Exception as exc:  # stable boundary; never expose credentials or database errors
                 from ..context_bus import ContextBusError
                 from ..coordination import CoordinationError
@@ -794,6 +804,7 @@ class MCPHandler(BaseHTTPRequestHandler):
                 "service": "dianxun-mcp",
                 **({"alive": True} if self.path == "/live" else {"ready": True}),
                 "version": "0.2.0",
+                "build_revision": _build_revision(),
                 "tools": len(enabled_tools()),
                 "p0_tools": len(TOOLS),
                 "p1_knowledge_enabled": os.environ.get("DIANXUN_ENABLE_P1_TOOLS") == "1",
@@ -802,6 +813,11 @@ class MCPHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format: str, *args: Any) -> None:
         return
+
+
+def _build_revision() -> str:
+    value = os.environ.get("DIANXUN_BUILD_SHA", "")
+    return value if len(value) == 40 and all(c in "0123456789abcdef" for c in value) else "unknown"
 
 
 def _reject_nonfinite(value: str) -> None:

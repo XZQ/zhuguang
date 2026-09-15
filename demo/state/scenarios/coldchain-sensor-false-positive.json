@@ -40,7 +40,9 @@
     "work_status": "COMPLETED",
     "verification_result": "verified",
     "device_state": "recovered",
-    "batch_states": ["released"],
+    "batch_states": [
+      "released"
+    ],
     "approval_status": "approved"
   },
   "expected_evidence": [
@@ -81,13 +83,46 @@
       "payload": {
         "device_id": "FROST-S03",
         "series": [
-          { "offset_minutes": -30, "temp_c": 9.1, "quality": "suspect" },
-          { "offset_minutes": 0, "temp_c": 10.2, "quality": "suspect" }
+          {
+            "offset_minutes": -30,
+            "temp_c": 9.1,
+            "quality": "suspect"
+          },
+          {
+            "offset_minutes": 0,
+            "temp_c": 10.2,
+            "quality": "suspect"
+          }
         ]
       }
     },
     {
-      "event_id": "010-manual-temperature-normal",
+      "event_id": "003-reference-probe-series",
+      "at_minute": 0,
+      "event_type": "append_temperature_series",
+      "payload": {
+        "device_id": "FROST-S03",
+        "series": [
+          {
+            "offset_minutes": -60,
+            "temp_c": 4.2,
+            "source": "synthetic-reference-probe"
+          },
+          {
+            "offset_minutes": -30,
+            "temp_c": 4.2,
+            "source": "synthetic-reference-probe"
+          },
+          {
+            "offset_minutes": 0,
+            "temp_c": 4.2,
+            "source": "synthetic-reference-probe"
+          }
+        ]
+      }
+    },
+    {
+      "event_id": "010-manual-temperature-normal-0",
       "at_minute": 1,
       "event_type": "record_manual_evidence",
       "payload": {
@@ -97,7 +132,34 @@
         "metadata": {
           "temp_c": 4.2,
           "instrument": "synthetic-calibrated-probe",
-          "synthetic": true
+          "synthetic": true,
+          "batch_id": "BATCH-S03-DAIRY-001",
+          "device_id": "FROST-S03",
+          "instrument_id": "synthetic-calibrated-probe",
+          "measurement_point": "product",
+          "calibrated_at": "2026-08-01T00:00:00+08:00",
+          "calibration_valid_until": "2026-09-01T00:00:00+08:00"
+        }
+      }
+    },
+    {
+      "event_id": "010-manual-temperature-normal-1",
+      "at_minute": 1,
+      "event_type": "record_manual_evidence",
+      "payload": {
+        "incident_id": "INC-COLD-B",
+        "evidence_type": "manual_temperature",
+        "note": "Synthetic calibrated handheld thermometer reads normal",
+        "metadata": {
+          "temp_c": 4.2,
+          "instrument": "synthetic-calibrated-probe",
+          "synthetic": true,
+          "batch_id": "BATCH-S03-FRESH-001",
+          "device_id": "FROST-S03",
+          "instrument_id": "synthetic-calibrated-probe",
+          "measurement_point": "product",
+          "calibrated_at": "2026-08-01T00:00:00+08:00",
+          "calibration_valid_until": "2026-09-01T00:00:00+08:00"
         }
       }
     },
@@ -121,9 +183,21 @@
       "payload": {
         "device_id": "FROST-S03",
         "series": [
-          { "offset_minutes": 2, "temp_c": 4.3, "quality": "good" },
-          { "offset_minutes": 3, "temp_c": 4.1, "quality": "good" },
-          { "offset_minutes": 4, "temp_c": 4.0, "quality": "good" }
+          {
+            "offset_minutes": 2,
+            "temp_c": 4.3,
+            "quality": "good"
+          },
+          {
+            "offset_minutes": 3,
+            "temp_c": 4.1,
+            "quality": "good"
+          },
+          {
+            "offset_minutes": 4,
+            "temp_c": 4.0,
+            "quality": "good"
+          }
         ]
       }
     },

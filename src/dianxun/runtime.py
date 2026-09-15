@@ -449,6 +449,7 @@ class RuntimeService:
                     policy=self.mcp.policy.policy,
                     trace_id=case.trace_id,
                     manual_measurements=self.store.list_manual_evidence(incident_id=incident_id),
+                    assessed_at=self.store.now(),
                 )
                 self.incidents.replace_hypotheses(incident_id, output["hypotheses"])
                 self.incidents.transition_phase(

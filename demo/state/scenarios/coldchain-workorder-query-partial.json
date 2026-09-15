@@ -38,7 +38,10 @@
     "work_status": "BLOCKED",
     "verification_result": "reopened",
     "device_state": "recovered",
-    "batch_states": ["transferred", "disposed"],
+    "batch_states": [
+      "transferred",
+      "disposed"
+    ],
     "approval_status": "approved"
   },
   "expected_evidence": [
@@ -55,7 +58,8 @@
     "repair_approval_decision_minute": 1,
     "repair_completion_minute": 5,
     "disposition_approval_timeout_minutes": 30,
-    "disposition_approval_decision_minute": 6
+    "disposition_approval_decision_minute": 6,
+    "disposition_receipt_minute": 7
   },
   "events": [
     {
@@ -77,9 +81,18 @@
       "payload": {
         "device_id": "FROST-S03",
         "series": [
-          { "offset_minutes": -60, "temp_c": 7.8 },
-          { "offset_minutes": -30, "temp_c": 8.7 },
-          { "offset_minutes": 0, "temp_c": 9.6 }
+          {
+            "offset_minutes": -60,
+            "temp_c": 7.8
+          },
+          {
+            "offset_minutes": -30,
+            "temp_c": 8.7
+          },
+          {
+            "offset_minutes": 0,
+            "temp_c": 9.6
+          }
         ]
       }
     },
@@ -125,9 +138,18 @@
       "payload": {
         "device_id": "FROST-S03",
         "series": [
-          { "offset_minutes": 3, "temp_c": 6.2 },
-          { "offset_minutes": 4, "temp_c": 5.4 },
-          { "offset_minutes": 5, "temp_c": 4.8 }
+          {
+            "offset_minutes": 3,
+            "temp_c": 6.2
+          },
+          {
+            "offset_minutes": 4,
+            "temp_c": 5.4
+          },
+          {
+            "offset_minutes": 5,
+            "temp_c": 4.8
+          }
         ]
       }
     },
@@ -160,6 +182,53 @@
         "action_id": "INC-COLD-F:batch:BATCH-S03-FRESH-001",
         "decision": "approved",
         "reason": "synthetic food safety owner approval"
+      }
+    },
+    {
+      "event_id": "040-disposition-receipt-0",
+      "at_minute": 7,
+      "event_type": "record_manual_evidence",
+      "payload": {
+        "incident_id": "INC-COLD-F",
+        "action_id": "INC-COLD-F:batch:BATCH-S03-DAIRY-001",
+        "evidence_type": "disposition_receipt",
+        "note": "Synthetic independent physical receipt; not a store observation",
+        "metadata": {
+          "synthetic": true,
+          "batch_id": "BATCH-S03-DAIRY-001",
+          "disposition": "disposed",
+          "quantity": 24,
+          "source_location": "FROST-S03",
+          "receipt_ref": "synthetic://INC-COLD-F/BATCH-S03-DAIRY-001",
+          "executor_id": "synthetic-store-operator",
+          "confirmed_by": "synthetic-receiver",
+          "disposal_method": "synthetic-destruction",
+          "destroyed": true
+        }
+      }
+    },
+    {
+      "event_id": "040-disposition-receipt-1",
+      "at_minute": 7,
+      "event_type": "record_manual_evidence",
+      "payload": {
+        "incident_id": "INC-COLD-F",
+        "action_id": "INC-COLD-F:batch:BATCH-S03-FRESH-001",
+        "evidence_type": "disposition_receipt",
+        "note": "Synthetic independent physical receipt; not a store observation",
+        "metadata": {
+          "synthetic": true,
+          "batch_id": "BATCH-S03-FRESH-001",
+          "disposition": "transferred",
+          "quantity": 18,
+          "source_location": "FROST-S03",
+          "receipt_ref": "synthetic://INC-COLD-F/BATCH-S03-FRESH-001",
+          "executor_id": "synthetic-store-operator",
+          "confirmed_by": "synthetic-receiver",
+          "destination_location": "synthetic-backup-cabinet",
+          "destination_temp_c": 4.0,
+          "received": true
+        }
       }
     }
   ]

@@ -65,6 +65,67 @@ class PolarDBIntegrationTests(unittest.TestCase):
             postgres_result["phases"]["DIAGNOSE_DECIDE"]["hypotheses"][0]["label"],
         )
         self._assert_runtime_recovery_concurrency()
+        self._assert_partition_guards()
+        self._assert_pgvector_workflow()
+
+    def _assert_partition_guards(self):
+        from datetime import timedelta
+
+        from dianxun.state.protocols import StorePolicyError
+
+        with self.store.transaction() as conn:
+            first = conn.execute(
+                "SELECT date_trunc('month', CURRENT_DATE)::date AS month"
+            ).fetchone()["month"]
+            from datetime import date
+
+            month = date.fromisoformat(first)
+            for value, code in [
+                (month + timedelta(days=1), "AUDIT_MONTH_INVALID"),
+                (month.replace(year=month.year + 2), "AUDIT_WINDOW_REJECTED"),
+            ]:
+                with self.assertRaises(StorePolicyError) as caught:
+                    with self.store.transaction():
+                        conn.execute(
+                            "SELECT ensure_audit_partition(CAST(? AS date))", (value.isoformat(),)
+                        )
+                self.assertEqual(code, caught.exception.code)
+                self.assertFalse(caught.exception.retryable)
+            conn.execute("SELECT ensure_audit_partition(CAST(? AS date))", (first,))
+            conn.execute(
+                "SELECT ensure_audit_partition((CAST(? AS date) + INTERVAL '1 month')::date)",
+                (first,),
+            )
+            self.assertEqual(1, conn.execute("SELECT 1 AS healthy").fetchone()["healthy"])
+
+    def _assert_pgvector_workflow(self):
+        # Exercises the actual PostgreSQL vector write/search branch. The offline
+        # hash embedder verifies SQL wiring, not semantic quality or store value.
+        from unittest.mock import patch
+
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            patch.dict(os.environ, {"DIANXUN_EMBEDDING_MODE": "hash"}),
+        ):
+            adapter = LocalDemoAdapter(
+                db_path=_DSN,
+                scenario_path=DEFAULT_SCENARIO_PATH,
+                trace_db_path=Path(temporary) / "vector-trace.db",
+                enable_rag=True,
+            )
+            result = adapter.run()
+            knowledge_id = result["review"]["knowledge"]["knowledge_id"]
+            adapter.knowledge.review_candidate(
+                knowledge_id=knowledge_id,
+                decision="approve",
+                reviewer="Human",
+                reason="synthetic isolated integration",
+                redaction_passed=True,
+            )
+            hits = adapter.knowledge.search(tenant_id="demo", query="冷柜 压缩机故障 维修后复测")[
+                "hits"
+            ]
+            self.assertTrue(any(hit["knowledge_id"] == knowledge_id for hit in hits))
 
     def _assert_runtime_recovery_concurrency(self):
         from concurrent.futures import ThreadPoolExecutor

@@ -28,6 +28,7 @@ from ..state import (
     StoreIntegrityError,
     create_state_store,
 )
+from ..state.protocols import StorePolicyError
 from .envelope import ToolEnvelope
 
 DEFAULT_DB_PATH = output_path("demo", "state", "runtime.db")
@@ -1144,6 +1145,12 @@ class MCPService:
                     created_at=now,
                 )
             return self._ok(rid, data, audit_ref=audit_id)
+        except StorePolicyError as exc:
+            rejected = self._error(
+                rid, exc.code, "Database policy rejected the operation; do not retry"
+            )
+            rejected["error"].update(sqlstate=exc.sqlstate, retryable=exc.retryable)
+            return rejected
         except ScopeViolation as exc:
             return self._error(rid, "FORBIDDEN", str(exc))
         except PermissionError as exc:

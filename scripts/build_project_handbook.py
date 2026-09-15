@@ -606,6 +606,27 @@ def make_story(sources, facts, ablation, edition, commit, source_hashes):
         ]
     )
 
+    finals = tables(section(sources["todo"], "二轮反馈：队友按顺序执行"))[0]
+    for index, start in enumerate(range(1, len(finals), 4), 1):
+        chapter(
+            f"finals-handoff-{index}",
+            f"09  二轮反馈与服务端交接  {index}/2",
+            "真实环境暂未提供；逐项记录目标版本、命令、退出码与原始证据。",
+        )
+        story.append(table([finals[0], *finals[start : start + 4]], [0.16, 0.17, 0.38, 0.29], True))
+        story.extend(
+            [
+                Spacer(1, 12),
+                paragraph(
+                    '<link href="https://github.com/XZQ/zhuguang/blob/main/docs/operations/'
+                    'finals-server-handoff.md" color="#087F8C">'
+                    "服务端部署与取证手册：配置、命令、凭证字段、回放和验收标准</link>",
+                    "small",
+                ),
+                note("本地 SQLite 回放不等于真实 AT／PolarDB 取证；未完成项只在统一待办更新。"),
+            ]
+        )
+
     chapter("sources", "10  版本、来源与复核", "保留可追溯输入，更新正文后显式导出并检查每页。")
     story.append(
         table(

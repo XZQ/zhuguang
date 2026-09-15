@@ -40,6 +40,7 @@
         "repair_approval_decision_minute": { "type": "integer", "minimum": 0 },
         "repair_completion_minute": { "type": "integer", "minimum": 0 },
         "disposition_approval_timeout_minutes": { "type": "integer", "minimum": 1 },
+      "disposition_receipt_minute": { "type": "integer", "minimum": 0 },
         "disposition_approval_decision_minute": { "type": "integer", "minimum": 0 },
         "release_approval_timeout_minutes": { "type": "integer", "minimum": 1 },
         "release_approval_decision_minute": { "type": "integer", "minimum": 0 }

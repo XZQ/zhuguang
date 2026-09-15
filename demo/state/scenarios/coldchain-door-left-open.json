@@ -39,7 +39,10 @@
     "work_status": "COMPLETED",
     "verification_result": "verified",
     "device_state": "recovered",
-    "batch_states": ["transferred", "disposed"],
+    "batch_states": [
+      "transferred",
+      "disposed"
+    ],
     "approval_status": "approved"
   },
   "expected_evidence": [
@@ -56,7 +59,8 @@
     "repair_budget": 300.0,
     "repair_completion_minute": 4,
     "disposition_approval_timeout_minutes": 30,
-    "disposition_approval_decision_minute": 5
+    "disposition_approval_decision_minute": 5,
+    "disposition_receipt_minute": 6
   },
   "events": [
     {
@@ -78,9 +82,21 @@
       "payload": {
         "device_id": "FROST-S03",
         "series": [
-          { "offset_minutes": -60, "temp_c": 7.6, "quality": "good" },
-          { "offset_minutes": -30, "temp_c": 8.8, "quality": "good" },
-          { "offset_minutes": 0, "temp_c": 9.4, "quality": "good" }
+          {
+            "offset_minutes": -60,
+            "temp_c": 7.6,
+            "quality": "good"
+          },
+          {
+            "offset_minutes": -30,
+            "temp_c": 8.8,
+            "quality": "good"
+          },
+          {
+            "offset_minutes": 0,
+            "temp_c": 9.4,
+            "quality": "good"
+          }
         ]
       }
     },
@@ -92,7 +108,10 @@
         "incident_id": "INC-COLD-C",
         "evidence_type": "manual_door_inspection",
         "note": "Synthetic employee inspection confirms the cabinet door was open",
-        "metadata": { "door_state": "open", "synthetic": true }
+        "metadata": {
+          "door_state": "open",
+          "synthetic": true
+        }
       }
     },
     {
@@ -128,9 +147,21 @@
       "payload": {
         "device_id": "FROST-S03",
         "series": [
-          { "offset_minutes": 2, "temp_c": 6.5, "quality": "good" },
-          { "offset_minutes": 3, "temp_c": 5.6, "quality": "good" },
-          { "offset_minutes": 4, "temp_c": 4.9, "quality": "good" }
+          {
+            "offset_minutes": 2,
+            "temp_c": 6.5,
+            "quality": "good"
+          },
+          {
+            "offset_minutes": 3,
+            "temp_c": 5.6,
+            "quality": "good"
+          },
+          {
+            "offset_minutes": 4,
+            "temp_c": 4.9,
+            "quality": "good"
+          }
         ]
       }
     },
@@ -152,6 +183,53 @@
         "action_id": "INC-COLD-C:batch:BATCH-S03-FRESH-001",
         "decision": "approved",
         "reason": "synthetic food safety owner approval"
+      }
+    },
+    {
+      "event_id": "040-disposition-receipt-0",
+      "at_minute": 6,
+      "event_type": "record_manual_evidence",
+      "payload": {
+        "incident_id": "INC-COLD-C",
+        "action_id": "INC-COLD-C:batch:BATCH-S03-DAIRY-001",
+        "evidence_type": "disposition_receipt",
+        "note": "Synthetic independent physical receipt; not a store observation",
+        "metadata": {
+          "synthetic": true,
+          "batch_id": "BATCH-S03-DAIRY-001",
+          "disposition": "disposed",
+          "quantity": 24,
+          "source_location": "FROST-S03",
+          "receipt_ref": "synthetic://INC-COLD-C/BATCH-S03-DAIRY-001",
+          "executor_id": "synthetic-store-operator",
+          "confirmed_by": "synthetic-receiver",
+          "disposal_method": "synthetic-destruction",
+          "destroyed": true
+        }
+      }
+    },
+    {
+      "event_id": "040-disposition-receipt-1",
+      "at_minute": 6,
+      "event_type": "record_manual_evidence",
+      "payload": {
+        "incident_id": "INC-COLD-C",
+        "action_id": "INC-COLD-C:batch:BATCH-S03-FRESH-001",
+        "evidence_type": "disposition_receipt",
+        "note": "Synthetic independent physical receipt; not a store observation",
+        "metadata": {
+          "synthetic": true,
+          "batch_id": "BATCH-S03-FRESH-001",
+          "disposition": "transferred",
+          "quantity": 18,
+          "source_location": "FROST-S03",
+          "receipt_ref": "synthetic://INC-COLD-C/BATCH-S03-FRESH-001",
+          "executor_id": "synthetic-store-operator",
+          "confirmed_by": "synthetic-receiver",
+          "destination_location": "synthetic-backup-cabinet",
+          "destination_temp_c": 4.0,
+          "received": true
+        }
       }
     }
   ]

@@ -20,6 +20,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from .. import mcp, trace
+from ..domain.evidence import coverage_issues, temperature_series, timestamp
 from .contracts import enforce_output_contract
 
 if TYPE_CHECKING:
@@ -312,17 +313,27 @@ def detect_coldchain_event(
             return result
 
         device = device_response["data"]["devices"][0]
-        readings = sorted(
-            device.get("temperature_series", []),
-            key=lambda item: item["observed_at"],
+        readings, excluded = temperature_series(
+            device.get("temperature_series", []), now=service.store.now()
         )
-        latest = readings[-max(1, minimum_over_samples) :]
-        sustained_over = len(latest) >= minimum_over_samples and all(
-            float(item["temp_c"]) > alarm_max_c for item in latest
+        issues = coverage_issues(readings, now=service.store.now())
+        latest = []
+        for item in reversed(readings):
+            if float(item["temp_c"]) <= alarm_max_c:
+                break
+            latest.insert(0, item)
+        alert_minutes = float(service.policy.policy["temperature"]["alert_after_minutes"])
+        sustained_over = (
+            not issues
+            and len(latest) >= max(2, minimum_over_samples)
+            and (
+                timestamp(latest[-1]["observed_at"]) - timestamp(latest[0]["observed_at"])
+            ).total_seconds()
+            >= alert_minutes * 60
         )
         health = device.get("health", {})
         equipment_fault = health.get("state") != "normal"
-        detected = sustained_over or equipment_fault
+        detected = sustained_over or equipment_fault or bool(excluded) or bool(issues)
         max_temp = max((float(item["temp_c"]) for item in readings), default=None)
         severity = (
             "critical"
@@ -348,6 +359,9 @@ def detect_coldchain_event(
                 "alarm_max_c": alarm_max_c,
                 "max_temp_c": max_temp,
                 "equipment_fault": equipment_fault,
+                "coverage_issues": issues,
+                "excluded_readings": len(excluded),
+                "alert_after_minutes": alert_minutes,
             },
             "containment_request": {
                 "required": detected,

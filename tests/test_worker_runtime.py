@@ -170,6 +170,27 @@ class WorkerRuntimeTests(unittest.TestCase):
                 approval_id=approval["data"]["approval_id"],
                 idempotency_key=f"dispose:{index}",
             )
+            receipt = self.mcp.record_manual_evidence(
+                incident_id=self.incident,
+                action_id=action_id,
+                evidence_type="disposition_receipt",
+                observed_at=self.store.now(),
+                note="Synthetic independent disposal receipt",
+                actor="Human",
+                idempotency_key=f"receipt:{index}",
+                metadata={
+                    "batch_id": batch_id,
+                    "disposition": "disposed",
+                    "quantity": self.store.list_batches(batch_ids=[batch_id])[0]["quantity"],
+                    "source_location": "FROST-S03",
+                    "receipt_ref": f"synthetic://{batch_id}",
+                    "executor_id": "synthetic-operator",
+                    "confirmed_by": "synthetic-witness",
+                    "disposal_method": "synthetic-destruction",
+                    "destroyed": True,
+                },
+            )
+            self.assertTrue(receipt["ok"])
         self.store.advance_time(minutes=5)
         workorder = self.store.list_workorders(incident_id=self.incident)[0]
         self.store.set_workorder_status(
@@ -362,6 +383,28 @@ class WorkerRuntimeTests(unittest.TestCase):
             disposition="disposed",
             approval_id=approval["data"]["approval_id"],
             idempotency_key="rework-dispose",
+        )
+        self.assertTrue(
+            self.mcp.record_manual_evidence(
+                incident_id=self.incident,
+                action_id="rework",
+                evidence_type="disposition_receipt",
+                observed_at=self.store.now(),
+                note="Synthetic independent rework receipt",
+                actor="Human",
+                idempotency_key="rework-receipt",
+                metadata={
+                    "batch_id": batch,
+                    "disposition": "disposed",
+                    "quantity": self.store.list_batches(batch_ids=[batch])[0]["quantity"],
+                    "source_location": "FROST-S03",
+                    "receipt_ref": "synthetic://rework",
+                    "executor_id": "synthetic-operator",
+                    "confirmed_by": "synthetic-witness",
+                    "disposal_method": "synthetic-destruction",
+                    "destroyed": True,
+                },
+            )["ok"]
         )
         self.assertTrue(self.rpc("Executor", "complete", **execute)["completed"])
         for role in ("Auditor", "Executor", "Auditor", "Auditor"):

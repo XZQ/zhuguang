@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -73,10 +74,16 @@ class ScenarioEngine:
             key=lambda item: (item["at_minute"], item["event_id"]),
         ):
             marker = f"scenario_event:{self.scenario['scenario_id']}:{event['event_id']}"
-            if event["at_minute"] <= elapsed and self.store.get_meta(marker) != "applied":
-                self._apply(event)
-                self.store.set_meta(marker, "applied")
-                applied.append(event["event_id"])
+            if event["at_minute"] <= elapsed:
+                with self.store.transaction() as conn:
+                    if self.store.backend_name == "postgresql":
+                        lock = int(hashlib.sha256(marker.encode()).hexdigest()[:15], 16)
+                        conn.execute("SELECT pg_advisory_xact_lock(?)", (lock,))
+                    if self.store.get_meta(marker) == "applied":
+                        continue
+                    self._apply(event)
+                    self.store.set_meta(marker, "applied")
+                    applied.append(event["event_id"])
         return applied
 
     def elapsed_minutes(self) -> int:
@@ -110,7 +117,7 @@ class ScenarioEngine:
                     observed_at=observed_at,
                     temp_c=float(item["temp_c"]),
                     quality=item.get("quality", "good"),
-                    source="scenario",
+                    source=item.get("source", "scenario"),
                 )
         elif event_type == "set_batch_safety":
             self.store.set_batch_safety(

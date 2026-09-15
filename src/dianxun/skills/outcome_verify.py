@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from .. import trace
 from ..domain import Verification, VerificationResult
+from ..domain.evidence import coverage_issues, temperature_series
 from ..domain.safety import TERMINAL_BATCH_STATES, batches_are_safe_terminal
 from .contracts import enforce_output_contract
 
@@ -160,16 +161,23 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
     maximum = float(policy["temperature"]["refrigerated_max_celsius"])
     device_rows = _rows(responses["device"], "devices")
     device = device_rows[0] if device_rows else {}
-    readings = sorted(device.get("temperature_series", []), key=lambda item: item["observed_at"])
-    trusted_readings = [
-        item for item in readings if str(item.get("quality", "good")).lower() == "good"
-    ]
-    excluded_readings = [item for item in readings if item not in trusted_readings]
+    trusted_readings, excluded_readings = temperature_series(
+        device.get("temperature_series", []), now=service.store.now()
+    )
     latest = trusted_readings[-recovery_samples:]
     workorders = _rows(responses["workorder"], "workorders")
     device_passed = (
         len(latest) == recovery_samples
-        and all(float(item["temp_c"]) <= maximum for item in latest)
+        and not any(
+            str(item.get("quality", "good")).lower() == "good" for item in excluded_readings
+        )
+        and not coverage_issues(latest, now=service.store.now(), max_gap=5)
+        and all(
+            float(policy["temperature"]["refrigerated_min_celsius"])
+            <= float(item["temp_c"])
+            <= maximum
+            for item in latest
+        )
         and device.get("health", {}).get("state") == "normal"
         and device.get("health", {}).get("compressor_state") == "running"
         and bool(workorders)
@@ -180,7 +188,14 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
     )
 
     batches = _rows(responses["batches"], "batches")
-    batches_passed = batches_are_safe_terminal(batches, case.affected_batches)
+    receipts = service.store.list_manual_evidence(incident_id=case.incident_id)
+    batches_passed = batches_are_safe_terminal(
+        batches,
+        case.affected_batches,
+        receipts=receipts,
+        actions=service.store.list_actions(incident_id=case.incident_id),
+        now=service.store.now(),
+    )
     holds = _rows(responses["sales_hold"], "sales_holds")
     hold_by_batch = {item["batch_id"]: item for item in holds}
     holds_passed = bool(batches) and all(
@@ -225,7 +240,7 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
                 "batch_ids": sorted(case.affected_batches),
                 "released_goods_safe_for_sale": True,
             },
-            "observed": {"batches": batches},
+            "observed": {"batches": batches, "disposition_receipts": receipts},
         },
         "sales_hold": {
             "passed": holds_passed,

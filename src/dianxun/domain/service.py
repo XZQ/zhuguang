@@ -312,7 +312,13 @@ class IncidentService:
                 ActionStatus.TIMEOUT,
             }
         ]
-        batch_terminal = batches_are_safe_terminal(batches, case.affected_batches)
+        batch_terminal = batches_are_safe_terminal(
+            batches,
+            case.affected_batches,
+            receipts=self.store.list_manual_evidence(incident_id=incident_id),
+            actions=self.store.list_actions(incident_id=incident_id),
+            now=self.store.now(),
+        )
         latest_by_subject: dict[str, Verification] = {}
         for verification in case.verifications:
             latest_by_subject[verification.subject] = verification

@@ -39,7 +39,7 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试和 10 项协调生命周期测试；全量发现 140 项测试，其中 138 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
+仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试和 10 项协调生命周期测试；全量发现 148 项测试，其中 146 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
 
 ## 2. 模型、凭证、费用与 Skill 类型
 
@@ -97,17 +97,19 @@ HTTP Adapter 支持：
 
 ### PolarDB overlay
 
-`agentteams/overlays/polardb` 将状态库切换为 PolarDB PostgreSQL，并启用 3 个知识工具和远程 embedding。它只引用以下 Secret，不提交真实值：
+`agentteams/overlays/polardb` 将状态库切换为 PolarDB PostgreSQL，默认关闭 P1/RAG，主链不依赖 embedding 服务。需要 3 个知识工具和远程 embedding 时使用 `agentteams/overlays/polardb-rag`。完整部署与二轮取证步骤见[决赛服务端交接](../docs/operations/finals-server-handoff.md)。下列 Secret 不提交真实值：
 
 - `dianxun-polardb-runtime/database-url`：受 RLS 约束的运行账号 DSN；
-- `dianxun-embedding-runtime/{endpoint,model,api-key}`：HTTPS embedding 服务配置；
+- `dianxun-embedding-runtime/{endpoint,model,api-key}`：仅 polardb-rag overlay 需要的 HTTPS embedding 服务配置；
 - `dianxun-agent-identities/actor-tokens-json`：动态 Token → Actor 映射。
 - `dianxun-agent-identities/runtime-tokens-json`：动态 Token → Worker/租户/门店/角色映射。
 
 数据库管理员需先从可信环境按顺序执行：
 
 ```powershell
-uv run dianxun db-bootstrap --profile core --profile security --profile cron --profile archive
+uv run dianxun db-bootstrap --profile core --profile security
+# 确认目标实例 pg_cron/归档前置后，再启用以下可选 profile：
+uv run dianxun db-bootstrap --profile cron --profile archive
 ```
 
 迁移/安全管理员还要为每个数据库登录账号登记不可自改的 principal scope。下面只展示无密码示例，角色名、租户和门店需按目标环境替换；密码、DSN 和轮换配置必须由 PolarDB/Kubernetes Secret 或外部密钥系统完成：

@@ -55,7 +55,8 @@ class ColdChainWorkflowTests(unittest.TestCase):
             {"batch_id": "a", "disposition": "disposed", "safe_for_sale": False},
             {"batch_id": "b", "disposition": "transferred", "safe_for_sale": False},
         ]
-        self.assertTrue(batches_are_safe_terminal(rows, ["a", "b"]))
+        # A terminal label without independent physical receipts cannot close an incident.
+        self.assertFalse(batches_are_safe_terminal(rows, ["a", "b"]))
         self.assertFalse(batches_are_safe_terminal(rows[:1], ["a", "b"]))
         self.assertFalse(batches_are_safe_terminal([rows[0], rows[0]], ["a", "b"]))
         rows[0]["disposition"] = "released"

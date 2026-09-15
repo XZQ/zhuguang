@@ -130,6 +130,7 @@ class AblationAdapter(LocalDemoAdapter):
                 policy=self.policy.policy,
                 trace_id=trace_id,
                 manual_measurements=self.store.list_manual_evidence(incident_id=incident_id),
+                assessed_at=self.store.now(),
             )
             case = self.incidents.get(incident_id)
             top = case.hypotheses[0]

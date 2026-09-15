@@ -473,6 +473,7 @@ class LocalDemoAdapter:
                 policy=self.policy.policy,
                 trace_id=trace_id,
                 manual_measurements=self.store.list_manual_evidence(incident_id=incident_id),
+                assessed_at=self.store.now(),
             )
             case = self.incidents.get(incident_id)
             top = case.hypotheses[0]
@@ -742,6 +743,10 @@ class LocalDemoAdapter:
                 response=response,
             )
             results.append({**item, "result": "executed" if response["ok"] else "failed"})
+        receipt_minute = workflow.get("disposition_receipt_minute")
+        if receipt_minute is not None:
+            self._advance_to(int(receipt_minute))
+            self._append_manual_evidence_refs(incident_id)
         return results
 
     def _execute_sales_hold_release(

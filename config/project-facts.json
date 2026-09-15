@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "project_version": "0.2.0-dev",
-  "updated_at": "2026-09-13",
+  "updated_at": "2026-09-15",
   "owner": "XZQ",
   "project_name": "店巡 Agent",
   "display_name": "逐光队｜店巡 Agent",
@@ -272,8 +272,8 @@
       "covered_trace_phases": 26,
       "expected_trace_phases": 26,
       "safety_violations": 0,
-      "full_unittest_count": 140,
-      "full_unittest_passed": 138,
+      "full_unittest_count": 148,
+      "full_unittest_passed": 146,
       "conditional_integration_skipped": 2,
       "report": "evidence/m4/report.md",
       "results": "evidence/m4/results.json",
@@ -314,7 +314,7 @@
         "report": "evidence/m4/ablation.md"
       },
       "command_center_html": "evidence/m4/command-center.html",
-      "unittest_verified_at": "2026-09-13",
+      "unittest_verified_at": "2026-09-15",
       "unittest_environment": "Windows_Python_3.12.13_Node_local_SQLite"
     },
     "operations_hardening": {

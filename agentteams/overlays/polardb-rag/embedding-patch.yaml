@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dianxun-mcp
+  namespace: dianxun
+spec:
+  template:
+    spec:
+      containers:
+        - name: mcp
+          env:
+            - name: DIANXUN_ENABLE_P1_TOOLS
+              value: "1"
+            - name: DIANXUN_RAG_ENABLED
+              value: "1"
+            - name: DIANXUN_EMBEDDING_MODE
+              value: remote
+            - name: DIANXUN_EMBEDDING_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: dianxun-embedding-runtime
+                  key: endpoint
+            - name: DIANXUN_EMBEDDING_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: dianxun-embedding-runtime
+                  key: model
+            - name: DIANXUN_EMBEDDING_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dianxun-embedding-runtime
+                  key: api-key

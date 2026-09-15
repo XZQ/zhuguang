@@ -147,5 +147,16 @@ class StoreIntegrityError(RuntimeError):
     """Normalized integrity failure raised by optional database drivers."""
 
 
+class StorePolicyError(RuntimeError):
+    """A PostgreSQL P0001 guard rejected the operation; retrying cannot repair input."""
+
+    sqlstate = "P0001"
+    retryable = False
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
 class IncidentConflictError(ValueError):
     """The supplied incident version is stale; reload before retrying the intent."""

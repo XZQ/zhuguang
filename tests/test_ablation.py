@@ -90,6 +90,10 @@ class AblationSuiteTests(unittest.TestCase):
 
     def test_rule_only_degrades_diagnosis_but_stays_safe(self) -> None:
         variant = self.summary["rule_only"]
+        # Only ranking is ablated. Clock, risk evidence and physical receipts
+        # must remain comparable to the full pipeline.
+        self.assertEqual(self.summary["full"]["acceptance_passed"], variant["acceptance_passed"])
+        self.assertEqual(self.summary["full"]["closed"], variant["closed"])
         self.assertEqual(4, variant["top1_hits"])
         self.assertEqual(2, variant["misrouted_workorders"])
         self.assertEqual(0, variant["erroneous_closures"])

@@ -10,7 +10,7 @@ from importlib import resources
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
-from .protocols import ConnectionProtocol, CursorProtocol, StoreIntegrityError
+from .protocols import ConnectionProtocol, CursorProtocol, StoreIntegrityError, StorePolicyError
 from .store import SQLiteStateStore
 
 _SQL_PACKAGE = "dianxun.state.sql"
@@ -20,6 +20,18 @@ _PROFILE_FILES = {
     "cron": "postgres_cron.sql",
     "archive": "postgres_archive.sql",
 }
+
+
+def raise_policy_error(error: Exception) -> None:
+    if getattr(error, "sqlstate", None) != "P0001":
+        return
+    message = getattr(getattr(error, "diag", None), "message_primary", "")
+    codes = {
+        "audit partition month_start must be the first day of a month": "AUDIT_MONTH_INVALID",
+        "audit partition month is outside the allowed maintenance window": "AUDIT_WINDOW_REJECTED",
+    }
+    # Never return raw database diagnostics, parameters or credentials to the caller.
+    raise StorePolicyError(codes.get(message, "DATABASE_POLICY_REJECTED")) from error
 
 
 def _load_driver():
@@ -114,6 +126,9 @@ class _PostgresConnection(ConnectionProtocol):
             cursor = self._connection.execute(qmark_to_postgres(sql), parameters)
         except self._driver.IntegrityError as exc:
             raise StoreIntegrityError(str(exc)) from exc
+        except self._driver.Error as exc:
+            raise_policy_error(exc)
+            raise
         return _PostgresResult(cursor)
 
     def executemany(
@@ -126,6 +141,9 @@ class _PostgresConnection(ConnectionProtocol):
             cursor.executemany(qmark_to_postgres(sql), parameters)
         except self._driver.IntegrityError as exc:
             raise StoreIntegrityError(str(exc)) from exc
+        except self._driver.Error as exc:
+            raise_policy_error(exc)
+            raise
         return _PostgresResult(cursor)
 
     def commit(self) -> None:
@@ -194,8 +212,9 @@ class PostgresStateStore(SQLiteStateStore):
         try:
             yield connection
             connection.commit()
-        except Exception:
+        except Exception as exc:
             connection.rollback()
+            raise_policy_error(exc)
             raise
         finally:
             self._transaction_connection.reset(token)
@@ -252,8 +271,9 @@ class PostgresStateStore(SQLiteStateStore):
             raw = connection._connection  # migrations need PostgreSQL's multi-statement parser
             raw.execute(script, prepare=False)
             connection.commit()
-        except Exception:
+        except Exception as exc:
             connection.rollback()
+            raise_policy_error(exc)
             raise
         finally:
             connection.close()
