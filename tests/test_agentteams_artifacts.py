@@ -13,7 +13,7 @@ from scripts.build_worker_package import REQUIRED_SKILLS, build_worker_package, 
 
 ROOT = Path(__file__).resolve().parents[1]
 AGENTTEAMS = ROOT / "agentteams"
-PACKAGE_SOURCE_COMMIT = "5014ce872c81ff78c36a44c7c5f70b7bc29e2897"
+PACKAGE_SOURCE_COMMIT = "ade0e67022cbc1d6c0dc5adab6a353a2575d36cb"
 PACKAGE_URL = (
     "https://raw.githubusercontent.com/XZQ/zhuguang/"
     f"{PACKAGE_SOURCE_COMMIT}/dist/dianxun-worker.zip"

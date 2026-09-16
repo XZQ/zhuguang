@@ -7,8 +7,8 @@
 ## 身份与接入
 
 `/runtime` 提供独立的 MCP JSON-RPC 工具目录，原 `/mcp` 的 12 个 P0 业务工具保持兼容。
-领域实现仍仅位于 src/dianxun。Worker ZIP 保持已有字节和固定下载地址；新增运行接口规则
-通过 Worker YAML 的 agents 字段传入，不向包内复制 Python 实现。
+领域实现仍仅位于 src/dianxun。Worker ZIP 的运行规则和 Worker YAML 同步范围协议 v2；
+发布时核对固定提交下载地址和 SHA-256，不向包内复制 Python 实现。数据库升级与旧客户端边界见[范围协议升级](scope-v2-upgrade.md)。
 
 服务端从 `DIANXUN_RUNTIME_TOKENS_JSON` 读取 Token 到身份的映射。每个值必须包含
 `actor`、`worker_id`、`tenant_id`、`store_id` 四个非空字段。Worker 角色为 Orchestrator、
@@ -46,6 +46,10 @@ FINAL_VERIFY/Auditor；LEARN/Auditor。无需解禁的场景中 RELEASE 只检�
 查询 partial 或失败不能写成功 checkpoint。LEARN 再次核验后才调用 IncidentService 关闭。
 
 ## 持久化与兼容
+
+范围 v2 事件在以上写请求中另带 `expected_scope_version`，值来自当前 `incident.scope_version`，
+与 `expected_version` 的 Context CAS 分开。新建 v2 事件传 0；修订/对账使用所有关联事件的
+`expected_versions`。完整参数、审批对象和版本冲突处理见[范围协议升级](scope-v2-upgrade.md)。
 
 runtime_contexts 保存协调版本，与领域变更使用同一个业务数据库事务；嵌套操作使用
 SAVEPOINT，内部异常即使被转成工具错误结果，也会回滚该操作的业务、审计和幂等记录。

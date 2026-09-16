@@ -75,6 +75,33 @@ def collect_casefile(mcp, principal, incident_id, *, limit=1000, include_trace=T
         capture(
             table, f"SELECT * FROM {table} WHERE incident_id = ? ORDER BY {ordering}", [incident_id]
         )
+    if case.get("scope_version", 0) or case.get("scope_state"):
+        store.require_scope_schema()
+        capture(
+            "scope_revisions",
+            "SELECT * FROM scope_revisions WHERE incident_id=? "
+            "AND tenant_id=? AND store_id=? ORDER BY scope_version",
+            [incident_id, principal.tenant_id, principal.store_id],
+        )
+        lineage_ids = set(case["affected_batches"])
+        for revision in records["scope_revisions"]:
+            for field in ("before_json", "after_json"):
+                value = revision.get(field)
+                value = json.loads(value) if isinstance(value, str) else value
+                if isinstance(value, dict):
+                    lineage_ids.update(b["batch_id"] for b in value.get("batches", []))
+        if lineage_ids:
+            ids = sorted(lineage_ids)
+            markers = ",".join("?" for _ in ids)
+            capture(
+                "batch_lineage",
+                "SELECT * FROM batch_lineage WHERE tenant_id=? "
+                f"AND store_id=? AND (child_batch_id IN ({markers}) "
+                f"OR parent_batch_id IN ({markers})) ORDER BY child_batch_id",
+                [principal.tenant_id, principal.store_id, *ids, *ids],
+            )
+        else:
+            records["batch_lineage"] = []
     assets = case["affected_assets"]
     batches = case["affected_batches"]
     if assets:
@@ -137,6 +164,13 @@ def collect_casefile(mcp, principal, incident_id, *, limit=1000, include_trace=T
         "incident": case,
         "context": context,
         "records": records,
+        "scope": {
+            "version": case.get("scope_version", 0),
+            "state": case.get("scope_state") or "legacy_unversioned",
+            "digest": case.get("scope_digest"),
+            "snapshot": case.get("scope_snapshot"),
+            "approval_applicability": _approval_applicability(mcp, case, records),
+        },
         "trace": {"status": spans["status"], "rows": spans["rows"][:limit]},
         "truncated": truncated,
         "current_policy": mcp.policy.policy,
@@ -146,3 +180,38 @@ def collect_casefile(mcp, principal, incident_id, *, limit=1000, include_trace=T
         "Trace has a separate capture boundary. Current policy/registry do not replace "
         "historical versions.",
     }
+
+
+def _approval_applicability(mcp, case, records):
+    """Derived read-only view; never rewrite an approval decision or captured DB row."""
+    actions = {r["action_id"]: r for r in records["actions"]}
+    result = []
+    validator = getattr(mcp, "_validate_approval_binding", None)
+    for row in records["approvals"]:
+        action = actions.get(row["action_id"], {})
+        if action.get("tool_name") not in {None, "create_approval"}:
+            applicable = "historical_consumed"
+        elif not case.get("scope_version", 0):
+            applicable = "legacy_unbound"
+        elif not row.get("target_snapshot_json"):
+            applicable = "requires_review"
+        elif validator is None:
+            applicable = "not_evaluated"
+        else:
+            try:
+                with mcp.store._reader() as conn:
+                    validator(conn, row["approval_id"], case["incident_id"])
+                applicable = "applicable"
+            except (ValueError, PermissionError):
+                applicable = "not_applicable"
+        result.append(
+            {
+                "approval_id": row["approval_id"],
+                "action_id": row["action_id"],
+                "decision": row["status"],
+                "applicability": applicable,
+                "scope_version": row.get("scope_version"),
+                "deadline": row["deadline"],
+            }
+        )
+    return result

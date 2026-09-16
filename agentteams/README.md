@@ -22,7 +22,7 @@ dist/dianxun-worker.zip
 dist/dianxun-worker.provenance.json
 ```
 
-Worker YAML 的 `spec.package` 指向公共仓库中的 HTTP ZIP，并固定到不可变 commit `5014ce872c81ff78c36a44c7c5f70b7bc29e2897`，禁止指向会漂移的 `main`。此次[历史线性化](../docs/operations/git-history-linearization-20260913.md)只映射包地址中的提交标识，包字节和 SHA-256 与原固定版本一致；既有 Windows 干净克隆与 Ubuntu CI 复现记录仍对应原历史版本。当前 SHA-256 为 `6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b`；`dist/dianxun-worker.provenance.json` 还记录 Registry、生命周期文档和每个 Skill 的版本与内容哈希。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为集群可访问的镜像。
+Worker YAML 的 `spec.package` 固定到不可变 commit `ade0e67022cbc1d6c0dc5adab6a353a2575d36cb`，禁止指向会漂移的 `main`。该版本新增范围 v2 运行规则，SHA-256 为 `528c2990626eace1d78b3db5f358768a3d27c64db14ab9f4746dc3e8815ed957`；`dist/dianxun-worker.provenance.json` 记录 Registry、生命周期文档和每个 Skill 的版本与内容哈希。本地提交不等于公开发布，部署前必须确认固定 URL 可下载且摘要匹配；旧 Windows/Ubuntu 验证记录不冒充这个新版包的验收。升级顺序见[范围协议升级](../docs/operations/scope-v2-upgrade.md)。MCP Deployment 使用本地镜像名 `dianxun-mcp:0.2.0`；远程集群部署前必须替换为实际新构建的可访问镜像。
 
 当前仓库只提交脱敏、可复现的配置。只有真实平台产生的 Team Room、委派消息、MCP 调用和资源状态才是动态证据；本地契约测试不能替代它们。
 

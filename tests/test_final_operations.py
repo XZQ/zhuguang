@@ -147,6 +147,51 @@ class FinalOperationsTests(unittest.TestCase):
                 conn.execute("UPDATE meta SET value = 'bad'")
         self.assertEqual(before, self.store.snapshot_digest())
 
+    def test_scope_history_and_lineage_are_scoped_read_only_casefile_records(self):
+        from dianxun.runtime import RuntimePrincipal
+
+        self.store.migrate_scope_v2()
+        runtime = self.server.runtime_service
+        human = RuntimePrincipal("Human", "scope-human", "demo", "S03")
+        runtime.principals[human.worker_id] = human
+        parent = self.store.list_batches(batch_ids=["BATCH-S03-DAIRY-001"])[0]
+        snapshot = runtime.snapshot(principal=human, incident_id=self.incident)
+        runtime.call(
+            "runtime_revise_scope",
+            {
+                "incident_id": self.incident,
+                "expected_versions": {
+                    self.incident: {
+                        "scope_version": 1,
+                        "context_version": snapshot["context"]["version"],
+                    }
+                },
+                "change_id": "casefile-split",
+                "source_ref": "synthetic:wms",
+                "changes": [
+                    {
+                        "op": "split",
+                        "batch_id": parent["batch_id"],
+                        "children": [
+                            {"batch_id": "CASE-C1", "quantity": 1},
+                            {"batch_id": "CASE-C2", "quantity": parent["quantity"] - 1},
+                        ],
+                    }
+                ],
+            },
+            human,
+        )
+        before = self.store.snapshot_digest()
+        data = self.rpc("Orchestrator", "casefile", incident_id=self.incident)
+        self.assertEqual(before, self.store.snapshot_digest())
+        self.assertEqual([1, 2], [r["scope_version"] for r in data["records"]["scope_revisions"]])
+        self.assertEqual(
+            ["CASE-C1", "CASE-C2"], [r["child_batch_id"] for r in data["records"]["batch_lineage"]]
+        )
+        self.assertEqual(2, data["scope"]["version"])
+        self.assertEqual("synthetic:wms", data["records"]["scope_revisions"][-1]["source_ref"])
+        self.rpc("other-store", "casefile", incident_id=self.incident, expect_error=True)
+
     def test_runtime_capture_roundtrip_and_restored_data_comparison(self):
         self.detect()
         bundle = self.root / "bundle"

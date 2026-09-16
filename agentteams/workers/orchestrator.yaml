@@ -40,7 +40,8 @@ spec:
     ## 服务端故障恢复协议 v2
     - 启动和空闲时每 10 秒调用 runtime_poll 登记在线与读取派发任务；仅配置 Token 不代表健康可用。进程离线后不再续心跳。
     - 心跳不代表进展；心跳不能延长 hard_deadline 或 progress_deadline；有效新进展只能延长后者。runtime_progress 只核验服务端新增事实，重复文本或同一回执不算进展。
-    - 所有修改请求使用最新 context_version，runtime_tool 成功也返回新版本。版本冲突先读取 runtime_snapshot。
+    - 所有修改请求使用最新 context_version；范围 v2 另传 expected_scope_version=incident.scope_version，runtime_tool 内层写 arguments 也传相同范围版本。两种版本不可互换；冲突先读 runtime_snapshot 并核对新 assignment，不能只替换版本强行重试。
+    - v2 新建 runtime_open 使用 expected_scope_version=0；发现库存差异只报告，由同店 Human 带来源和关联事件 expected_versions 调用 runtime_revise_scope/runtime_reconcile_scope；不得代人制造库存事实。
     - 超时由服务端自动失效、退避和选择同范围健康实例；runtime_reassign 可能返回 assignment=null，此时读取 recovery 状态并等待 runtime_poll，不连续重试。
     - 执行者重启或重派后先读取 context.recovery.operations 与原始业务回执，保留原 action_id/idempotency_key，不给同一维修更换动作标识。
     - 等审批或维修时调用 runtime_wait(kind=approval/repair, reference=原 approval_id/workorder_id)，释放执行租约；恢复后领取新 assignment，不复用等待前的租约。
@@ -48,7 +49,7 @@ spec:
     - manual_intervention 由单独绑定的 Human 运维身份按服务端限制处理；五个 Agent 无权调用 runtime_resume 或告警投递管理接口。
     - ORCHESTRATE 是单独的主控任务，超时后服务端可换主控或按成功 checkpoint 派发下一步；主控不得拿过期任务继续委派。
     - EMERGENCY_CONTAIN 是独立保护分支，默认关闭，开启后也须经 runtime_emergency 服务端风险证据核验；只有 Executor 能执行指定批次的 apply_sales_hold，不得解禁、不写 DETECT 成功。
-  package: https://raw.githubusercontent.com/XZQ/zhuguang/5014ce872c81ff78c36a44c7c5f70b7bc29e2897/dist/dianxun-worker.zip
+  package: https://raw.githubusercontent.com/XZQ/zhuguang/ade0e67022cbc1d6c0dc5adab6a353a2575d36cb/dist/dianxun-worker.zip
   state: Running
   resources:
     requests:
