@@ -149,6 +149,43 @@ jobs:
             docker exec -i zhuguang-archive-ci psql -X -v ON_ERROR_STOP=1 \
               -U postgres -d zhuguang_archive_test
 
+      - name: Build PostgreSQL integration runner
+        run: docker build -f packages/dianxun-mcp/Dockerfile -t dianxun-pg-tests:ci .
+
+      - name: Create separate integration database and readonly login
+        run: |
+          docker exec zhuguang-archive-ci createdb -U postgres zhuguang_integration_test
+          docker exec zhuguang-archive-ci psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres \
+            -c 'CREATE ROLE zhuguang_test_ro LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION; GRANT dianxun_business_ro TO zhuguang_test_ro;'
+
+      - name: Real PostgreSQL scenarios, recovery, vector, snapshot and RLS without skips
+        run: |
+          docker run --rm --network container:zhuguang-archive-ci --memory 512m --cpus 1 \
+            --entrypoint python -v "$GITHUB_WORKSPACE:/workspace:ro" -w /workspace \
+            -e PYTHONPATH=/workspace/src \
+            -e DIANXUN_TEST_POSTGRES_DSN=postgresql://postgres@127.0.0.1/zhuguang_integration_test \
+            -e DIANXUN_TEST_POSTGRES_READONLY_DSN=postgresql://zhuguang_test_ro@127.0.0.1/zhuguang_integration_test \
+            -e DIANXUN_ALLOW_TEST_DATABASE_RESET=1 dianxun-pg-tests:ci -W error::ResourceWarning \
+            -c 'import sys, unittest; suite = unittest.defaultTestLoader.loadTestsFromName("tests.test_polardb_integration"); result = unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful() or bool(result.skipped) or result.testsRun == 0)'
+
+      - name: Build matching PostgreSQL backup test tools
+        run: docker build -f tests/Dockerfile.postgres -t dianxun-pg-capture:ci .
+
+      - name: Create empty capture and restore databases
+        run: |
+          docker exec zhuguang-archive-ci createdb -U postgres zhuguang_capture_test
+          docker exec zhuguang-archive-ci createdb -U postgres zhuguang_restore_test
+
+      - name: Real pg_dump, separate pg_restore, incident comparison and offline replay
+        run: |
+          docker run --rm --network container:zhuguang-archive-ci --memory 512m --cpus 1 \
+            -v "$GITHUB_WORKSPACE:/workspace:ro" -e PYTHONPATH=/workspace/src \
+            -e DIANXUN_BUILD_SHA="$GITHUB_SHA" \
+            -e DIANXUN_TEST_POSTGRES_DSN=postgresql://postgres@127.0.0.1/zhuguang_capture_test \
+            -e DIANXUN_TEST_POSTGRES_RESTORE_DSN=postgresql://postgres@127.0.0.1/zhuguang_restore_test \
+            -e DIANXUN_ALLOW_TEST_DATABASE_RESET=1 dianxun-pg-capture:ci \
+            scripts/check_postgres_capture.py --output /var/lib/dianxun/capture
+
       - name: Stop isolated PostgreSQL
         if: always()
         run: docker stop zhuguang-archive-ci

@@ -202,6 +202,8 @@ uv run --extra postgres python scripts/capture_runtime.py \
 
 工具拒绝使用同一源库标识进行恢复对账，比较事件、上下文、设备、商品、审批、动作、回执、核验及审计内容；这是该事件的数据一致性检查，不代替全库恢复、托管切换或 RPO/RTO 验收。本地 SQLite 可以把 state.sqlite 复制到另一路径，用 `--state` 代替 `--database-env` 检查，已完成此本地回归。
 
+隔离 PG 合成恢复回归已另提供 `scripts/check_postgres_capture.py`：配置 `DIANXUN_TEST_POSTGRES_DSN`、`DIANXUN_TEST_POSTGRES_RESTORE_DSN` 和 `DIANXUN_ALLOW_TEST_DATABASE_RESET=1`，通过 `--output` 指定新目录。它会初始化／重置源测试库的合成夹具，拒绝同一源目标及非空恢复目标；不得用于已有业务运行库。与上方只读 `capture_runtime.py` 的用途不同。`tests/Dockerfile.postgres` 固定 PG16 客户端与测试服务端匹配；直接使用系统默认的更新客户端可能生成旧服务端不识别的恢复设置。本轮首尔 PG16 实际导出恢复和事件对账通过；结果仍明确为合成数据、平台真实性未验证。
+
 ### 5.3 在线追溯页
 
 服务端 `/operations` 提供只读页面。使用受控网络的 HTTPS 入口或本机端口转发访问，输入独立 Human 或 Worker 运行身份；Token 仅留在页面内存，退出会清空事件内容。页面通过 `/runtime` 的 runtime_cases（游标分页）和 runtime_casefile 查询，租户/门店取自 Token，跨范围请求被拒，数据库连接本身为只读快照。

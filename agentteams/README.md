@@ -41,6 +41,8 @@ Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SH
 
 仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试和 10 项协调生命周期测试；全量发现 155 项测试，其中 153 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
 
+2026-09-16 补充：上述两项条件测试已在首尔隔离 PostgreSQL 16 上 2/2 实跑通过（零 skip），另有实际归档、导出／空库恢复及事件对账。这里仍不是托管 PolarDB 或真实 AgentTeams 端到端证据；无 DSN 的常规全量测试继续保留两项 skip，详见唯一[待办](../docs/待办.md)。
+
 ## 2. 模型、凭证、费用与 Skill 类型
 
 - Manager 与 5 个 Worker 的 YAML 均声明 `qwenpaw + qwen3.5-plus`；模型只用于目标 AgentTeams 的任务拆解、结构化协作和工具编排。本地 Demo/M4 不调用 LLM。

@@ -74,6 +74,7 @@ uv run dianxun command-center  # 生成 evidence/m4/command-center.html 事故�
 | 消融对照：单一身份 / 纯规则 | 单一身份 6 次受控写全被 Policy 拒绝（保持 OPEN）；纯规则 Top-1 降至 4/6、2 张错派工单、安全违规 0 | 同上 |
 | 事故指挥台 | 六场景同屏只读 HTML（交接链、温度曲线、批次处置、审批、审计、判决） | [`evidence/m4/command-center.html`](evidence/m4/command-center.html) |
 | 自动化测试 | 155 项发现：153 通过、2 个 PolarDB 条件集成测试因无外部实例跳过 | `uv run --group dev python -W error::ResourceWarning -m unittest discover -v` |
+| 隔离 PostgreSQL 补充实测 | 2026-09-16 首尔 PG16 两项条件测试 2 通过／0 跳过，另有 foreign table 与实际导出恢复回归；不是托管 PolarDB 或真实平台验收 | [当前进度](docs/待办.md)、[部署与取证](docs/operations/finals-server-handoff.md) |
 | 协调上下文生命周期 | 租户隔离、TTL、WAL、乐观版本、lease/heartbeat、唯一超时重派和 checkpoint 重启恢复已通过本地并发测试 | `src/dianxun/context_bus.py`、`src/dianxun/coordination.py`、`tests/test_context_lifecycle.py` |
 | 运行可观测性 | `/metrics` 提供低基数工具调用量、结果、耗时 histogram 和鉴权失败计数 | `src/dianxun/metrics.py`、`tests/test_adversarial_hardening.py` |
 | 协调恢复演练 | 本地 SQLite 的 WAL、stale writer、lease、唯一 successor、checkpoint 重启恢复和五阶段完成全部通过 | [`evidence/operations/recovery-drill.json`](evidence/operations/recovery-drill.json) |
