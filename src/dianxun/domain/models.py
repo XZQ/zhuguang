@@ -175,6 +175,10 @@ class IncidentCase:
     created_at: str = field(default_factory=iso_now)
     updated_at: str = field(default_factory=iso_now)
     version: int = 0
+    scope_version: int = 0
+    scope_snapshot: dict[str, Any] | None = None
+    scope_digest: str | None = None
+    scope_state: str = ""
 
     @classmethod
     def create(

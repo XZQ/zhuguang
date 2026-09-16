@@ -35,6 +35,10 @@
   ],
   "properties": {
     "version": { "type": "integer", "minimum": 0, "default": 0 },
+    "scope_version": { "type": "integer", "minimum": 0, "default": 0 },
+    "scope_snapshot": { "type": ["object", "null"] },
+    "scope_digest": { "type": ["string", "null"] },
+    "scope_state": { "enum": ["", "requires_reconciliation", "ready"] },
     "incident_id": { "type": "string", "minLength": 1 },
     "trace_id": { "type": "string", "minLength": 1 },
     "tenant_id": { "type": "string", "minLength": 1 },

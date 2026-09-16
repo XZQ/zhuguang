@@ -378,6 +378,16 @@ class SQLiteStateStore:
         """Create the local schema; remote backends only verify readiness."""
         self.create_schema()
 
+    def migrate_scope_v2(self) -> None:
+        from .scope_migration import migrate
+
+        migrate(self)
+
+    def require_scope_schema(self) -> None:
+        from .scope_migration import require_schema
+
+        require_schema(self)
+
     def initialize(self, seed: dict[str, Any], *, reset: bool = True) -> str:
         """Initialize a deterministic world and return its canonical digest."""
         self.create_schema()

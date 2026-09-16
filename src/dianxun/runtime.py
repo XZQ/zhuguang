@@ -127,6 +127,7 @@ class RuntimeService:
                     "runtime_emergency",
                     "runtime_complete",
                     "runtime_resume",
+                    "runtime_revise_scope",
                 }
             ):
                 raise ValueError("Recovery scheduler unavailable; writes suspended")
@@ -160,6 +161,11 @@ class RuntimeService:
         from .operations import list_incidents
 
         return list_incidents(self.store, principal, after=after, limit=limit)
+
+    def revise_scope(self, *, principal, **arguments):
+        from .scope_revision import ScopeRevisionService
+
+        return ScopeRevisionService(self).revise(principal=principal, **arguments)
 
     def open(self, *, principal, incident_id, device_id):
         if principal.actor != "Orchestrator":
@@ -893,6 +899,31 @@ _LEASE = {
     "expected_version": {"type": "integer", "minimum": 1},
 }
 RUNTIME_SCHEMAS = {
+    "runtime_revise_scope": schema(
+        {
+            **_INCIDENT,
+            "expected_versions": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": schema(
+                    {
+                        "scope_version": {"type": "integer", "minimum": 0},
+                        "context_version": {"type": "integer", "minimum": 1},
+                    },
+                    ["scope_version", "context_version"],
+                ),
+            },
+            "change_id": _TEXT,
+            "source_ref": _TEXT,
+            "changes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {"type": "object"},
+            },
+        },
+        ["incident_id", "expected_versions", "change_id", "source_ref", "changes"],
+    ),
     "runtime_cases": schema(
         {
             "after": {"type": "string", "maxLength": 256},

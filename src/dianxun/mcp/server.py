@@ -166,6 +166,7 @@ TOOLS: dict[str, dict[str, Any]] = {
                 "action_id": _STRING,
                 "batch_ids": _STRING_ARRAY,
                 "disposition": {"enum": ["quarantined", "transferred", "released", "disposed"]},
+                "expected_scope_version": {"type": "integer", "minimum": 1},
                 "approval_id": _STRING,
                 "idempotency_key": _STRING,
                 "request_id": _STRING,
@@ -216,6 +217,14 @@ TOOLS: dict[str, dict[str, Any]] = {
                 "timeout_minutes": {"type": "integer", "minimum": 1},
                 "amount": {"type": "number", "minimum": 0},
                 "disposition": {"type": "string"},
+                "expected_scope_version": {"type": "integer", "minimum": 1},
+                "target_batch_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": True,
+                    "items": _STRING,
+                },
+                "target_device_ids": {"type": "array", "uniqueItems": True, "items": _STRING},
                 "idempotency_key": _STRING,
                 "request_id": _STRING,
             },
@@ -236,6 +245,7 @@ TOOLS: dict[str, dict[str, Any]] = {
         "inputSchema": _object_schema(
             {
                 "approval_id": _STRING,
+                "expected_scope_version": {"type": "integer", "minimum": 1},
                 "decision": {"enum": ["approved", "rejected", "timeout"]},
                 "reason": _STRING,
                 "idempotency_key": _STRING,

@@ -20,6 +20,7 @@ from typing import Any
 from ..domain.enums import ApprovalStatus, BatchDisposition, WorkOrderStatus
 from ..domain.models import Evidence
 from ..domain.policy import PolicyDecision, PolicyEngine
+from ..domain.scope import build_scope_snapshot
 from ..knowledge import KnowledgeService, embedding_provider_from_env
 from ..resources import output_path, resource_path
 from ..state import (
@@ -549,6 +550,7 @@ class MCPService:
         approval_id: str | None = None,
         actor: str = "Executor",
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         try:
@@ -569,6 +571,8 @@ class MCPService:
             "disposition": target.value,
             "approval_id": approval_id,
         }
+        if expected_scope_version is not None:
+            request["expected_scope_version"] = expected_scope_version
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(
@@ -584,6 +588,7 @@ class MCPService:
                     action_id=action_id,
                     action_type="apply_batch_disposition",
                     disposition=target.value,
+                    batch_ids=batch_ids,
                 )
             else:
                 self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
@@ -753,6 +758,9 @@ class MCPService:
         disposition: str | None = None,
         actor: str = "Executor",
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
+        target_batch_ids: list[str] | None = None,
+        target_device_ids: list[str] | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         if amount is not None:
@@ -788,9 +796,19 @@ class MCPService:
             "amount": amount,
             "disposition": disposition,
         }
+        for key, value in (
+            ("expected_scope_version", expected_scope_version),
+            ("target_batch_ids", target_batch_ids),
+            ("target_device_ids", target_device_ids),
+        ):
+            if value is not None:
+                request[key] = value
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
-            self._require_incident_scope(conn, incident_id=incident_id)
+            case = self._require_incident_scope(conn, incident_id=incident_id)
+            binding = None
+            if case.get("scope_version", 0):
+                binding = self._approval_target(conn, case, target_batch_ids, target_device_ids)
             self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
             approval_id = self.store.next_id(conn, "approval")
             deadline = (self._parse_time(now) + timedelta(minutes=timeout_minutes)).isoformat(
@@ -832,6 +850,16 @@ class MCPService:
                 now=now,
                 approval_id=approval_id,
             )
+            if binding is not None:
+                conn.execute(
+                    "UPDATE approvals SET scope_version=?,target_snapshot_json=?, "
+                    "applicability='applicable' WHERE approval_id=?",
+                    (case["scope_version"], _canonical(binding), approval_id),
+                )
+                conn.execute(
+                    "UPDATE actions SET scope_version=?,target_snapshot_json=? WHERE action_id=?",
+                    (case["scope_version"], _canonical(binding), action_id),
+                )
             return data
 
         return self._mutate(
@@ -856,6 +884,7 @@ class MCPService:
         idempotency_key: str,
         actor: str,
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         if actor not in {"Human", "ScenarioEngine"}:
@@ -872,6 +901,8 @@ class MCPService:
             return self._error(rid, "NOT_FOUND", f"Unknown approval {approval_id}")
         approval = rows[0]
         request = {"approval_id": approval_id, "decision": target.value, "reason": reason}
+        if expected_scope_version is not None:
+            request["expected_scope_version"] = expected_scope_version
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             lock_clause = " FOR UPDATE" if self.store.backend_name == "postgresql" else ""
@@ -883,6 +914,8 @@ class MCPService:
                 raise ValueError(f"Unknown approval {approval_id}")
             if row["status"] != ApprovalStatus.PENDING.value:
                 raise ValueError(f"Approval is already {row['status']}")
+            if target is ApprovalStatus.APPROVED:
+                self._validate_approval_binding(conn, approval_id, approval["incident_id"])
             cursor = conn.execute(
                 """UPDATE approvals SET status = ?, decided_at = ?, decided_by = ?,
                    decision_reason = ? WHERE approval_id = ? AND status = ?""",
@@ -1081,6 +1114,19 @@ class MCPService:
                 )
         try:
             with self.store.transaction() as conn:
+                case = self.store.get_incident(incident_id) if incident_id else None
+                if (
+                    case
+                    and case.get("scope_version", 0)
+                    and self.store.backend_name == "postgresql"
+                ):
+                    from ..recovery import digest
+
+                    conn.execute(
+                        "SELECT pg_advisory_xact_lock(?)",
+                        (int(digest([case["tenant_id"], case["store_id"]])[:15], 16),),
+                    )
+                    case = self.store.get_incident(incident_id)
                 previous = self.store.idempotent_result(
                     conn,
                     idempotency_key=idempotency_key,
@@ -1120,7 +1166,18 @@ class MCPService:
                             audit_ref=audit_id,
                         )
                     data = {**previous["data"], "idempotent_replay": True}
+                    if case and case.get("scope_version", 0) != request.get(
+                        "expected_scope_version", 0
+                    ):
+                        data["historical_replay"] = True
                     return self._ok(rid, data, audit_ref=previous["audit_id"])
+                if case and case.get("scope_version", 0):
+                    self.store.require_scope_schema()
+                    expected = request.get("expected_scope_version")
+                    if type(expected) is not int or expected != case["scope_version"]:
+                        raise ValueError(
+                            "Current expected_scope_version is required for scope-v2 writes"
+                        )
                 now = self.store.now()
                 data = mutation(conn, now)
                 policy_data = decision.to_dict()
@@ -1187,8 +1244,8 @@ class MCPService:
             )
         return self._error(rid, code, message, audit_ref=audit_id)
 
-    @staticmethod
     def _require_approval(
+        self,
         conn: ConnectionProtocol,
         *,
         approval_id: str | None,
@@ -1197,6 +1254,8 @@ class MCPService:
         action_type: str,
         amount: float | None = None,
         disposition: str | None = None,
+        batch_ids: list[str] | None = None,
+        device_ids: list[str] | None = None,
     ) -> None:
         if not approval_id:
             raise PermissionError("approval_id is required")
@@ -1230,6 +1289,64 @@ class MCPService:
                 raise PermissionError("Approval amount does not match the requested action")
         if disposition is not None and approved_request.get("disposition") != disposition:
             raise PermissionError("Approval disposition does not match the requested action")
+        binding = self._validate_approval_binding(conn, approval_id, incident_id)
+        if binding is not None:
+            bound_batches = [b["batch_id"] for b in binding["scope"]["batches"]]
+            if (
+                sorted(batch_ids or []) != bound_batches
+                or sorted(device_ids or []) != binding["devices"]
+            ):
+                raise PermissionError("Approval does not authorize these exact action targets")
+
+    def _approval_target(self, conn, case, batch_ids, device_ids):
+        if (
+            not isinstance(batch_ids, list)
+            or not batch_ids
+            or any(not isinstance(v, str) for v in batch_ids)
+            or len(batch_ids) != len(set(batch_ids))
+        ):
+            raise ValueError("Explicit unique target_batch_ids are required")
+        devices = device_ids or []
+        if (
+            not isinstance(devices, list)
+            or any(not isinstance(v, str) for v in devices)
+            or len(devices) != len(set(devices))
+            or not set(devices) <= set(case["affected_assets"])
+        ):
+            raise ValueError("Approval device targets are outside incident scope")
+        self._require_incident_scope(conn, incident_id=case["incident_id"], batch_ids=batch_ids)
+        snapshot = build_scope_snapshot(
+            tenant_id=case["tenant_id"],
+            store_id=case["store_id"],
+            asset_ids=case["affected_assets"],
+            batches=self.store.list_batches(batch_ids=batch_ids),
+        )
+        return {
+            "scope": snapshot,
+            "devices": sorted(devices),
+            "policy_id": self.policy.policy["policy_id"],
+            "policy_version": self.policy.policy["policy_version"],
+        }
+
+    def _validate_approval_binding(self, conn, approval_id, incident_id):
+        case = self.store.get_incident(incident_id)
+        if not case or not case.get("scope_version", 0):
+            return None
+        row = conn.execute(
+            "SELECT target_snapshot_json,applicability,deadline FROM approvals WHERE approval_id=?",
+            (approval_id,),
+        ).fetchone()
+        if not row or not row["target_snapshot_json"] or row["applicability"] != "applicable":
+            raise PermissionError("Approval requires review of explicit current targets")
+        if self._parse_time(row["deadline"]) <= self._parse_time(self.store.now()):
+            raise PermissionError("Approval has expired")
+        binding = _decode_json(row["target_snapshot_json"])
+        current = self._approval_target(
+            conn, case, [b["batch_id"] for b in binding["scope"]["batches"]], binding["devices"]
+        )
+        if binding != current:
+            raise PermissionError("Approval target quantity, location or policy changed")
+        return binding
 
     @staticmethod
     def _require_incident_scope(
