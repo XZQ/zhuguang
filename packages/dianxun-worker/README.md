@@ -18,3 +18,5 @@ uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 ```
 
 构建器会验证包内 Skill 与 canonical 目录逐字一致，并确定性生成 ZIP、SHA-256 与逐 Skill provenance。不要直接修改 `dist/` 或在本目录实现 `IncidentService`、MCP、Policy 和状态存储。
+
+范围协议 v2 的调用约束在 `config/AGENTS.md`：范围版本、Context CAS 与恢复 generation 分离；显式审批对象；Human 库存来源核对；旧回执仅供历史回放。部署必须同步新服务端和 Worker 包，不能把旧客户端缺版本的请求自动补成当前版本。

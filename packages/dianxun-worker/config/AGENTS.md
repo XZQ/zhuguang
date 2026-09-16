@@ -20,6 +20,18 @@
 
 每次回复至少包含：`incident_id`、`phase`、`status`、`summary`、`evidence_refs`、`next_owner`、`blocking_reason`、`context_version`、`assignment_id`、`attempt`、`lease_expires_at` 和 `checkpoint_ref`。调用 MCP 时保留返回的 `request_id` 与 `audit_ref`。
 
+## 库存范围协议 v2
+
+- 先读取 `runtime_snapshot` 的 `incident.scope_version`、范围快照和恢复 generation；`scope_version` 与 `context.version` 不可互换。
+- 对已启用 v2 的事件，所有 runtime 推进/修改请求携带 `expected_scope_version`，继续保留原 `expected_version`（Context CAS）。`runtime_tool.arguments` 内的 MCP 写请求也携带同一 `expected_scope_version`。不默认填当前版本来重试陈旧任务。
+- `runtime_open` 创建 v2 新事件使用 `expected_scope_version=0`；已存在事件必须先读快照，不把打开接口当成重置操作。
+- 版本冲突先读快照并核对 assignment/generation；范围修订失效的旧租约、旧输出和 checkpoint 不能推进新轮次。`historical_replay=true` 仅是历史回执，不是本轮新动作成功。
+- 批次处置/解除停售申请审批填写明确 `target_batch_ids`，不夹带设备目标；维修审批只填 `target_device_ids=[device_id]`，批次列表留空或省略。数量、位置、规则由服务器生成快照，不能从 subject 文案推断授权。新增或拆分子批不得借父批批准/凭证放行。
+- 补货、移柜、拆批及旧事件库存对账只由同门店 Human 经 `runtime_revise_scope` / `runtime_reconcile_scope` 提交来源引用、稳定 `change_id` 和所有关联开放事件的 `expected_versions`；Agent 只报告差异，不虚构 WMS/POS 事实。
+- CONTAIN 仅处理当前 `containment_required`；查询原工单及 `context.recovery.operations` 后恢复，不因 generation 增加就重新发工单。未知执行结果先回查；未取得渠道回执不得宣称已经遏制。
+- Auditor 汇总当前完整叶子批次范围；旧范围成功不等于当前完整核验通过。历史已完成动作和回执保留，不修改过去决定来掩盖范围变化。
+- 放行使用本轮 Auditor 返回的 verification_id；v2 独立核验编号包含 `:scope:<scope_version>`，不得硬编码旧的 `<incident_id>:verify:release_guard`。
+
 ## 协调生命周期
 
 - Orchestrator 按租户创建有 TTL 的 Context；Context 只保存协调元数据、assignment、checkpoint 和 Evidence 引用，不得直接写业务终态。
