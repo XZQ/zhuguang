@@ -64,6 +64,8 @@ Human 修订接口：
 
 旧事件库存对账使用 `runtime_reconcile_scope`，同样包含 `incident_id`、完整 `expected_versions`、唯一 `change_id` 与 `source_ref`，不接受模型编造的来源。关闭后出现新暴露，调用 `runtime_open` 创建新事件，并传 `previous_incident_id` 和 `source_ref` 关联已关闭历史，不重写旧事件。
 
+未启用 v2 的旧库保留原有“重核后安全降级”的行为；切换为 v2 后，已关闭事件只供历史读取，不重新执行核验或关闭来改写历史。新风险必须走关联新事件，不能把历史 CLOSED 当作当前库存安全证明。
+
 ## 审批与恢复
 
 - 批次处置、解除停售：申请时明确 `target_batch_ids`；不得附带设备目标。服务器绑定当前数量、位置、规则。

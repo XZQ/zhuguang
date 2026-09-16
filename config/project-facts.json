@@ -229,9 +229,9 @@
     "m3_repository_artifacts": {
       "status": "implemented_static_external_runtime_pending",
       "worker_package": "dist/dianxun-worker.zip",
-      "worker_package_source_commit": "5014ce872c81ff78c36a44c7c5f70b7bc29e2897",
-      "worker_package_url": "https://raw.githubusercontent.com/XZQ/zhuguang/5014ce872c81ff78c36a44c7c5f70b7bc29e2897/dist/dianxun-worker.zip",
-      "worker_package_sha256": "6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b",
+      "worker_package_source_commit": "ade0e67022cbc1d6c0dc5adab6a353a2575d36cb",
+      "worker_package_url": "https://raw.githubusercontent.com/XZQ/zhuguang/ade0e67022cbc1d6c0dc5adab6a353a2575d36cb/dist/dianxun-worker.zip",
+      "worker_package_sha256": "528c2990626eace1d78b3db5f358768a3d27c64db14ab9f4746dc3e8815ed957",
       "worker_package_files": 35,
       "artifact_contract_tests": 5,
       "runtime_evidence_contract_tests": 4,

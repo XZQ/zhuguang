@@ -497,7 +497,7 @@ class MCPService:
                 raise PermissionError("Auditor release_guard belongs to an old scope")
             if case.scope_version:
                 from ..domain.safety import batches_are_safe_terminal
-                from ..scope_guard import scope_actions_cover
+                from ..scope_guard import scope_actions_cover, scope_device_ids
 
                 batches = self.store.list_batches(batch_ids=case.affected_batches)
                 if not scope_actions_cover(self.store, case) or not batches_are_safe_terminal(
@@ -515,7 +515,7 @@ class MCPService:
                 updates.extend(
                     d["updated_at"]
                     for d in self.store.list_devices()
-                    if d["device_id"] in case.affected_assets
+                    if d["device_id"] in scope_device_ids(case)
                 )
                 if any(
                     self._parse_time(value) > self._parse_time(verification["verified_at"])

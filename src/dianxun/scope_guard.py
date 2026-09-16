@@ -6,6 +6,14 @@ from contextlib import contextmanager
 from .domain.scope import build_scope_snapshot, scope_digest
 
 
+def scope_device_ids(case):
+    """Devices whose current facts support the complete incident scope."""
+    devices = set(case.affected_assets)
+    if case.scope_version and case.scope_snapshot:
+        devices.update(batch["device_id"] for batch in case.scope_snapshot["batches"])
+    return devices
+
+
 @contextmanager
 def locked_scope(store, incident_id):
     with store.transaction() as conn:

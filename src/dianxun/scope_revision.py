@@ -314,6 +314,10 @@ class ScopeRevisionService:
                     or expected["context_version"] != context.version
                 ):
                     raise ContextVersionConflict("Related incident scope/context version changed")
+                from .scope_guard import current_snapshot
+
+                if scope_digest(current_snapshot(self.store, current)) != current.scope_digest:
+                    raise ValueError("Existing inventory drift requires source reconciliation before revision")
                 contexts[current.incident_id] = context
             replacements = {}
             changed_ids = set()

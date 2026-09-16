@@ -1,5 +1,7 @@
 # 逐光队｜店巡 Agent
 
+> 开发分支暂停交接（2026-09-16）：当前为 WIP，最近完整回归 190 项中 2 失败、2 跳过，后续草稿尚未验收。下方旧通过数字不是当前分支通过证明。请先阅读[统一待办](docs/待办.md)和[当日交接](docs/operations/2026-09-16-scope-v2-handoff.md)，不要直接部署。
+
 [![CI](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml/badge.svg)](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml)
 
 > 让连锁门店异常从“告警已读”走到“证据完备、责任清晰、安全关闭”。
@@ -238,10 +240,10 @@ uv run --group dev python -m unittest -v tests.test_agentteams_artifacts
 当前 Worker ZIP SHA-256：
 
 ```text
-6f3a9e590ee85b7336b529488e82f979ea3e3d04c1d1fbda2f1dd397bbc5289b
+528c2990626eace1d78b3db5f358768a3d27c64db14ab9f4746dc3e8815ed957
 ```
 
-5 个 Worker 的下载地址均固定到不可变 commit `5014ce872c81ff78c36a44c7c5f70b7bc29e2897`；契约测试禁止退回可漂移的 `main` URL。[历史线性化记录](docs/operations/git-history-linearization-20260913.md)保留旧新提交映射；已核对固定下载包字节及 SHA-256 不变，双平台复现记录仍对应原历史版本。
+5 个 Worker 的下载地址均固定到不可变 commit `ade0e67022cbc1d6c0dc5adab6a353a2575d36cb`；契约测试禁止退回可漂移的 `main` URL。此版本补充范围 v2 协议，本地提交不等于已发布，部署前须确认固定 URL 可下载且摘要一致；升级步骤见[范围协议交接](docs/operations/scope-v2-upgrade.md)。[历史线性化记录](docs/operations/git-history-linearization-20260913.md)和双平台复现记录仍对应旧包，不作为新版下载验证。
 
 AgentTeams 版本固定为 `v1.2.3`（commit `223ddc2b8073e4c8b93bcbb15e1d717f196c04d9`），CRD 为 `agentteams.io/v1beta1`，Manager/Worker runtime 为 `qwenpaw`。构建、部署和动态验收步骤见 [`agentteams/README.md`](agentteams/README.md)。
 

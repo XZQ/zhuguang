@@ -28,7 +28,14 @@ def outcome_verify(
     from ..scope_guard import locked_scope, require_current_scope
 
     with locked_scope(service.store, incident_id):
-        require_current_scope(service.store, incidents.get(incident_id))
+        case = incidents.get(incident_id)
+        if case.incident_status == "CLOSED" and (
+            case.scope_version or service.store.get_meta("schema:scope-v2") == "1"
+        ):
+            from ..domain.service import InvalidTransition
+
+            raise InvalidTransition("Closed history is immutable; assess new exposure in a linked incident")
+        require_current_scope(service.store, case)
         return _outcome_verify(
             incidents=incidents,
             service=service,
@@ -87,7 +94,9 @@ def _outcome_verify(*, incidents, service, incident_id, policy, trace_id):
             ),
         }
         if case.scope_version:
-            locations = {batch["device_id"] for batch in case.scope_snapshot["batches"]}
+            from ..scope_guard import scope_device_ids
+
+            locations = scope_device_ids(case)
             for device_id in sorted(locations - {case.affected_assets[0]}):
                 extra = _query(
                     service.query_device_context,

@@ -296,8 +296,10 @@ class IncidentService:
 
     def _recompute(self, incident_id: str) -> IncidentCase:
         case = self.get(incident_id)
-        if case.incident_status == IncidentStatus.CLOSED:
-            return case
+        if case.incident_status == IncidentStatus.CLOSED and (
+            case.scope_version or self.store.get_meta("schema:scope-v2") == "1"
+        ):
+            raise InvalidTransition("Closed history is immutable; assess new exposure in a linked incident")
         batches = self.store.list_batches(batch_ids=case.affected_batches)
         case.batch_dispositions = {
             row["batch_id"]: BatchDisposition(row["disposition"]) for row in batches
@@ -310,7 +312,9 @@ class IncidentService:
         case.workorder_refs = [row["workorder_id"] for row in workorders]
 
         devices = self.store.list_devices()
-        affected_assets = set(case.affected_assets)
+        from ..scope_guard import scope_device_ids
+
+        affected_assets = scope_device_ids(case)
         case.asset_states = {
             row["device_id"]: (
                 "recovered"
