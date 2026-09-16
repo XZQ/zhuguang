@@ -12,6 +12,7 @@ from dianxun.state import PostgresStateStore
 
 _DSN = os.environ.get("DIANXUN_TEST_POSTGRES_DSN", "")
 _READONLY_DSN = os.environ.get("DIANXUN_TEST_POSTGRES_READONLY_DSN", "")
+_RUNTIME_DSN = os.environ.get("DIANXUN_TEST_POSTGRES_RUNTIME_DSN", "")
 _RESET_ALLOWED = os.environ.get("DIANXUN_ALLOW_TEST_DATABASE_RESET") == "1"
 
 
@@ -68,6 +69,75 @@ class PolarDBIntegrationTests(unittest.TestCase):
         self._assert_partition_guards()
         self._assert_pgvector_workflow()
         self._assert_read_snapshot()
+        self._assert_limited_runtime_http()
+
+    def _assert_limited_runtime_http(self):
+        # The admin prepares ONLY synthetic fixtures. All MCP/Worker requests use
+        # a separate NOSUPERUSER/NOBYPASSRLS login, never SET ROLE or an admin DSN.
+        from dianxun.domain import PolicyEngine
+        from dianxun.mcp.p0 import DEFAULT_POLICY_PATH, MCPService
+        from dianxun.scenarios import ScenarioEngine
+        from tests.test_worker_runtime import WorkerRuntimeTests
+
+        if not _RUNTIME_DSN:
+            raise RuntimeError("A separate DIANXUN_TEST_POSTGRES_RUNTIME_DSN is required")
+        runtime_user = urlsplit(_RUNTIME_DSN).username
+        if not runtime_user or runtime_user in {
+            urlsplit(_DSN).username,
+            urlsplit(_READONLY_DSN).username,
+        }:
+            raise RuntimeError("Runtime login must differ from admin and readonly logins")
+        admin = self.store
+        admin.apply_profile("security")
+        with admin.transaction() as conn:
+            database = conn.execute("SELECT current_database() AS name").fetchone()["name"]
+            conn.execute(
+                """INSERT INTO dianxun_principal_scope(
+                    database_role, tenant_id, runtime_role, store_id
+                ) VALUES(?, 'demo', 'runtime', 'S03')
+                ON CONFLICT(database_role) DO UPDATE SET
+                    tenant_id = excluded.tenant_id,
+                    runtime_role = excluded.runtime_role,
+                    store_id = excluded.store_id""",
+                (runtime_user,),
+            )
+
+        class LimitedRuntimeCase(WorkerRuntimeTests):
+            def initialize_runtime_fixture(case, path):
+                admin.initialize_from_file(DEFAULT_SEED_PATH, reset=True)
+                case.scenario = ScenarioEngine(
+                    admin,
+                    DEFAULT_SCENARIO_PATH,
+                    service=MCPService(admin, PolicyEngine(DEFAULT_POLICY_PATH)),
+                )
+                case.scenario.reset()
+                case.store = PostgresStateStore(
+                    _RUNTIME_DSN, tenant_id="demo", runtime_role="runtime", store_id="S03"
+                )
+                with case.store.read_snapshot() as conn:
+                    identity = conn.execute(
+                        """SELECT session_user AS login, current_database() AS database,
+                        rolsuper, rolbypassrls, rolcreatedb, rolcreaterole
+                        FROM pg_roles WHERE rolname = session_user"""
+                    ).fetchone()
+                    case.assertEqual(runtime_user, identity["login"])
+                    case.assertEqual(database, identity["database"])
+                    for flag in ("rolsuper", "rolbypassrls", "rolcreatedb", "rolcreaterole"):
+                        case.assertFalse(identity[flag], flag)
+                case.mcp = MCPService(case.store, PolicyEngine(DEFAULT_POLICY_PATH))
+
+        names = [
+            "test_real_http_workflow_recovers_after_restart_and_closes_independently",
+            "test_scope_actor_lease_and_claims_cannot_be_forged",
+            "test_diagnosis_output_survives_lost_response_and_restart",
+            "test_failed_audit_can_recontain_reexecute_and_close",
+        ]
+        result = unittest.TextTestRunner(verbosity=2).run(
+            unittest.TestSuite(LimitedRuntimeCase(name) for name in names)
+        )
+        self.assertEqual(4, result.testsRun)
+        self.assertFalse(result.skipped)
+        self.assertTrue(result.wasSuccessful(), "Non-admin PostgreSQL runtime protocol failed")
 
     def _assert_read_snapshot(self):
         from psycopg.errors import ReadOnlySqlTransaction

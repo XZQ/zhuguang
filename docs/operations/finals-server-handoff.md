@@ -33,7 +33,7 @@ uv run python scripts/check_quality_facts.py
 | 用途 | 配置 |
 |---|---|
 | 迁移 | `DIANXUN_DATABASE_URL` 指向管理员 DSN；完成后从该进程退出 |
-| 条件集成测试 | `DIANXUN_TEST_POSTGRES_DSN`、`DIANXUN_TEST_POSTGRES_READONLY_DSN`、`DIANXUN_ALLOW_TEST_DATABASE_RESET=1` |
+| 条件集成测试 | `DIANXUN_TEST_POSTGRES_DSN`、`DIANXUN_TEST_POSTGRES_READONLY_DSN`、`DIANXUN_TEST_POSTGRES_RUNTIME_DSN`、`DIANXUN_ALLOW_TEST_DATABASE_RESET=1` |
 | 正式运行 | `dianxun-polardb-runtime/database-url` 为受限运行 DSN |
 | Worker 身份 | `dianxun-agent-identities/runtime-tokens-json`；每个 Worker 独立 actor、worker_id、tenant_id、store_id |
 | 人工审批与证据 | `actor-tokens-json` 中独立 Human 身份，禁止提供给 Worker／模型 |
@@ -52,7 +52,7 @@ uv run dianxun db-bootstrap --profile cron --profile archive
 uv run python -m unittest -v tests.test_polardb_integration
 ```
 
-该测试类仍是 2 项条件测试。第一项增加了真实月首日／越维护窗口拒绝、SAVEPOINT 后继续事务、分区创建，以及知识审核后的 PostgreSQL vector 写入和检索。向量测试使用本地 hash embedding，仅证明数据库调用链，不证明语义模型效果。第二项验证独立只读登录和总部／门店边界。**必须报告 2 passed、0 skipped**；还要另测运行账号的跨租户、跨门店隔离和允许写入路径，管理员测试通过不能替代运行账号验收。
+该测试类仍是 2 项条件测试。第一项增加了真实月首日／越维护窗口拒绝、SAVEPOINT 后继续事务、分区创建，以及知识审核后的 PostgreSQL vector 写入和检索。向量测试使用本地 hash embedding，仅证明数据库调用链，不证明语义模型效果。第一项内还执行四条 HTTP 协议回归：重启后独立关闭、身份/租约伪造拒绝、诊断响应丢失恢复、复核失败后重新遏制执行。须预建继承 `dianxun_runtime` 的独立 LOGIN；运行 DSN 的用户名不能与管理员或只读登录相同，且不能具有 superuser、BYPASSRLS、CREATEDB、CREATEROLE 权限。管理员仅准备合成夹具，HTTP 请求使用实际受限数据库连接；缺失运行 DSN 会失败，不静默跳过。第二项验证独立只读登录和总部／门店边界。**必须报告外层 2 passed、0 skipped，内层 4 passed、0 skipped**。这些合成 Worker/Human/实物回执不替代真实 AT、人工审批或托管 PolarDB 验收。
 
 `security` 的 `2026-09-16-security-audit-append-v3` 迁移显式撤销旧版对审计表的更新权限，运行/HQ 只可读取和追加。现有目标实例须由获授权迁移身份重应用 security；不能只拉代码就宣称数据库权限已变更。新增 `tests/sql/runtime_security_regression.sql` 以实际非管理员连接检查业务范围、客户端伪造范围、审计改删拒绝及合法追加。它会重置合成夹具，**仅允许封闭测试容器内的专用 `zhuguang_runtime_test`**，禁止对业务库执行。CI 还先恢复旧 UPDATE 授权再应用新迁移，以验证升级路径。该 SQL 回归不代替受限账号经 MCP 的完整业务链验收。
 

@@ -18,6 +18,7 @@ from tests import test_worker_runtime as fixture
 class RuntimeRecoveryTests(unittest.TestCase):
     # Reuse the real HTTP+SQLite fixture without discovering the base tests twice.
     setUp = fixture.WorkerRuntimeTests.setUp
+    initialize_runtime_fixture = fixture.WorkerRuntimeTests.initialize_runtime_fixture
     restart_runtime = fixture.WorkerRuntimeTests.restart_runtime
     rpc = fixture.WorkerRuntimeTests.rpc
     snapshot = fixture.WorkerRuntimeTests.snapshot

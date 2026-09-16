@@ -28,6 +28,7 @@ from tests import test_worker_runtime as fixture
 
 
 class FinalOperationsTests(unittest.TestCase):
+    initialize_runtime_fixture = fixture.WorkerRuntimeTests.initialize_runtime_fixture
     rpc = fixture.WorkerRuntimeTests.rpc
     restart_runtime = fixture.WorkerRuntimeTests.restart_runtime
     assign = fixture.WorkerRuntimeTests.assign

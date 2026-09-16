@@ -180,6 +180,7 @@ jobs:
             -e PYTHONPATH=/workspace/src \
             -e DIANXUN_TEST_POSTGRES_DSN=postgresql://postgres@127.0.0.1/zhuguang_integration_test \
             -e DIANXUN_TEST_POSTGRES_READONLY_DSN=postgresql://zhuguang_test_ro@127.0.0.1/zhuguang_integration_test \
+            -e DIANXUN_TEST_POSTGRES_RUNTIME_DSN=postgresql://zhuguang_test_runtime@127.0.0.1/zhuguang_integration_test \
             -e DIANXUN_ALLOW_TEST_DATABASE_RESET=1 dianxun-pg-tests:ci -W error::ResourceWarning \
             -c 'import sys, unittest; suite = unittest.defaultTestLoader.loadTestsFromName("tests.test_polardb_integration"); result = unittest.TextTestRunner(verbosity=2).run(suite); sys.exit(not result.wasSuccessful() or bool(result.skipped) or result.testsRun == 0)'
 

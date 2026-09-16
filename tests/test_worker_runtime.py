@@ -25,15 +25,7 @@ class WorkerRuntimeTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
-        self.store = StateStore(Path(temporary.name) / "runtime.db")
-        self.store.initialize_from_file(ROOT / "demo/state/seed.json")
-        self.mcp = MCPService(self.store, PolicyEngine(DEFAULT_POLICY_PATH))
-        self.scenario = ScenarioEngine(
-            self.store,
-            ROOT / "demo/state/scenarios/coldchain-compressor-failure.json",
-            service=self.mcp,
-        )
-        self.scenario.reset()
+        self.initialize_runtime_fixture(Path(temporary.name) / "runtime.db")
         identities = {
             role: {"actor": role, "worker_id": role.lower(), "tenant_id": "demo", "store_id": "S03"}
             for role in ("Orchestrator", "Sentry", "Diagnoser", "Executor", "Auditor")
@@ -56,6 +48,18 @@ class WorkerRuntimeTests(unittest.TestCase):
         self.addCleanup(self.server.shutdown)
         self.incident = "INC-RUNTIME"
         self.rpc("Orchestrator", "open", incident_id=self.incident, device_id="FROST-S03")
+
+    def initialize_runtime_fixture(self, path):
+        """Shared protocol cases can supply a separately provisioned backend."""
+        self.store = StateStore(path)
+        self.store.initialize_from_file(ROOT / "demo/state/seed.json")
+        self.mcp = MCPService(self.store, PolicyEngine(DEFAULT_POLICY_PATH))
+        self.scenario = ScenarioEngine(
+            self.store,
+            ROOT / "demo/state/scenarios/coldchain-compressor-failure.json",
+            service=self.mcp,
+        )
+        self.scenario.reset()
 
     def restart_runtime(self):
         # Fresh service and context instances; persisted state is the only recovery source.
