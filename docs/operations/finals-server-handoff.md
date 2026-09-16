@@ -214,7 +214,9 @@ uv run --extra postgres python scripts/capture_runtime.py \
 
 在隔离实例执行正常分区创建、再次创建的幂等检查，并保存 `pg_inherits` 中实际分区。要证明 cron 运行，须在隔离库临时安排短周期的同等作业，等它实际触发，再取消临时作业；仅手工调用函数或查询 cron.job 不够。保存 cron.job_run_details 与 dianxun_cron_health 的 runid、状态和开始／结束时间。夜间复盘当前仅入队，不等于 AgentTeams 复盘已执行。
 
-归档须由管理员先配置独立 foreign table。使用隔离月分区的小规模合成审计数据调用 `stage_audit_partition_to_foreign`，重复调用并核对源／目标条数、内容摘要与 manifest。再注入目标缺行并确认验证拒绝。当前函数按条数验证，内容摘要需要外部核对；不能以相同条数宣称内容完全一致。函数不删除源分区。本轮未实跑 cron、归档或 OSS，状态保留 F04。
+归档须由管理员先配置独立 foreign table。使用隔离月分区的小规模合成审计数据调用 `stage_audit_partition_to_foreign`，重复调用并核对源／目标条数、内容摘要与 manifest。再注入目标缺行、等量内容篡改并确认验证拒绝。函数已在首次复制和重跑时使用完整行 JSONB 的 `EXCEPT ALL` 核对内容与重复数量；旧 manifest 不得用于另一个目标表。函数不删除源分区。内容核对证明当前读取快照的一致性，不保证归档目标之后不被修改，也不能代替 OSS 持久性与灾备验证。
+
+2026-09-16 已在首尔独立、无网络的 PostgreSQL 16/pgvector 容器中实跑 `postgres_fdw` 合成归档回归：首次复制、重复调用、等量篡改拒绝、目标替换拒绝、缺行拒绝、首次复制内容变化后的回滚。源码为 `tests/sql/archive_regression.sql`，CI 的 `postgres-archive` job 从全新数据库应用 core/security/archive 后执行它。测试脚本只允许专用 `zhuguang_archive_test` 数据库，并会清空其中合成审计和归档夹具；严禁用于业务库。此结果不是 PolarDB、OSS、cron 或真实门店验收，F04 其余条件继续保留。
 
 ## 7. 托管切换与业务量化
 

@@ -209,17 +209,18 @@ BEGIN
         RAISE EXCEPTION 'audit partition month is outside the allowed maintenance window';
     END IF;
     EXECUTE format(
-        'CREATE TABLE IF NOT EXISTS %I PARTITION OF audit_log FOR VALUES FROM (%L) TO (%L)',
+        'CREATE TABLE IF NOT EXISTS public.%I PARTITION OF public.audit_log '
+        || 'FOR VALUES FROM (%L) TO (%L)',
         partition_name,
         month_start,
         month_end
     );
     IF to_regprocedure('public.dianxun_tenant_allowed(text)') IS NOT NULL THEN
-        EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', partition_name);
-        EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', partition_name);
-        EXECUTE format('DROP POLICY IF EXISTS audit_partition_scope ON %I', partition_name);
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', partition_name);
+        EXECUTE format('ALTER TABLE public.%I FORCE ROW LEVEL SECURITY', partition_name);
+        EXECUTE format('DROP POLICY IF EXISTS audit_partition_scope ON public.%I', partition_name);
         EXECUTE format(
-            'CREATE POLICY audit_partition_scope ON %I USING '
+            'CREATE POLICY audit_partition_scope ON public.%I USING '
             || '(public.dianxun_tenant_allowed(tenant_id)) WITH CHECK '
             || '(public.dianxun_tenant_allowed(tenant_id))',
             partition_name
@@ -299,4 +300,8 @@ CREATE TABLE IF NOT EXISTS supplier_contracts (
 
 INSERT INTO schema_migrations(version)
 VALUES ('2026-08-28-core-v1')
+ON CONFLICT(version) DO NOTHING;
+
+INSERT INTO schema_migrations(version)
+VALUES ('2026-09-16-partition-schema-v2')
 ON CONFLICT(version) DO NOTHING;

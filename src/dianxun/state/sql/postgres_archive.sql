@@ -26,6 +26,8 @@ DECLARE
     destination_count BIGINT;
     destination_kind "char";
     archive_key TEXT;
+    content_differs BOOLEAN;
+    recorded_destination TEXT;
 BEGIN
     IF NOT EXISTS (
         SELECT 1
@@ -44,6 +46,11 @@ BEGIN
     EXECUTE format('SELECT count(*) FROM %s', source_partition) INTO source_count;
     archive_key := 'archive:' || source_partition::TEXT || ':' || archive_month::TEXT;
     IF EXISTS (SELECT 1 FROM audit_archive_manifest WHERE archive_id = archive_key) THEN
+        SELECT m.destination_table INTO recorded_destination
+        FROM audit_archive_manifest m WHERE m.archive_id = archive_key;
+        IF to_regclass(recorded_destination) IS DISTINCT FROM destination_table THEN
+            RAISE EXCEPTION 'archive destination mismatch';
+        END IF;
         EXECUTE format(
             'SELECT count(*) FROM %s WHERE created_at >= %L AND created_at < %L',
             destination_table,
@@ -53,6 +60,15 @@ BEGIN
         IF destination_count <> source_count THEN
             RAISE EXCEPTION 'archive verification mismatch: source %, destination %',
                 source_count, destination_count;
+        END IF;
+        EXECUTE format(
+            'SELECT EXISTS (SELECT to_jsonb(s) FROM %s s EXCEPT ALL '
+            || 'SELECT to_jsonb(d) FROM %s d WHERE created_at >= %L AND created_at < %L)',
+            source_partition, destination_table,
+            archive_month, archive_month + INTERVAL '1 month'
+        ) INTO content_differs;
+        IF content_differs THEN
+            RAISE EXCEPTION 'archive content mismatch';
         END IF;
         UPDATE audit_archive_manifest SET
             source_rows = source_count,
@@ -84,6 +100,18 @@ BEGIN
             source_count, inserted_count, destination_count;
     END IF;
 
+    -- Equal counts alone cannot detect altered rows or substituted duplicates.
+    -- EXCEPT ALL compares the complete JSONB row multiset, including multiplicity.
+    EXECUTE format(
+        'SELECT EXISTS (SELECT to_jsonb(s) FROM %s s EXCEPT ALL '
+        || 'SELECT to_jsonb(d) FROM %s d WHERE created_at >= %L AND created_at < %L)',
+        source_partition, destination_table,
+        archive_month, archive_month + INTERVAL '1 month'
+    ) INTO content_differs;
+    IF content_differs THEN
+        RAISE EXCEPTION 'archive content mismatch';
+    END IF;
+
     INSERT INTO audit_archive_manifest(
         archive_id, source_partition, destination_table, archive_month,
         source_rows, copied_rows, status, copied_at, verified_at
@@ -110,4 +138,8 @@ GRANT EXECUTE ON FUNCTION stage_audit_partition_to_foreign(REGCLASS, REGCLASS, D
 
 INSERT INTO schema_migrations(version)
 VALUES ('2026-08-28-archive-v1')
+ON CONFLICT(version) DO NOTHING;
+
+INSERT INTO schema_migrations(version)
+VALUES ('2026-09-16-archive-content-v2')
 ON CONFLICT(version) DO NOTHING;

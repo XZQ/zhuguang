@@ -118,6 +118,41 @@ jobs:
       - name: Generated artifacts are current
         run: git diff --exit-code
 
+  postgres-archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Start isolated PostgreSQL with pgvector
+        run: |
+          docker run -d --name zhuguang-archive-ci --network none --memory 512m --cpus 1 \
+            -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=zhuguang_archive_test \
+            pgvector/pgvector@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+          for attempt in $(seq 1 30); do
+            if docker exec zhuguang-archive-ci pg_isready -U postgres -d zhuguang_archive_test; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Fresh bootstrap and real foreign-table archive regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat src/dianxun/state/sql/postgres_schema.sql \
+              src/dianxun/state/sql/postgres_security.sql \
+              src/dianxun/state/sql/postgres_archive.sql \
+              tests/sql/archive_regression.sql |
+            docker exec -i zhuguang-archive-ci psql -X -v ON_ERROR_STOP=1 \
+              -U postgres -d zhuguang_archive_test
+
+      - name: Stop isolated PostgreSQL
+        if: always()
+        run: docker stop zhuguang-archive-ci
+
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 20
