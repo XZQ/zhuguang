@@ -102,6 +102,8 @@ def collect_casefile(mcp, principal, incident_id, *, limit=1000, include_trace=T
             )
         else:
             records["batch_lineage"] = []
+        if "scope_revisions" in truncated and "batch_lineage" not in truncated:
+            truncated.append("batch_lineage")
     assets = case["affected_assets"]
     batches = case["affected_batches"]
     if assets:

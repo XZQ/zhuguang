@@ -59,6 +59,13 @@ class IncidentService:
         return IncidentCase.from_dict(raw)
 
     def save(self, case: IncidentCase) -> IncidentCase:
+        existing = self.store.get_incident(case.incident_id)
+        if (
+            existing
+            and existing["incident_status"] == "CLOSED"
+            and (existing.get("scope_version") or self.store.get_meta("schema:scope-v2") == "1")
+        ):
+            raise InvalidTransition("Closed history is immutable; open a linked incident")
         case.touch(self.store.now())
         case.version = self.store.save_incident(case.to_dict())
         return case
@@ -225,8 +232,21 @@ class IncidentService:
         incident_id: str,
         verification: Verification,
     ) -> IncidentCase:
-        with self.store.transaction() as conn:
+        from ..scope_guard import locked_scope, require_current_scope
+
+        with locked_scope(self.store, incident_id) as conn:
             case = self.get(incident_id)
+            require_current_scope(self.store, case)
+            if case.scope_version:
+                verification.verification_id = (
+                    verification.verification_id.split(":scope:")[0]
+                    + f":scope:{case.scope_version}"
+                )
+                verification.expected_condition = {
+                    **verification.expected_condition,
+                    "scope_version": case.scope_version,
+                    "scope_digest": case.scope_digest,
+                }
             case.verifications = [
                 existing
                 for existing in case.verifications
@@ -259,11 +279,25 @@ class IncidentService:
                     verification.verified_at,
                 ),
             )
+            if case.scope_version:
+                conn.execute(
+                    "UPDATE verifications SET scope_version=?,scope_digest=? "
+                    "WHERE verification_id=?",
+                    (case.scope_version, case.scope_digest, verification.verification_id),
+                )
             return self.save(case)
 
     def recompute(self, incident_id: str) -> IncidentCase:
         """Refresh entity states and derive aggregate status without trusting an Agent claim."""
+        from ..scope_guard import locked_scope
+
+        with locked_scope(self.store, incident_id):
+            return self._recompute(incident_id)
+
+    def _recompute(self, incident_id: str) -> IncidentCase:
         case = self.get(incident_id)
+        if case.incident_status == IncidentStatus.CLOSED:
+            return case
         batches = self.store.list_batches(batch_ids=case.affected_batches)
         case.batch_dispositions = {
             row["batch_id"]: BatchDisposition(row["disposition"]) for row in batches
@@ -297,11 +331,21 @@ class IncidentService:
                 for batch_id in case.affected_batches
             )
 
-        pending_approvals = [row for row in approvals if row["status"] == "pending"]
+        obsolete = {
+            row["action_id"]
+            for row in approvals
+            if case.scope_version and row.get("applicability") != "applicable"
+        }
+        pending_approvals = [
+            row
+            for row in approvals
+            if row["status"] == "pending" and row["action_id"] not in obsolete
+        ]
         unresolved_actions = [
             action
             for action in case.actions
-            if action.status
+            if action.action_id not in obsolete
+            and action.status
             in {
                 ActionStatus.PROPOSED,
                 ActionStatus.PENDING,
@@ -319,8 +363,17 @@ class IncidentService:
             actions=self.store.list_actions(incident_id=incident_id),
             now=self.store.now(),
         )
+        if case.scope_version:
+            from ..scope_guard import scope_actions_cover
+
+            batch_terminal = batch_terminal and scope_actions_cover(self.store, case)
         latest_by_subject: dict[str, Verification] = {}
         for verification in case.verifications:
+            if case.scope_version and (
+                verification.expected_condition.get("scope_version") != case.scope_version
+                or verification.expected_condition.get("scope_digest") != case.scope_digest
+            ):
+                continue
             latest_by_subject[verification.subject] = verification
         latest_updates = {
             "device": [
@@ -334,6 +387,13 @@ class IncidentService:
             self._verification_is_fresh(latest_by_subject.get(subject), updates)
             for subject, updates in latest_updates.items()
         )
+        if case.scope_version or case.scope_state:
+            from ..scope_guard import require_current_scope
+
+            try:
+                require_current_scope(self.store, case)
+            except ValueError:
+                verified = False
 
         if batch_terminal and not unresolved_actions and not pending_approvals and verified:
             case.incident_status = IncidentStatus.RESOLVED
@@ -367,8 +427,11 @@ class IncidentService:
         return all(verified_at >= _parse_timestamp(updated_at) for updated_at in state_updates)
 
     def close_after_learning(self, incident_id: str) -> IncidentCase:
-        with self.store.transaction() as conn:
+        from ..scope_guard import locked_scope, require_current_scope
+
+        with locked_scope(self.store, incident_id) as conn:
             current = self.get(incident_id)
+            require_current_scope(self.store, current)
             if self.store.backend_name == "postgresql" and current.affected_batches:
                 placeholders = ",".join("?" for _ in current.affected_batches)
                 conn.execute(

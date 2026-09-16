@@ -345,6 +345,7 @@ class MCPService:
         idempotency_key: str,
         actor: str = "Executor",
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         if not batch_ids:
@@ -357,6 +358,8 @@ class MCPService:
             "batch_ids": batch_ids,
             "reason": reason,
         }
+        if expected_scope_version is not None:
+            request["expected_scope_version"] = expected_scope_version
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(
@@ -441,6 +444,7 @@ class MCPService:
         idempotency_key: str,
         actor: str = "Executor",
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         decision = self.policy.evaluate(actor=actor, action_type="release_sales_hold")
@@ -451,15 +455,32 @@ class MCPService:
             "approval_id": approval_id,
             "verification_id": verification_id,
         }
+        if expected_scope_version is not None:
+            request["expected_scope_version"] = expected_scope_version
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(conn, incident_id=incident_id)
+            from ..domain import IncidentCase
+            from ..scope_guard import require_current_scope
+
+            case = IncidentCase.from_dict(self.store.get_incident(incident_id))
+            require_current_scope(self.store, case)
+            targets = []
+            for hold_id in hold_ids:
+                hold = conn.execute(
+                    "SELECT batch_id FROM sales_holds WHERE incident_id=? AND hold_id=?",
+                    (incident_id, hold_id),
+                ).fetchone()
+                if not hold:
+                    raise ValueError("Hold is outside incident")
+                targets.append(hold["batch_id"])
             self._require_approval(
                 conn,
                 approval_id=approval_id,
                 incident_id=incident_id,
                 action_id=action_id,
                 action_type="release_sales_hold",
+                batch_ids=targets,
             )
             verification = conn.execute(
                 """SELECT * FROM verifications WHERE verification_id = ?
@@ -469,6 +490,38 @@ class MCPService:
             ).fetchone()
             if verification is None:
                 raise PermissionError("A passed Auditor release_guard verification is required")
+            if case.scope_version and (
+                verification["scope_version"] != case.scope_version
+                or verification["scope_digest"] != case.scope_digest
+            ):
+                raise PermissionError("Auditor release_guard belongs to an old scope")
+            if case.scope_version:
+                from ..domain.safety import batches_are_safe_terminal
+                from ..scope_guard import scope_actions_cover
+
+                batches = self.store.list_batches(batch_ids=case.affected_batches)
+                if not scope_actions_cover(self.store, case) or not batches_are_safe_terminal(
+                    batches,
+                    case.affected_batches,
+                    receipts=self.store.list_manual_evidence(incident_id=incident_id),
+                    actions=self.store.list_actions(incident_id=incident_id),
+                    now=now,
+                ):
+                    raise PermissionError("Current complete scope lacks terminal action evidence")
+                updates = [b["updated_at"] for b in batches]
+                updates.extend(
+                    w["updated_at"] for w in self.store.list_workorders(incident_id=incident_id)
+                )
+                updates.extend(
+                    d["updated_at"]
+                    for d in self.store.list_devices()
+                    if d["device_id"] in case.affected_assets
+                )
+                if any(
+                    self._parse_time(value) > self._parse_time(verification["verified_at"])
+                    for value in updates
+                ):
+                    raise PermissionError("Full-scope Auditor verification is stale")
             if not hold_ids:
                 raise ValueError("hold_ids must not be empty")
             if len(hold_ids) != len(set(hold_ids)):
@@ -580,6 +633,13 @@ class MCPService:
                 incident_id=incident_id,
                 batch_ids=batch_ids,
             )
+            if target is BatchDisposition.RELEASED:
+                from ..domain import IncidentCase
+                from ..scope_guard import require_current_scope
+
+                require_current_scope(
+                    self.store, IncidentCase.from_dict(self.store.get_incident(incident_id))
+                )
             if decision.approval_required:
                 self._require_approval(
                     conn,
@@ -654,6 +714,7 @@ class MCPService:
         assignee: str = "vendor-a",
         actor: str = "Executor",
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         if not _is_finite_nonnegative_number(budget):
@@ -672,14 +733,24 @@ class MCPService:
             "approval_id": approval_id,
             "assignee": assignee,
         }
+        if expected_scope_version is not None:
+            request["expected_scope_version"] = expected_scope_version
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
-            self._require_incident_scope(
+            case = self._require_incident_scope(
                 conn,
                 incident_id=incident_id,
                 store_id=store_id,
                 device_id=device_id,
             )
+            if (
+                case.get("scope_version")
+                and conn.execute(
+                    "SELECT workorder_id FROM workorders WHERE incident_id=? AND device_id=?",
+                    (incident_id, device_id),
+                ).fetchone()
+            ):
+                raise ValueError("Reuse the existing device workorder and original idempotency key")
             if decision.approval_required:
                 self._require_approval(
                     conn,
@@ -688,6 +759,7 @@ class MCPService:
                     action_id=action_id,
                     action_type="create_workorder",
                     amount=budget,
+                    device_ids=[device_id],
                 )
             else:
                 self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
@@ -808,6 +880,11 @@ class MCPService:
             case = self._require_incident_scope(conn, incident_id=incident_id)
             binding = None
             if case.get("scope_version", 0):
+                if requested_action_type == "create_workorder":
+                    if target_batch_ids or not target_device_ids or len(target_device_ids) != 1:
+                        raise ValueError("Workorder approval requires exactly one device target")
+                elif not target_batch_ids or target_device_ids:
+                    raise ValueError("Batch action approval requires explicit batch targets only")
                 binding = self._approval_target(conn, case, target_batch_ids, target_device_ids)
             self._ensure_new_action(conn, incident_id=incident_id, action_id=action_id)
             approval_id = self.store.next_id(conn, "approval")
@@ -978,6 +1055,7 @@ class MCPService:
         uri: str | None = None,
         sha256: str | None = None,
         request_id: str | None = None,
+        expected_scope_version: int | None = None,
     ) -> dict[str, Any]:
         rid = request_id or self._request_id()
         if actor not in {"Human", "ScenarioEngine"}:
@@ -1011,6 +1089,8 @@ class MCPService:
             "uri": uri,
             "sha256": digest,
         }
+        if expected_scope_version is not None:
+            request["expected_scope_version"] = expected_scope_version
 
         def mutate(conn: ConnectionProtocol, now: str) -> dict[str, Any]:
             self._require_incident_scope(conn, incident_id=incident_id)
@@ -1171,8 +1251,16 @@ class MCPService:
                     ):
                         data["historical_replay"] = True
                     return self._ok(rid, data, audit_ref=previous["audit_id"])
-                if case and case.get("scope_version", 0):
+                if case and (
+                    case.get("scope_version", 0)
+                    or case.get("scope_state")
+                    or self.store.get_meta("schema:scope-v2") == "1"
+                ):
                     self.store.require_scope_schema()
+                    if case["incident_status"] == "CLOSED":
+                        raise ValueError("Closed history is immutable")
+                    if not case.get("scope_version"):
+                        raise ValueError("Legacy incident requires scope reconciliation")
                     expected = request.get("expected_scope_version")
                     if type(expected) is not int or expected != case["scope_version"]:
                         raise ValueError(
@@ -1180,6 +1268,37 @@ class MCPService:
                         )
                 now = self.store.now()
                 data = mutation(conn, now)
+                if (
+                    case
+                    and case.get("scope_version")
+                    and action_id
+                    and tool_name
+                    in {
+                        "apply_sales_hold",
+                        "apply_batch_disposition",
+                        "create_workorder",
+                        "release_sales_hold",
+                    }
+                ):
+                    batches = request.get("batch_ids", [])
+                    if tool_name == "release_sales_hold":
+                        batches = [
+                            conn.execute(
+                                "SELECT batch_id FROM sales_holds WHERE hold_id=?", (hold_id,)
+                            ).fetchone()["batch_id"]
+                            for hold_id in request["hold_ids"]
+                        ]
+                    binding = self._approval_target(
+                        conn,
+                        case,
+                        batches,
+                        [request["device_id"]] if request.get("device_id") else [],
+                    )
+                    conn.execute(
+                        "UPDATE actions SET scope_version=?,target_snapshot_json=? "
+                        "WHERE action_id=?",
+                        (case["scope_version"], _canonical(binding), action_id),
+                    )
                 policy_data = decision.to_dict()
                 audit_id = self.store.record_audit(
                     conn,
@@ -1299,9 +1418,9 @@ class MCPService:
                 raise PermissionError("Approval does not authorize these exact action targets")
 
     def _approval_target(self, conn, case, batch_ids, device_ids):
+        batch_ids = [] if batch_ids is None else batch_ids
         if (
             not isinstance(batch_ids, list)
-            or not batch_ids
             or any(not isinstance(v, str) for v in batch_ids)
             or len(batch_ids) != len(set(batch_ids))
         ):
@@ -1314,12 +1433,23 @@ class MCPService:
             or not set(devices) <= set(case["affected_assets"])
         ):
             raise ValueError("Approval device targets are outside incident scope")
+        if not batch_ids and not devices:
+            raise ValueError("Explicit action targets are required")
         self._require_incident_scope(conn, incident_id=case["incident_id"], batch_ids=batch_ids)
-        snapshot = build_scope_snapshot(
-            tenant_id=case["tenant_id"],
-            store_id=case["store_id"],
-            asset_ids=case["affected_assets"],
-            batches=self.store.list_batches(batch_ids=batch_ids),
+        snapshot = (
+            build_scope_snapshot(
+                tenant_id=case["tenant_id"],
+                store_id=case["store_id"],
+                asset_ids=case["affected_assets"],
+                batches=self.store.list_batches(batch_ids=batch_ids),
+            )
+            if batch_ids
+            else {
+                "tenant_id": case["tenant_id"],
+                "store_id": case["store_id"],
+                "asset_ids": sorted(case["affected_assets"]),
+                "batches": [],
+            }
         )
         return {
             "scope": snapshot,

@@ -358,6 +358,17 @@ P1_TOOLS: dict[str, dict[str, Any]] = {
     },
 }
 
+for _name in (
+    "apply_sales_hold",
+    "release_sales_hold",
+    "create_workorder",
+    "record_manual_evidence",
+):
+    TOOLS[_name]["inputSchema"]["properties"]["expected_scope_version"] = {
+        "type": "integer",
+        "minimum": 1,
+    }
+
 _READ_ONLY_TOOLS = {
     name for name in (*TOOLS, *P1_TOOLS) if name.startswith("query_") or name == "search_knowledge"
 }
@@ -797,6 +808,11 @@ class MCPHandler(BaseHTTPRequestHandler):
                 if scheduler is not None and not scheduler.healthy():
                     raise RuntimeError("Recovery scheduler unavailable")
                 service = getattr(self.server, "service", None) or default_service()
+                if (
+                    os.environ.get("DIANXUN_SCOPE_V2_REQUIRED") == "1"
+                    or service.store.get_meta("schema:scope-v2") == "1"
+                ):
+                    service.store.require_scope_schema()
                 with closing(service.store.connect()) as conn:
                     row = conn.execute(
                         "SELECT value FROM meta WHERE key = 'virtual_time'"

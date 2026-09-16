@@ -25,6 +25,20 @@ def outcome_verify(
     trace_id: str,
 ) -> dict[str, Any]:
     """Requery device, batches, holds, workorders and approvals as Auditor."""
+    from ..scope_guard import locked_scope, require_current_scope
+
+    with locked_scope(service.store, incident_id):
+        require_current_scope(service.store, incidents.get(incident_id))
+        return _outcome_verify(
+            incidents=incidents,
+            service=service,
+            incident_id=incident_id,
+            policy=policy,
+            trace_id=trace_id,
+        )
+
+
+def _outcome_verify(*, incidents, service, incident_id, policy, trace_id):
     case = incidents.get(incident_id)
     with trace.span(
         "outcome-verify",
@@ -72,6 +86,25 @@ def outcome_verify(
                 actor="Auditor",
             ),
         }
+        if case.scope_version:
+            locations = {batch["device_id"] for batch in case.scope_snapshot["batches"]}
+            for device_id in sorted(locations - {case.affected_assets[0]}):
+                extra = _query(
+                    service.query_device_context,
+                    trace_id,
+                    "query_device_context",
+                    device_id=device_id,
+                    store_id=case.store_id,
+                    incident_id=incident_id,
+                    actor="Auditor",
+                )
+                if not extra.get("ok") or extra.get("partial"):
+                    responses["device"]["partial"] = True
+                else:
+                    for key in ("devices", "evidence"):
+                        responses["device"]["data"].setdefault(key, []).extend(
+                            extra["data"].get(key, [])
+                        )
 
         checks = _evaluate(case, responses, policy, service)
         for subject, check in checks.items():
@@ -186,6 +219,25 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
             for item in workorders
         )
     )
+    # Moved leaf goods require current health and temperature at their destination too.
+    for destination in device_rows[1:]:
+        trusted, excluded = temperature_series(
+            destination.get("temperature_series", []), now=service.store.now()
+        )
+        samples = trusted[-recovery_samples:]
+        device_passed = device_passed and (
+            len(samples) == recovery_samples
+            and not any(str(item.get("quality", "good")).lower() == "good" for item in excluded)
+            and not coverage_issues(samples, now=service.store.now(), max_gap=5)
+            and all(
+                float(policy["temperature"]["refrigerated_min_celsius"])
+                <= float(item["temp_c"])
+                <= maximum
+                for item in samples
+            )
+            and destination.get("health", {}).get("state") == "normal"
+            and destination.get("health", {}).get("compressor_state") == "running"
+        )
 
     batches = _rows(responses["batches"], "batches")
     receipts = service.store.list_manual_evidence(incident_id=case.incident_id)
@@ -196,6 +248,10 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
         actions=service.store.list_actions(incident_id=case.incident_id),
         now=service.store.now(),
     )
+    if case.scope_version:
+        from ..scope_guard import scope_actions_cover
+
+        batches_passed = batches_passed and scope_actions_cover(service.store, case)
     holds = _rows(responses["sales_hold"], "sales_holds")
     hold_by_batch = {item["batch_id"]: item for item in holds}
     holds_passed = bool(batches) and all(
@@ -208,9 +264,27 @@ def _evaluate(case, responses: dict[str, dict[str, Any]], policy: dict[str, Any]
         for item in batches
     )
     approvals = _rows(responses["approval"], "approvals")
+    obsolete = {
+        item["action_id"]
+        for item in approvals
+        if case.scope_version and item.get("applicability") != "applicable"
+    }
+    completed = {
+        action["action_id"]
+        for action in service.store.list_actions(incident_id=case.incident_id)
+        if action["status"] == "completed"
+    }
+    approvals = [
+        item
+        for item in approvals
+        if item["action_id"] not in obsolete or item["action_id"] in completed
+    ]
     approved_actions = {item["action_id"] for item in approvals if item.get("status") == "approved"}
     required_approval_actions = {
-        action.action_id for action in case.actions if action.approval_id is not None
+        action.action_id
+        for action in case.actions
+        if action.approval_id is not None
+        and (action.action_id not in obsolete or action.action_id in completed)
     }
     approvals_passed = required_approval_actions <= approved_actions and all(
         item.get("status") == "approved" for item in approvals

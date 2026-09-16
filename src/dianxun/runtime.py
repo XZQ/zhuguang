@@ -116,6 +116,23 @@ class RuntimeService:
         # Business changes, receipts and checkpoints share one transaction.
         with self.store.transaction():
             self.recovery.lock_scope(principal)
+            arguments = dict(arguments)
+            expected_scope = arguments.pop("expected_scope_version", None)
+            if name in SCOPE_MUTATIONS:
+                case = self.store.get_incident(arguments.get("incident_id"))
+                activated = self.store.get_meta("schema:scope-v2") == "1"
+                if activated or (case and (case.get("scope_version") or case.get("scope_state"))):
+                    self.store.require_scope_schema()
+                    current = case.get("scope_version", 0) if case else 0
+                    if type(expected_scope) is not int or expected_scope != current:
+                        historical = self._historical_replay(
+                            name, arguments, expected_scope, principal
+                        )
+                        if historical is not None:
+                            return historical
+                        raise ContextVersionConflict("Current expected_scope_version is required")
+                    if case and case.get("incident_status") == "CLOSED" and name != "runtime_open":
+                        raise ValueError("Closed history is immutable; open a linked incident")
             if (
                 self.scheduler is not None
                 and not self.scheduler.healthy()
@@ -128,10 +145,55 @@ class RuntimeService:
                     "runtime_complete",
                     "runtime_resume",
                     "runtime_revise_scope",
+                    "runtime_reconcile_scope",
                 }
             ):
                 raise ValueError("Recovery scheduler unavailable; writes suspended")
             return method(principal=principal, **arguments)
+
+    def _historical_replay(self, name, arguments, expected_scope, principal):
+        """Read an identical old receipt without reviving its lease or checkpoint."""
+        if type(expected_scope) is not int or name not in {"runtime_tool", "runtime_complete"}:
+            return None
+        case, bus, coordinator = self._context(principal, arguments["incident_id"])
+        context = bus.get(case.incident_id, allow_expired=True, now=self.clock())
+        assignment = coordinator._find_assignment(context, arguments["assignment_id"])
+        coordinator._assert_worker(assignment, principal.worker_id)
+        if name == "runtime_complete":
+            for historical in context.recovery.get("scope_history", []):
+                checkpoint = historical.get("checkpoints", {}).get(assignment.phase, {})
+                if (
+                    historical["scope_version"] == expected_scope
+                    and checkpoint.get("assignment_id") == assignment.assignment_id
+                ):
+                    return {
+                        "completed": True,
+                        "replayed": True,
+                        "historical_replay": True,
+                        "output": checkpoint.get("output"),
+                        "context_version": context.version,
+                    }
+            return None
+        tool = arguments["tool"]
+        if principal.actor != "Executor" or tool not in EXECUTOR_TOOLS.get(assignment.phase, set()):
+            return None
+        request = arguments["arguments"]
+        with self.store.transaction() as conn:
+            previous = self.store.idempotent_result(
+                conn, idempotency_key=request.get("idempotency_key", "")
+            )
+        if not previous:
+            return None
+        from .mcp.server import tool_call
+
+        result = tool_call(
+            tool,
+            {"expected_scope_version": expected_scope, **request, "incident_id": case.incident_id},
+            actor=principal.actor,
+            service=self.mcp,
+        )
+        result["context_version"] = context.version
+        return result
 
     def _context(self, principal, incident_id):
         case = self.incidents.get(incident_id)
@@ -167,11 +229,29 @@ class RuntimeService:
 
         return ScopeRevisionService(self).revise(principal=principal, **arguments)
 
-    def open(self, *, principal, incident_id, device_id):
+    def reconcile_scope(self, *, principal, **arguments):
+        from .scope_revision import ScopeRevisionService
+
+        return ScopeRevisionService(self).reconcile(principal=principal, **arguments)
+
+    def open(
+        self, *, principal, incident_id, device_id, previous_incident_id=None, source_ref=None
+    ):
         if principal.actor != "Orchestrator":
             raise PermissionError("Only Orchestrator can open incidents")
         if incident_id.startswith("@runtime-"):
             raise ValueError("Reserved runtime identifier")
+        if bool(previous_incident_id) != bool(source_ref):
+            raise ValueError("Linked incidents require previous_incident_id and source_ref")
+        if previous_incident_id:
+            previous = self.incidents.get(previous_incident_id)
+            if (previous.tenant_id, previous.store_id) != (principal.tenant_id, principal.store_id):
+                raise PermissionError("Previous incident is outside Worker scope")
+            if (
+                previous.incident_status != IncidentStatus.CLOSED
+                or device_id not in previous.affected_assets
+            ):
+                raise ValueError("Linked source must be a closed incident on the same asset")
         existing = self.store.get_incident(incident_id)
         if existing is not None:
             case, _, _ = self._context(principal, incident_id)
@@ -200,13 +280,50 @@ class RuntimeService:
         case.affected_batches = [
             row["batch_id"]
             for row in self.store.list_batches(device_id=device_id, store_id=principal.store_id)
+            if row.get("lifecycle", "active") == "active"
         ]
         if not case.affected_batches:
             raise ValueError("Device has no inventory batches")
+        if self.store.get_meta("schema:scope-v2") == "1":
+            from .domain.scope import scope_digest
+            from .scope_guard import current_snapshot
+
+            self.store.require_scope_schema()
+            case.scope_version = 1
+            case.scope_snapshot = current_snapshot(self.store, case)
+            case.scope_digest = scope_digest(case.scope_snapshot)
+            case.scope_state = "reconciled"
         self.incidents.create(case)
-        RuntimeContextBus(self.store, principal.tenant_id).create(
+        if case.scope_version:
+            from .scope_revision import ScopeRevisionService
+
+            with self.store.transaction() as conn:
+                ScopeRevisionService(self)._record_revision(
+                    conn,
+                    case,
+                    principal,
+                    source_ref or "runtime-open:inventory",
+                    f"runtime-open:{incident_id}",
+                    None,
+                    {
+                        "incident_id": incident_id,
+                        "device_id": device_id,
+                        "previous_incident_id": previous_incident_id,
+                        "source_ref": source_ref,
+                    },
+                    tool_name="runtime_open",
+                )
+        bus = RuntimeContextBus(self.store, principal.tenant_id)
+        context = bus.create(
             incident_id, case.trace_id, scope={"store_id": principal.store_id}, now=self.clock()
         )
+        if previous_incident_id:
+            self.recovery.initialize(context, bus)
+            context.recovery["previous_incident"] = {
+                "incident_id": previous_incident_id,
+                "source_ref": source_ref,
+            }
+            bus.commit(context, now=self.clock())
         return self.snapshot(principal=principal, incident_id=incident_id)
 
     def snapshot(self, *, principal, incident_id):
@@ -218,6 +335,7 @@ class RuntimeService:
         }
         context = bus.get(incident_id, allow_expired=True, now=self.clock())
         return {
+            "scope_version": case.scope_version,
             "incident": case.to_dict(),
             "context": context.snapshot(),
             "remaining_stages": list(STAGES)[coordinator._checkpoint_prefix_length(context) :],
@@ -254,7 +372,19 @@ class RuntimeService:
                 or task.is_lease_expired(self.clock())
             ):
                 raise LeaseExpiredError("Orchestration work is owned elsewhere or expired")
-        assignment, context = self.recovery.dispatch(context, remaining[0], worker_id, coordinator)
+        predecessors = [a for a in context.assignments if a.phase == remaining[0]]
+        predecessor = (
+            predecessors[-1] if context.recovery.get("generation", 0) and predecessors else None
+        )
+        if predecessor and predecessor.status in ACTIVE:
+            raise ValueError("Stage still has an active assignment")
+        assignment, context = self.recovery.dispatch(
+            context,
+            remaining[0],
+            worker_id,
+            coordinator,
+            predecessor=predecessor,
+        )
         return {
             "assignment": asdict(assignment),
             "context_version": bus.get(incident_id, now=self.clock()).version,
@@ -341,11 +471,9 @@ class RuntimeService:
         if mutating and previous and previous["key"] != arguments.get("idempotency_key"):
             raise ValueError("Retry must retain the original operation idempotency key")
         if tool == "create_workorder":
-            generation = context.recovery.get("generation", 0)
             for operation in context.recovery["operations"].values():
                 if (
                     operation["tool"] == tool
-                    and operation.get("generation", 0) == generation
                     and operation.get("device_id") == arguments.get("device_id")
                     and operation["action_id"] != arguments.get("action_id")
                 ):
@@ -354,11 +482,24 @@ class RuntimeService:
 
         result = tool_call(
             tool,
-            {**arguments, "incident_id": incident_id, "runtime_trace_id": case.trace_id},
+            {
+                **arguments,
+                "incident_id": incident_id,
+                "runtime_trace_id": case.trace_id,
+                **(
+                    {"expected_scope_version": case.scope_version}
+                    if case.scope_version and mutating and "expected_scope_version" not in arguments
+                    else {}
+                ),
+            },
             actor=principal.actor,
             service=self.mcp,
         )
         if result.get("isError"):
+            return result
+        receipt = json.loads(result["content"][0]["text"])
+        if (receipt.get("data") or {}).get("historical_replay"):
+            result["context_version"] = context.version
             return result
         # Deadline check after synchronous adapter work fences late effects too: local
         # adapters share this transaction, so rejection rolls back their writes.
@@ -401,6 +542,24 @@ class RuntimeService:
         previous = existing_coordinator._find_assignment(existing, assignment_id)
         existing_coordinator._assert_worker(previous, principal.worker_id)
         if previous.status == "succeeded":
+            historical = next(
+                (
+                    h
+                    for h in reversed(existing.recovery.get("scope_history", []))
+                    if h.get("checkpoints", {}).get(previous.phase, {}).get("assignment_id")
+                    == assignment_id
+                ),
+                None,
+            )
+            if historical:
+                checkpoint = historical["checkpoints"][previous.phase]
+                return {
+                    "completed": True,
+                    "replayed": True,
+                    "historical_replay": True,
+                    "output": checkpoint.get("output"),
+                    "context_version": existing.version,
+                }
             if previous.phase == "EMERGENCY_CONTAIN":
                 return {
                     "completed": True,
@@ -475,6 +634,9 @@ class RuntimeService:
                 ),
             )
             passed = output["detected"] and not output.get("partial")
+            if case.scope_version > 1:
+                # Exposure was already detected. A repaired device does not erase new goods.
+                passed = not output.get("partial")
         elif stage == "DIAGNOSE_DECIDE":
             output = diagnose_coldchain_hypotheses(
                 **common, store_id=case.store_id, device_id=case.affected_assets[0]
@@ -552,10 +714,23 @@ class RuntimeService:
                     )
             elif stage == "EXECUTE":
                 approvals = self.store.list_approvals(incident_id=incident_id)
+                obsolete = {
+                    row["action_id"]
+                    for row in approvals
+                    if case.scope_version and row.get("applicability") != "applicable"
+                }
                 passed = (
                     bool(current.actions)
-                    and all(action.status == ActionStatus.COMPLETED for action in current.actions)
-                    and all(row["status"] == "approved" for row in approvals)
+                    and all(
+                        action.status == ActionStatus.COMPLETED
+                        for action in current.actions
+                        if action.action_id not in obsolete
+                    )
+                    and all(
+                        row["status"] == "approved"
+                        for row in approvals
+                        if row["action_id"] not in obsolete
+                    )
                 )
                 if passed:
                     self.incidents.transition_phase(
@@ -980,7 +1155,10 @@ RUNTIME_SCHEMAS = {
         {**_INCIDENT, "expected_version": {"type": "integer", "minimum": 1}},
         ["incident_id", "expected_version"],
     ),
-    "runtime_open": schema({**_INCIDENT, "device_id": _TEXT}, ["incident_id", "device_id"]),
+    "runtime_open": schema(
+        {**_INCIDENT, "device_id": _TEXT, "previous_incident_id": _TEXT, "source_ref": _TEXT},
+        ["incident_id", "device_id"],
+    ),
     "runtime_snapshot": schema(_INCIDENT, list(_INCIDENT)),
     "runtime_assign": schema(
         {**_INCIDENT, "worker_id": _TEXT, "expected_version": {"type": "integer", "minimum": 1}},
@@ -999,3 +1177,36 @@ RUNTIME_SCHEMAS = {
         [*_LEASE, "tool", "arguments"],
     ),
 }
+
+RUNTIME_SCHEMAS["runtime_reconcile_scope"] = schema(
+    {
+        key: value
+        for key, value in RUNTIME_SCHEMAS["runtime_revise_scope"]["properties"].items()
+        if key != "changes"
+    },
+    ["incident_id", "expected_versions", "change_id", "source_ref"],
+)
+SCOPE_MUTATIONS = {
+    "runtime_" + name
+    for name in (
+        "open",
+        "assign",
+        "reassign",
+        "heartbeat",
+        "tool",
+        "complete",
+        "progress",
+        "fail",
+        "wait",
+        "emergency",
+        "resume",
+        "notification_result",
+        "reopen",
+        "link_platform",
+    )
+}
+for _name in SCOPE_MUTATIONS:
+    RUNTIME_SCHEMAS[_name]["properties"] = {
+        **RUNTIME_SCHEMAS[_name]["properties"],
+        "expected_scope_version": {"type": "integer", "minimum": 0},
+    }

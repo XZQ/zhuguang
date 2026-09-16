@@ -13,7 +13,7 @@ from dianxun.mcp.p0 import DEFAULT_POLICY_PATH, DEFAULT_SEED_PATH, MCPService
 from dianxun.runtime_context import RuntimeContextBus
 from dianxun.state import PostgresStateStore
 from dianxun.state.protocols import StorePolicyError
-from tests import test_scope_revision
+from tests import test_scope_approval, test_scope_revision, test_scope_workflow
 
 
 class LimitedScopeRevisionTests(test_scope_revision.ScopeRevisionTests):
@@ -47,7 +47,7 @@ class LimitedScopeRevisionTests(test_scope_revision.ScopeRevisionTests):
         return self.admin
 
     def setUp(self):
-        super().setUp()
+        test_scope_revision.ScopeRevisionTests.setUp(self)
         # Only fixture creation and migrations use admin. All tested revisions use
         # a distinct NOSUPERUSER/NOBYPASSRLS login, not SET ROLE on the admin connection.
         self.store = PostgresStateStore(self.runtime_dsn, tenant_id="demo", store_id="S03")
@@ -79,6 +79,30 @@ class LimitedScopeRevisionTests(test_scope_revision.ScopeRevisionTests):
                 prepare=False,
             )
         return StorePolicyError
+
+
+class LimitedScopeApprovalTests(test_scope_approval.ScopeApprovalTests):
+    initialize_store = LimitedScopeRevisionTests.initialize_store
+    setUp = LimitedScopeRevisionTests.setUp
+
+
+class LimitedScopeWorkflowTests(test_scope_workflow.ScopeWorkflowTests):
+    def initialize_runtime_fixture(self, path):
+        from dianxun.scenarios import ScenarioEngine
+        from tests.test_worker_runtime import ROOT
+
+        admin = LimitedScopeRevisionTests.initialize_store(self, path)
+        service = MCPService(admin, PolicyEngine(DEFAULT_POLICY_PATH))
+        self.scenario = ScenarioEngine(
+            admin,
+            ROOT / "demo/state/scenarios/coldchain-compressor-failure.json",
+            service=service,
+        )
+        self.scenario.reset()
+        admin.migrate_scope_v2()
+        self.store = PostgresStateStore(self.runtime_dsn, tenant_id="demo", store_id="S03")
+        self.store.require_scope_schema()
+        self.mcp = MCPService(self.store, PolicyEngine(DEFAULT_POLICY_PATH))
 
 
 if __name__ == "__main__":

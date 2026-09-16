@@ -50,6 +50,21 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--seed", type=_path, default=DEFAULT_SEED_PATH)
     init.add_argument("--allow-remote-reset", action="store_true")
 
+    migrate = subparsers.add_parser("migrate-scope-v2", help="offline scope protocol migration")
+    migrate.add_argument("--db", type=_database_target, default=DEFAULT_DB_PATH)
+    migrate.add_argument(
+        "--backup-verified",
+        action="store_true",
+        required=True,
+        help="operator attests a restorable backup was verified",
+    )
+    migrate.add_argument(
+        "--writers-stopped",
+        action="store_true",
+        required=True,
+        help="operator attests all old writers are stopped",
+    )
+
     scenario = subparsers.add_parser("scenario-reset", help="reset and apply minute-zero events")
     scenario.add_argument("scenario", type=_path)
     scenario.add_argument("--db", type=_database_target, default=DEFAULT_DB_PATH)
@@ -157,6 +172,19 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     _configure_stdio()
     args = build_parser().parse_args(argv)
+    if args.command == "migrate-scope-v2":
+        store = create_state_store(args.db)
+        store.migrate_scope_v2()
+        store.require_scope_schema()
+        _print_json(
+            {
+                "scope_protocol": 2,
+                "backend": store.backend_name,
+                "migration": "complete",
+                "legacy_open_incidents": "require_reconciliation",
+            }
+        )
+        return 0
     if args.command == "state-init":
         store = create_state_store(args.db)
         _require_remote_reset(store, args.allow_remote_reset)

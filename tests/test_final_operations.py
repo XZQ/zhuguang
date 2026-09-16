@@ -190,6 +190,14 @@ class FinalOperationsTests(unittest.TestCase):
         )
         self.assertEqual(2, data["scope"]["version"])
         self.assertEqual("synthetic:wms", data["records"]["scope_revisions"][-1]["source_ref"])
+        from dianxun.operations import collect_casefile
+
+        limited = collect_casefile(self.mcp, human, self.incident, limit=1)
+        self.assertIn("scope_revisions", limited["truncated"])
+        self.assertIn("batch_lineage", limited["truncated"])
+        script = (fixture.ROOT / "src/dianxun/assets/operations.js").read_text()
+        self.assertIn("关联批次共享谱系", script)
+        self.assertIn("本事件归属以范围修订中的变更编号为准", script)
         self.rpc("other-store", "casefile", incident_id=self.incident, expect_error=True)
 
     def test_runtime_capture_roundtrip_and_restored_data_comparison(self):

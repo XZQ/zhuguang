@@ -51,7 +51,8 @@ function render(data) {
   grid.append(table("商品与销售限制",r.inventory_batches.map(b=>({...b,hold:r.sales_holds.some(h=>h.batch_id===b.batch_id&&h.status==="active")?"限制中":"无本事件活动限制"})),[["batch_id","批次"],["disposition","处置"],["safe_for_sale","销售安全标记"],["hold","限制"]])); root.append(grid);
   root.append(table("独立复核",r.verifications.map(decoded),[["subject","对象"],["result","结果"],["verifier","复核角色"],["verified_at","时间"]]));
   root.append(table("范围修订与来源",(r.scope_revisions || []).map(decoded),[["scope_version","版本"],["change_id","变更编号"],["actor","操作者"],["source_ref","来源引用"],["before","原范围"],["after","新范围"]]));
-  root.append(table("拆批谱系",r.batch_lineage || [],[["parent_batch_id","父批次"],["parent_quantity","拆分前数量"],["child_batch_id","子批次"],["child_quantity","分配数量"],["change_id","变更编号"]]));
+  root.append(node("p","可能包含其他事件涉及的拆批；本事件归属以范围修订中的变更编号为准"));
+  root.append(table("关联批次共享谱系",r.batch_lineage || [],[["parent_batch_id","父批次"],["parent_quantity","拆分前数量"],["child_batch_id","子批次"],["child_quantity","分配数量"],["change_id","变更编号"]]));
   root.append(table("审批决定与当前适用性",scope.approval_applicability || [],[["approval_id","批准编号"],["action_id","动作"],["decision","历史决定"],["applicability","当前适用性"],["scope_version","申请范围版本"],["deadline","有效期"]]));
   root.append(node("p","批准、外部回执与恢复轮次分别保留；历史批准不自动覆盖新增或拆分对象，生成遏制待办也不代表外部渠道已经停售。","muted"));
   root.append(table("Worker 任务与租约",ctx.assignments,[["phase","阶段"],["worker","责任 Worker"],["assignment_id","接单编号"],["status","状态"],["attempt","次数"],["lease_expires_at","租约截止"]]));

@@ -21,6 +21,173 @@ class ScopeRevisionService:
         self.runtime = runtime
         self.store = runtime.store
 
+    def reconcile(self, *, principal, incident_id, expected_versions, change_id, source_ref):
+        """Human source attestation snapshots facts, never manufactures inventory or receipts."""
+        if principal.actor != "Human" or principal not in self.runtime.principals.values():
+            raise PermissionError("Only a registered Human can reconcile inventory scope")
+        if not all(isinstance(v, str) and v.strip() for v in (change_id, source_ref)):
+            raise ValueError("Stable change ID and source reference are required")
+        from .scope_guard import current_snapshot
+
+        request = dict(
+            incident_id=incident_id,
+            expected_versions=expected_versions,
+            change_id=change_id,
+            source_ref=source_ref,
+            worker_id=principal.worker_id,
+            operation="reconcile",
+        )
+        with self.store.transaction() as conn:
+            self.store.require_scope_schema()
+            self.runtime.recovery.lock_scope(principal)
+            case = self.runtime.incidents.get(incident_id)
+            if (case.tenant_id, case.store_id) != (principal.tenant_id, principal.store_id):
+                raise PermissionError("Incident is outside Human scope")
+            prior = conn.execute(
+                "SELECT incident_id,scope_version,request_json FROM scope_revisions "
+                "WHERE tenant_id=? AND store_id=? AND change_id=?",
+                (principal.tenant_id, principal.store_id, change_id),
+            ).fetchall()
+            if prior:
+                if any(row["request_json"] != _json(request) for row in prior):
+                    raise ValueError("Change ID already belongs to a different request")
+                return {
+                    "versions": {r["incident_id"]: r["scope_version"] for r in prior},
+                    "historical_replay": True,
+                }
+            if case.incident_status == IncidentStatus.CLOSED:
+                raise ValueError("Closed history is immutable; open a linked incident")
+            rows = conn.execute(
+                "SELECT incident_id FROM incidents WHERE tenant_id=? AND store_id=? "
+                "AND incident_status <> 'CLOSED' ORDER BY incident_id",
+                (principal.tenant_id, principal.store_id),
+            ).fetchall()
+            cases = [self.runtime.incidents.get(row["incident_id"]) for row in rows]
+            selected = {incident_id}
+            assets, batches = set(case.affected_assets), set(case.affected_batches)
+            while True:
+                related = [
+                    c
+                    for c in cases
+                    if set(c.affected_assets) & assets or set(c.affected_batches) & batches
+                ]
+                ids = {c.incident_id for c in related}
+                if ids == selected:
+                    break
+                selected = ids
+                assets.update(a for c in related for a in c.affected_assets)
+                batches.update(b for c in related for b in c.affected_batches)
+            if set(expected_versions) != selected:
+                raise ValueError("Expected versions must cover every related open incident")
+            bus = RuntimeContextBus(self.store, principal.tenant_id)
+            versions = {}
+            for current in related:
+                context = bus.get(current.incident_id, allow_expired=True, now=self.runtime.clock())
+                expected = expected_versions[current.incident_id]
+                if expected != {
+                    "scope_version": current.scope_version,
+                    "context_version": context.version,
+                } or any(type(v) is not int for v in expected.values()):
+                    raise ContextVersionConflict("Related incident scope/context version changed")
+                snapshot = current_snapshot(self.store, current)
+                before = current.scope_snapshot
+                current.scope_version += 1
+                current.scope_snapshot = snapshot
+                current.scope_digest = scope_digest(snapshot)
+                current.scope_state = "reconciled"
+                current.affected_batches = [b["batch_id"] for b in snapshot["batches"]]
+                current.phase = Phase.DETECT_CONTAIN
+                current.incident_status = IncidentStatus.OPEN
+                current.work_status = WorkStatus.READY
+                self.runtime.incidents.save(current)
+                self._record_revision(
+                    conn, current, principal, source_ref, change_id, before, request
+                )
+                self._restart(conn, current, context, bus, current.affected_batches)
+                versions[current.incident_id] = current.scope_version
+            return {"versions": versions, "historical_replay": False}
+
+    def _record_revision(
+        self,
+        conn,
+        current,
+        principal,
+        source_ref,
+        change_id,
+        before,
+        request,
+        tool_name="runtime_reconcile_scope",
+    ):
+        conn.execute(
+            "INSERT INTO scope_revisions "
+            "(incident_id,scope_version,change_id,tenant_id,store_id,actor,source_ref,"
+            "before_json,after_json,request_json,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                current.incident_id,
+                current.scope_version,
+                change_id,
+                current.tenant_id,
+                current.store_id,
+                principal.worker_id,
+                source_ref,
+                _json(before),
+                _json(current.scope_snapshot),
+                _json(request),
+                self.store.now(),
+            ),
+        )
+        self.store.record_audit(
+            conn,
+            request_id=change_id,
+            actor=principal.worker_id,
+            tool_name=tool_name,
+            incident_id=current.incident_id,
+            action_id=None,
+            policy=None,
+            request=request,
+            response={"scope_version": current.scope_version, "scope_digest": current.scope_digest},
+            created_at=self.store.now(),
+        )
+
+    def _restart(self, conn, current, context, bus, changed_ids):
+        context.recovery.setdefault("scope_history", []).append(
+            {
+                "scope_version": current.scope_version - 1,
+                "generation": context.recovery.get("generation", 0),
+                "checkpoints": {k: asdict(v) for k, v in context.checkpoints.items()},
+                "phases": context.recovery.get("phases", {}),
+            }
+        )
+        for assignment in context.assignments:
+            if assignment.status in {"assigned", "running", "waiting"}:
+                assignment.status = "cancelled"
+                assignment.error = "scope_revision"
+                assignment.updated_at = timestamp(self.runtime.clock())
+        for main in context.recovery.get("orchestration", []):
+            if main["status"] in {"assigned", "running", "waiting"}:
+                main["status"] = "cancelled"
+        context.checkpoints.clear()
+        context.recovery["generation"] = context.recovery.get("generation", 0) + 1
+        context.recovery["generation_started_at"] = timestamp(self.runtime.clock())
+        context.recovery["phases"] = {}
+        context.recovery["scope_containment_required"] = sorted(changed_ids)
+        context.coordination_status = "active"
+        for row in conn.execute(
+            "SELECT a.approval_id FROM approvals a JOIN actions x ON x.action_id=a.action_id "
+            "WHERE a.incident_id=? AND x.tool_name='create_approval'",
+            (current.incident_id,),
+        ).fetchall():
+            try:
+                self.runtime.mcp._validate_approval_binding(
+                    conn, row["approval_id"], current.incident_id
+                )
+            except (ValueError, PermissionError):
+                conn.execute(
+                    "UPDATE approvals SET applicability='requires_review' WHERE approval_id=?",
+                    (row["approval_id"],),
+                )
+        bus.commit(context, allow_expired=True, now=self.runtime.clock())
+
     def revise(self, *, principal, incident_id, expected_versions, change_id, source_ref, changes):
         if principal.actor != "Human" or principal not in self.runtime.principals.values():
             raise PermissionError("Only a registered Human can revise inventory scope")
@@ -127,6 +294,10 @@ class ScopeRevisionService:
                 for c in affected
                 if set(c.affected_batches).intersection(touched)
                 or any(b["device_id"] in c.affected_assets for b in additions)
+                or any(
+                    change["op"] == "move" and change["device_id"] in c.affected_assets
+                    for change in changes
+                )
             ]
             if set(expected_versions) != {c.incident_id for c in affected}:
                 raise ValueError("Expected versions must cover every related open incident")
@@ -213,6 +384,13 @@ class ScopeRevisionService:
                 new_ids.extend(
                     b["batch_id"] for b in additions if b["device_id"] in current.affected_assets
                 )
+                new_ids.extend(
+                    change["batch_id"]
+                    for change in changes
+                    if change["op"] == "move"
+                    and change["device_id"] in current.affected_assets
+                    and change["batch_id"] not in new_ids
+                )
                 batches = self.store.list_batches(batch_ids=new_ids)
                 if {r["batch_id"] for r in batches} != set(new_ids):
                     raise ValueError("Current incident inventory requires reconciliation")
@@ -229,7 +407,7 @@ class ScopeRevisionService:
                 # A split does not attest other unexplained inventory differences.
                 current.phase = Phase.DETECT_CONTAIN
                 current.incident_status = IncidentStatus.OPEN
-                current.work_status = WorkStatus.WAITING_HUMAN
+                current.work_status = WorkStatus.READY
                 self.runtime.incidents.save(current)
                 conn.execute(
                     """INSERT INTO scope_revisions
@@ -251,28 +429,7 @@ class ScopeRevisionService:
                     ),
                 )
                 context = contexts[current.incident_id]
-                context.recovery.setdefault("scope_history", []).append(
-                    {
-                        "scope_version": current.scope_version - 1,
-                        "generation": context.recovery.get("generation", 0),
-                        "checkpoints": {k: asdict(v) for k, v in context.checkpoints.items()},
-                        "phases": context.recovery.get("phases", {}),
-                    }
-                )
-                for assignment in context.assignments:
-                    if assignment.status in {"assigned", "running", "waiting"}:
-                        assignment.status = "cancelled"
-                        assignment.error = "scope_revision"
-                        assignment.updated_at = timestamp(self.runtime.clock())
-                context.checkpoints.clear()
-                context.recovery["generation"] = context.recovery.get("generation", 0) + 1
-                context.recovery["phases"] = {}
-                context.recovery["scope_containment_required"] = sorted(
-                    changed_ids.intersection(new_ids)
-                )
-                # Do not let the legacy scanner advance this pending protocol cutover.
-                context.coordination_status = "suspended"
-                bus.commit(context, allow_expired=True, now=self.runtime.clock())
+                self._restart(conn, current, context, bus, changed_ids.intersection(new_ids))
                 versions[current.incident_id] = current.scope_version
                 self.store.record_audit(
                     conn,

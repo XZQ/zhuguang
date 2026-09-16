@@ -152,7 +152,11 @@ class RecoveryManager:
             role = self.role(stage)
             if queued_at is None:
                 queued_at = max(
-                    [context.created_at] + [c.completed_at for c in context.checkpoints.values()]
+                    [
+                        context.created_at,
+                        context.recovery.get("generation_started_at", context.created_at),
+                    ]
+                    + [c.completed_at for c in context.checkpoints.values()]
                 )
             deadline = after(
                 parse_timestamp(queued_at), context.recovery["policy"]["roles"][role]["total"]
@@ -265,6 +269,8 @@ class RecoveryManager:
             )
 
     def dispatch(self, context, stage, worker, coordinator, *, predecessor=None):
+        if not self.reconcile(context, stage):
+            raise ValueError("Unknown operation outcome requires reconciliation")
         phase = self.phase(context, stage)
         if phase["state"] == "manual_intervention":
             raise ValueError("Manual intervention required")
