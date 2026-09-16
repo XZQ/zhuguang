@@ -306,8 +306,13 @@ GRANT USAGE ON SCHEMA public TO dianxun_runtime, dianxun_business_ro, dianxun_hq
 GRANT SELECT, INSERT, UPDATE ON
     meta, stores, devices, device_readings, inventory_batches, sales_holds,
     approvals, workorders, manual_evidence, incidents, actions, verifications,
-    audit_log, idempotency, knowledge_items, review_jobs, runtime_contexts
+    idempotency, knowledge_items, review_jobs, runtime_contexts
     TO dianxun_runtime;
+-- Reapplying this profile must also remove privileges from older installations.
+-- Runtime/HQ can append evidence, never edit or erase an existing audit record.
+REVOKE UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON audit_log
+    FROM dianxun_runtime, dianxun_hq;
+GRANT SELECT, INSERT ON audit_log TO dianxun_runtime;
 GRANT SELECT, UPDATE ON tool_failures TO dianxun_runtime;
 GRANT SELECT ON stores, devices, device_readings, inventory_batches, workorders
     TO dianxun_business_ro;
@@ -329,4 +334,8 @@ GRANT EXECUTE ON FUNCTION ensure_audit_partition(DATE) TO dianxun_runtime;
 
 INSERT INTO schema_migrations(version)
 VALUES ('2026-08-28-security-v2')
+ON CONFLICT(version) DO NOTHING;
+
+INSERT INTO schema_migrations(version)
+VALUES ('2026-09-16-security-audit-append-v3')
 ON CONFLICT(version) DO NOTHING;

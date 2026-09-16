@@ -152,6 +152,21 @@ jobs:
       - name: Build PostgreSQL integration runner
         run: docker build -f packages/dianxun-mcp/Dockerfile -t dianxun-pg-tests:ci .
 
+      - name: Separate runtime login, scope isolation and append-only audit upgrade
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec zhuguang-archive-ci createdb -U postgres zhuguang_runtime_test
+          cat src/dianxun/state/sql/postgres_schema.sql src/dianxun/state/sql/postgres_security.sql |
+            docker exec -i zhuguang-archive-ci psql -X -v ON_ERROR_STOP=1 \
+              -U postgres -d zhuguang_runtime_test
+          # Simulate the old privilege: upgrade must revoke it, not only omit a new GRANT.
+          docker exec zhuguang-archive-ci psql -X -v ON_ERROR_STOP=1 \
+            -U postgres -d zhuguang_runtime_test -c 'GRANT UPDATE ON audit_log TO dianxun_runtime;'
+          cat src/dianxun/state/sql/postgres_security.sql tests/sql/runtime_security_regression.sql |
+            docker exec -i zhuguang-archive-ci psql -X -v ON_ERROR_STOP=1 \
+              -U postgres -d zhuguang_runtime_test
+
       - name: Create separate integration database and readonly login
         run: |
           docker exec zhuguang-archive-ci createdb -U postgres zhuguang_integration_test
