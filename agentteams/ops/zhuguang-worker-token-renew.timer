@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh external zhuguang Worker credentials before their one-hour expiry
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=20min
+AccuracySec=10s
+Unit=zhuguang-worker-token-renew.service
+
+[Install]
+WantedBy=timers.target

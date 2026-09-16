@@ -1,0 +1,16 @@
+[Unit]
+Description=Refresh existing external zhuguang Worker ServiceAccount tokens
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/agentteams-competition/runtime
+ExecStart=/usr/bin/python3 /home/ubuntu/agentteams-competition/runtime/renew_agentteams_tokens.py --targets /home/ubuntu/agentteams-competition/runtime/zhuguang-token-targets.json
+TimeoutStartSec=240
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only

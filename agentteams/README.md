@@ -39,7 +39,9 @@ uv run python -m unittest -v tests.test_agentteams_artifacts
 
 Linux/macOS 命令相同。构建是确定性的：输入未变化时 ZIP 和 SHA-256 不变化，且测试会确认包内 6 个 Skill 与根目录规范逐字一致。
 
-仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试和 10 项协调生命周期测试；全量发现 155 项测试，其中 153 项通过、2 项 PolarDB 条件集成测试因无外部实例跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
+仓库内有 5 项 AgentTeams artifact 测试、4 项动态证据校验器测试、6 项外置 Worker 凭据投影测试和 10 项协调生命周期测试；2026-09-16 macOS 全量发现 161 项测试，其中 159 项通过、2 项 PolarDB 条件集成测试因本机无 DSN 跳过。POSIX 文件投影的 4 项测试在 Windows 跳过。六场景评测为 6/6。这些结果不验证平台动态委派、托管 PolarDB 或 `qwen3.5-plus` 模型效果。
+
+外置 Docker Worker 的短期 SA Token 必须持续投影，不能只在安装时复制一次；比赛拓扑专用的续期脚本、定时器与验收/停止说明见 [外置 Worker 凭据续期](ops/README.md)。这与 MCP actor Token、Matrix Token 和模型 API Key 是不同的凭据。
 
 2026-09-16 补充：上述两项条件测试已在首尔隔离 PostgreSQL 16 上 2/2 实跑通过（零 skip），另有实际归档、导出／空库恢复及事件对账。这里仍不是托管 PolarDB 或真实 AgentTeams 端到端证据；无 DSN 的常规全量测试继续保留两项 skip，详见唯一[待办](../docs/待办.md)。
 
