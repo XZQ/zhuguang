@@ -932,6 +932,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       🖥️ 集群管理后台
       <span class="badge-pill" style="background:rgba(99,102,241,0.25); color:#a78bfa;">Manager/网关</span>
     </button>
+    <button class="nav-tab-btn" onclick="switchMainTab('templates')">
+      📋 Agent 结构化卡片标准
+      <span class="badge-pill" style="background:rgba(16,185,129,0.2); color:#34d399;">四段式看板</span>
+    </button>
     
     <button class="nav-tab-btn" onclick="switchMainTab('hitl')">
       🔒 高风险审批与审计
@@ -1866,6 +1870,542 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           </div>
         </div>
         <iframe id="admin-embed-frame" src="about:blank" style="width:100%; height:720px; border:none; background:#070d18;"></iframe>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== SECTION 3.5: AGENT TEMPLATES & OUTPUT STANDARD ==================== -->
+  <section id="view-templates" class="view-section">
+    <div class="panel-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+        <div>
+          <div class="panel-title" style="display:flex; align-items:center; gap:8px;">
+            <span>📋</span> Agent 交互标准与五大角色结构化卡片模板
+            <span style="font-size:11px; background:rgba(16,185,129,0.2); color:#34d399; border:1px solid rgba(16,185,129,0.4); padding:2px 8px; border-radius:4px; font-weight:700;">
+              四段式看板规范 v2.0
+            </span>
+          </div>
+          <div class="panel-desc" style="margin-bottom:0;">
+            针对多智能体协同常出现的“英文自言自语、原始 JSON 倾倒、晦涩堆栈日志”三大痛点，逐光店巡团队制定的全链路输出标准。让店长与管理员一眼看懂业务进度，让系统完备保留可验证审计线索。
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="header-btn" href="./defense.html#q14" target="_blank" style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; color:#fff; text-decoration:none; padding:8px 14px; font-weight:700;">
+            📖 答辩文档 Q14 治理详解 ↗
+          </a>
+          <a class="header-btn primary" href="/zhuguang/chat/#/room/!1Trrg2QNy3LDEFqoVk:matrix-local.agentteams.io:28080" target="_blank" style="background:linear-gradient(135deg, #0284c7, #4f46e5); text-decoration:none; padding:8px 16px; font-weight:700; color:#fff;">
+            💬 进入 Element 实机群 ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- 3 Golden Rules Grid -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-bottom:24px;">
+        <div style="background:linear-gradient(135deg, rgba(16,185,129,0.12), rgba(14,23,38,0.8)); border:1px solid rgba(16,185,129,0.35); border-radius:10px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🎯</span>
+            <b style="color:#34d399; font-size:14px;">1. 业务大白话优先 (Business-First)</b>
+          </div>
+          <p style="font-size:12px; color:#cbd5e1; line-height:1.6; margin:0;">
+            严禁任何 Agent 直接倾倒未排版的原始 JSON 字符串或 Python 堆栈。消息首句必须是<b>自然语言结论</b>，清晰说明发生了什么、严重级别及业务影响。
+          </p>
+        </div>
+
+        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.12), rgba(14,23,38,0.8)); border:1px solid rgba(239,68,68,0.35); border-radius:10px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🚫</span>
+            <b style="color:#f87171; font-size:14px;">2. 严禁英文碎屑与复读 (Zero English Artifacts)</b>
+          </div>
+          <p style="font-size:12px; color:#cbd5e1; line-height:1.6; margin:0;">
+            全链路强制规范中文输出，严禁输出 <code style="color:#fca5a5;">"The orchestrator is asking me..."</code> 或 <code style="color:#fca5a5;">"standing by..."</code> 这类模型推理碎屑与自言自语。
+          </p>
+        </div>
+
+        <div style="background:linear-gradient(135deg, rgba(56,189,248,0.12), rgba(14,23,38,0.8)); border:1px solid rgba(56,189,248,0.35); border-radius:10px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">⚓️</span>
+            <b style="color:#38bdf8; font-size:14px;">3. 技术元数据下沉折叠 (Metadata Footing)</b>
+          </div>
+          <p style="font-size:12px; color:#cbd5e1; line-height:1.6; margin:0;">
+            机器调度与审计所需的 <code style="color:#7dd3fc;">incident_id</code>、<code style="color:#7dd3fc;">trace_id</code>、<code style="color:#7dd3fc;">action_id</code> 等收敛至卡片底部紧凑单行代码块中，兼顾机器解析且不扰人类视线。
+          </p>
+        </div>
+      </div>
+
+      <!-- Before & After Comparison -->
+      <div style="margin-bottom:28px;">
+        <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+          <span>⚖️</span> 直观视觉对比：整改前“天书日志” vs 整改后“四段式业务看板”
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">
+          
+          <!-- Before Card -->
+          <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="color:#f87171; font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px;">
+                <span>❌</span> 整改前（晦涩难懂 · 无法决策）
+              </span>
+              <span style="font-size:11px; background:rgba(239,68,68,0.2); color:#fca5a5; padding:2px 8px; border-radius:4px;">历史痛点</span>
+            </div>
+            <div style="background:#070d18; border:1px solid rgba(239,68,68,0.2); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:12px; line-height:1.5; color:#94a3b8;">
+              <div style="color:#f87171; margin-bottom:6px; font-weight:600;">@sentry:matrix-local.agentteams.io:28080</div>
+              <div style="color:#e2e8f0; margin-bottom:8px;">The orchestrator is asking me to give a one-line standby confirmation. I will invoke tool `query_device_context` to inspect telemetry...</div>
+              <div style="background:rgba(239,68,68,0.1); border-left:3px solid #ef4444; padding:6px 10px; margin-bottom:8px; color:#fca5a5; font-size:11px;">
+                {"tool":"dianxun-mcp","action":"query","err":500,"stack":"openai.AuthenticationError: 401 - Invalid API-key"}
+              </div>
+              <div style="color:#f87171; font-weight:700;">Internal error</div>
+            </div>
+            <div style="margin-top:10px; font-size:11.5px; color:#fca5a5; line-height:1.5;">
+              • 英文思考链泄露，普通店长完全看不懂事故影响<br>
+              • 原始 JSON 与堆栈直接倾倒，群聊被技术垃圾信息刷屏<br>
+              • 关键审批缺乏动作界定与超时降级机制，导致故障悬空
+            </div>
+          </div>
+
+          <!-- After Card -->
+          <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="color:#34d399; font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px;">
+                <span>✅</span> 整改后（四段式规范看板 · 3 秒决断）
+              </span>
+              <span style="font-size:11px; background:rgba(16,185,129,0.2); color:#6ee7b7; padding:2px 8px; border-radius:4px;">当前已上线</span>
+            </div>
+            <div style="background:#070d18; border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:12px; font-size:12px; line-height:1.6; color:#cbd5e1;">
+              <div style="color:#38bdf8; font-weight:700; margin-bottom:4px;">【🚨 Sentry 巡检员 · 发现冷链超温异常 (DETECT)】</div>
+              <div style="color:#fff; font-weight:600; margin-bottom:6px;">🎯 核心摘要：检测到 A02 门店 3 号冷柜持续超温，已触发冷链食品安全黄色预警！</div>
+              <div style="height:1px; background:rgba(255,255,255,0.08); margin:6px 0;"></div>
+              <div style="color:#94a3b8; font-size:11.5px;">
+                <b style="color:#cbd5e1;">📊 现场指标与证据：</b><br>
+                • 异常对象：A02 门店 3 号鲜奶立式冷柜 (DEV-COLD-03)<br>
+                • 关键读数：当前温度 8.2℃（安全标准 ≤ 4.0℃，超标持续 35 分钟）<br>
+                • 紧急动作：已自动在 POS 系统对受影响 42 盒鲜奶打上「暂停销售」预锁
+              </div>
+              <div style="height:1px; background:rgba(255,255,255,0.08); margin:6px 0;"></div>
+              <div style="color:#94a3b8; font-size:11.5px;">
+                <b style="color:#cbd5e1;">🚦 下步流转与指令：</b><br>
+                • 下一责任人：@Orchestrator 请推进遏制与根因排查<br>
+                • 人工介入指示：✅ 当前处于自动安全锁定阶段，无需人工干预
+              </div>
+              <div style="margin-top:6px; background:rgba(56,189,248,0.1); border-radius:4px; padding:3px 8px; font-family:var(--font-mono); font-size:11px; color:#7dd3fc;">
+                [审计追踪] incident_id: INC-COLD-A02-0918 | trace: tr-sentry-8821a
+              </div>
+            </div>
+            <div style="margin-top:10px; font-size:11.5px; color:#6ee7b7; line-height:1.5;">
+              • 首句大白话讲清门店、设备与货品影响，店长 3 秒获知态势<br>
+              • 明确下一责任人与是否需人工批准，责任链路杜绝推诿<br>
+              • 底行不可篡改审计追踪标识，满足机器自动化关联与取证
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Five Roles Interactive Template Showcase -->
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <div style="font-size:15px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;">
+            <span>🤖</span> 五大角色标准输出模板库与交互演示
+          </div>
+          <button onclick="copyAllRoleTemplates(this)" class="demo-btn secondary" style="font-size:12px; padding:6px 12px;">
+            📋 一键复制全部五大模板
+          </button>
+        </div>
+
+        <!-- Role Selectors -->
+        <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:16px;">
+          <button class="role-tpl-tab active" onclick="switchRoleTemplate('sentry', this)" style="padding:8px 16px; border-radius:8px; border:1px solid #38bdf8; background:rgba(56,189,248,0.18); color:#fff; font-weight:600; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;">
+            <span>🚨</span> Sentry (巡检预警员)
+          </button>
+          <button class="role-tpl-tab" onclick="switchRoleTemplate('diagnoser', this)" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#94a3b8; font-weight:600; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;">
+            <span>🔍</span> Diagnoser (诊断分析员)
+          </button>
+          <button class="role-tpl-tab" onclick="switchRoleTemplate('executor', this)" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#94a3b8; font-weight:600; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;">
+            <span>⚡️</span> Executor (动作执行员)
+          </button>
+          <button class="role-tpl-tab" onclick="switchRoleTemplate('auditor', this)" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#94a3b8; font-weight:600; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;">
+            <span>🛡️</span> Auditor (独立审计员)
+          </button>
+          <button class="role-tpl-tab" onclick="switchRoleTemplate('orchestrator', this)" style="padding:8px 16px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#94a3b8; font-weight:600; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px;">
+            <span>📋</span> Orchestrator / Manager (总控)
+          </button>
+        </div>
+
+        <!-- Role 1: Sentry Panel -->
+        <div id="role-panel-sentry" class="role-panel" style="display:block;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">
+            <!-- Visual Rendered Preview -->
+            <div style="background:rgba(14,23,38,0.9); border:1px solid #38bdf8; border-radius:12px; padding:18px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:20px;">🚨</span>
+                  <div>
+                    <b style="color:#fff; font-size:14px;">Sentry · 巡检预警卡片预览</b>
+                    <div style="font-size:11px; color:#38bdf8;">角色定位：发现异常、界定影响、拉响警报 (L0只读)</div>
+                  </div>
+                </div>
+                <span class="badge" style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid #38bdf8;">渲染视图</span>
+              </div>
+
+              <!-- Rendered Card Content -->
+              <div style="background:#070d18; border-radius:10px; padding:16px; border:1px solid rgba(56,189,248,0.3); font-size:13px; line-height:1.7;">
+                <div style="font-size:14px; font-weight:700; color:#38bdf8; margin-bottom:6px;">
+                  【🚨 Sentry 巡检员 · 发现冷链超温异常 (DETECT)】
+                </div>
+                <div style="color:#f8fafc; font-weight:600; margin-bottom:10px; background:rgba(56,189,248,0.08); padding:8px 10px; border-radius:6px; border-left:3px solid #38bdf8;">
+                  🎯 核心摘要：检测到 A02 门店 3 号冷柜持续超温，已触发冷链食品安全黄色预警！
+                </div>
+                <div style="color:#94a3b8; margin-bottom:10px; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">📊 现场指标与证据：</b><br>
+                  • 异常对象：A02 门店 3 号鲜奶立式冷柜 (DEV-COLD-03)<br>
+                  • 关键读数：当前温度 8.2℃（安全标准 ≤ 4.0℃，超标持续 35 分钟）<br>
+                  • 影响批次：在柜鲜奶制品 42 盒，货值约 680 元<br>
+                  • 紧急动作：已自动在 POS 系统对受影响批次打上「暂停销售」预锁
+                </div>
+                <div style="color:#94a3b8; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">🚦 下步流转与指令：</b><br>
+                  • 下一责任人：@Orchestrator 请推进遏制与根因排查<br>
+                  • 人工介入指示：✅ 当前处于自动安全锁定阶段，无需人工干预
+                </div>
+                <div style="margin-top:12px; background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.25); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11.5px; color:#38bdf8;">
+                  [审计追踪] incident_id: INC-COLD-A02-0918 | trace: tr-sentry-8821a
+                </div>
+              </div>
+            </div>
+
+            <!-- Raw Markdown Source -->
+            <div style="background:rgba(14,23,38,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <b style="color:#cbd5e1; font-size:13px;">标准 Markdown 原文</b>
+                  <button onclick="copyRoleTemplate('sentry', this)" class="demo-btn secondary" style="font-size:11px; padding:4px 10px;">
+                    📋 复制模板
+                  </button>
+                </div>
+                <pre id="raw-tpl-sentry" style="background:#070d18; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:11.5px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; overflow-x:auto; margin:0;">【🚨 Sentry 巡检员 · 发现冷链超温异常 (DETECT)】
+🎯 核心摘要：检测到 A02 门店 3 号冷柜持续超温，已触发冷链食品安全黄色预警！
+--------------------------------------------------
+📊 现场指标与证据：
+• 异常对象：A02 门店 3 号鲜奶立式冷柜 (DEV-COLD-03)
+• 关键读数：当前温度 8.2℃（安全标准 ≤ 4.0℃，超标持续 35 分钟）
+• 影响批次：在柜鲜奶制品 42 盒，货值约 680 元
+• 紧急动作：已自动在 POS 系统对受影响批次打上「暂停销售」预锁
+--------------------------------------------------
+🚦 下步流转与指令：
+• 下一责任人：@Orchestrator 请推进遏制与根因排查
+• 人工介入指示：✅ 当前处于自动安全锁定阶段，无需人工干预
+`[审计追踪] incident_id: INC-COLD-A02-0918 | trace: tr-sentry-8821a`</pre>
+              </div>
+              <div style="margin-top:14px; font-size:11.5px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                <b>调用契机</b>：IoT 时序巡检或传感器上报超限时触发。严格 L0 只读权限，绝不直接调用物理写接口。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role 2: Diagnoser Panel -->
+        <div id="role-panel-diagnoser" class="role-panel" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">
+            <div style="background:rgba(14,23,38,0.9); border:1px solid #c084fc; border-radius:12px; padding:18px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:20px;">🔍</span>
+                  <div>
+                    <b style="color:#fff; font-size:14px;">Diagnoser · 根因诊断卡片预览</b>
+                    <div style="font-size:11px; color:#c084fc;">角色定位：多维排查、排除误报、锁定根因 (置信度推导)</div>
+                  </div>
+                </div>
+                <span class="badge" style="background:rgba(192,132,252,0.2); color:#c084fc; border:1px solid #c084fc;">渲染视图</span>
+              </div>
+
+              <div style="background:#070d18; border-radius:10px; padding:16px; border:1px solid rgba(192,132,252,0.3); font-size:13px; line-height:1.7;">
+                <div style="font-size:14px; font-weight:700; color:#c084fc; margin-bottom:6px;">
+                  【🔍 Diagnoser 诊断员 · 根因分析完成 (DIAGNOSE)】
+                </div>
+                <div style="color:#f8fafc; font-weight:600; margin-bottom:10px; background:rgba(192,132,252,0.08); padding:8px 10px; border-radius:6px; border-left:3px solid #c084fc;">
+                  🎯 核心摘要：完成设备传感器与历史工单排查，定位故障根因为「冷凝风扇电机轴承卡阻」。
+                </div>
+                <div style="color:#94a3b8; margin-bottom:10px; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">📊 诊断矩阵与依据：</b><br>
+                  • Top-1 根因：冷凝风扇转速仅 320 RPM（额定 1200 RPM，置信度 92%）<br>
+                  • 排除项说明：压缩机供电正常（220V）、制冷剂压力正常（0.45 MPa，排除泄漏）<br>
+                  • 关联知识：命中《冷链散热电机常见高频故障库》(KB-REF-4421)<br>
+                  • 处置建议：推荐下发电机强制高频脉冲重启脚本
+                </div>
+                <div style="color:#94a3b8; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">🚦 下步流转与指令：</b><br>
+                  • 下一责任人：@Orchestrator 决策并生成执行计划<br>
+                  • 人工介入指示：✅ 方案已就绪，等待下发
+                </div>
+                <div style="margin-top:12px; background:rgba(15,23,42,0.9); border:1px solid rgba(192,132,252,0.25); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11.5px; color:#c084fc;">
+                  [审计追踪] incident_id: INC-COLD-A02-0918 | confidence: 0.92 | trace: tr-diag-9912c
+                </div>
+              </div>
+            </div>
+
+            <div style="background:rgba(14,23,38,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <b style="color:#cbd5e1; font-size:13px;">标准 Markdown 原文</b>
+                  <button onclick="copyRoleTemplate('diagnoser', this)" class="demo-btn secondary" style="font-size:11px; padding:4px 10px;">
+                    📋 复制模板
+                  </button>
+                </div>
+                <pre id="raw-tpl-diagnoser" style="background:#070d18; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:11.5px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; overflow-x:auto; margin:0;">【🔍 Diagnoser 诊断员 · 根因分析完成 (DIAGNOSE)】
+🎯 核心摘要：完成设备传感器与历史工单排查，定位故障根因为「冷凝风扇电机轴承卡阻」。
+--------------------------------------------------
+📊 诊断矩阵与依据：
+• Top-1 根因：冷凝风扇转速仅 320 RPM（额定 1200 RPM，置信度 92%）
+• 排除项说明：压缩机供电正常（220V）、制冷剂压力正常（0.45 MPa，排除泄漏）
+• 关联知识：命中《冷链散热电机常见高频故障库》(KB-REF-4421)
+• 处置建议：推荐下发电机强制高频脉冲重启脚本
+--------------------------------------------------
+🚦 下步流转与指令：
+• 下一责任人：@Orchestrator 决策并生成执行计划
+• 人工介入指示：✅ 方案已就绪，等待下发
+`[审计追踪] incident_id: INC-COLD-A02-0918 | confidence: 0.92 | trace: tr-diag-9912c`</pre>
+              </div>
+              <div style="margin-top:14px; font-size:11.5px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                <b>调用契机</b>：Sentry 发出异常报告后由 Orchestrator 唤醒，综合拓扑时序数据输出排查矩阵与置信度。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role 3: Executor Panel -->
+        <div id="role-panel-executor" class="role-panel" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">
+            <div style="background:rgba(14,23,38,0.9); border:1px solid #f59e0b; border-radius:12px; padding:18px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:20px;">⚡️</span>
+                  <div>
+                    <b style="color:#fff; font-size:14px;">Executor · 受控执行卡片预览</b>
+                    <div style="font-size:11px; color:#f59e0b;">角色定位：受控写、隔离危险、触发审批 (L2工控红线)</div>
+                  </div>
+                </div>
+                <span class="badge" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid #f59e0b;">待审批卡片</span>
+              </div>
+
+              <div style="background:#070d18; border-radius:10px; padding:16px; border:1px solid rgba(245,158,11,0.3); font-size:13px; line-height:1.7;">
+                <div style="font-size:14px; font-weight:700; color:#fbbf24; margin-bottom:6px;">
+                  【⚡️ Executor 执行员 · 动作就绪 / 等待人类授权 (EXECUTE)】
+                </div>
+                <div style="color:#f8fafc; font-weight:600; margin-bottom:10px; background:rgba(245,158,11,0.08); padding:8px 10px; border-radius:6px; border-left:3px solid #f59e0b;">
+                  🎯 核心摘要：物理隔离动作已完成；冷柜电机重启属于 L2 级工控写操作，等待人类审批！
+                </div>
+                <div style="color:#94a3b8; margin-bottom:10px; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">📊 动作状态与清单：</b><br>
+                  • 已执行动作：✅ 鲜奶商品条码停售封存生效 (LOCK-SKU-8821)<br>
+                  • 待执行动作：⏸️ 远程下发冷凝电机强制高频重启指令 (ACTION-RESTART-0918)<br>
+                  • 安全级别：L2 级受控操作（生产工控安全公理红线）
+                </div>
+                <div style="color:#94a3b8; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">🚦 下步流转与指令：</b><br>
+                  • 人工介入指示：⚠️ 请人类管理员 <b style="color:#fbbf24;">@admin</b> 审核并在群内回复「批准」或点击审批卡片<br>
+                  • 保护机制：若 15 分钟内未获批，系统将维持物理停售并降级派发线下驻店师傅工单
+                </div>
+                <div style="margin-top:12px; background:rgba(15,23,42,0.9); border:1px solid rgba(245,158,11,0.25); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11.5px; color:#fbbf24;">
+                  [审计追踪] incident_id: INC-COLD-A02-0918 | action_id: ACT-4410 | trace: tr-exec-0102b
+                </div>
+              </div>
+            </div>
+
+            <div style="background:rgba(14,23,38,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <b style="color:#cbd5e1; font-size:13px;">标准 Markdown 原文</b>
+                  <button onclick="copyRoleTemplate('executor', this)" class="demo-btn secondary" style="font-size:11px; padding:4px 10px;">
+                    📋 复制模板
+                  </button>
+                </div>
+                <pre id="raw-tpl-executor" style="background:#070d18; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:11.5px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; overflow-x:auto; margin:0;">【⚡️ Executor 执行员 · 动作就绪 / 等待人类授权 (EXECUTE)】
+🎯 核心摘要：物理隔离动作已完成；冷柜电机重启属于 L2 级工控写操作，等待人类审批！
+--------------------------------------------------
+📊 动作状态与清单：
+• 已执行动作：✅ 鲜奶商品条码停售封存生效 (LOCK-SKU-8821)
+• 待执行动作：⏸️ 远程下发冷凝电机强制高频重启指令 (ACTION-RESTART-0918)
+• 安全级别：L2 级受控操作（生产工控安全公理红线）
+--------------------------------------------------
+🚦 下步流转与指令：
+• 人工介入指示：⚠️ 请人类管理员 @admin 审核并在群内回复「批准」或点击审批卡片
+• 保护机制：若 15 分钟内未获批，系统将维持物理停售并降级派发线下驻店师傅工单
+`[审计追踪] incident_id: INC-COLD-A02-0918 | action_id: ACT-4410 | trace: tr-exec-0102b`</pre>
+              </div>
+              <div style="margin-top:14px; font-size:11.5px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                <b>调用契机</b>：执行任何写操作（改配置、下发重启、触发工单）前生成。生产资金与工控红线严禁越权。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role 4: Auditor Panel -->
+        <div id="role-panel-auditor" class="role-panel" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">
+            <div style="background:rgba(14,23,38,0.9); border:1px solid #10b981; border-radius:12px; padding:18px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:20px;">🛡️</span>
+                  <div>
+                    <b style="color:#fff; font-size:14px;">Auditor · 独立审计卡片预览</b>
+                    <div style="font-size:11px; color:#34d399;">角色定位：反自验 (Anti-Self)、双重验证、固化证据链</div>
+                  </div>
+                </div>
+                <span class="badge" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid #10b981;">合规关单凭证</span>
+              </div>
+
+              <div style="background:#070d18; border-radius:10px; padding:16px; border:1px solid rgba(16,185,129,0.3); font-size:13px; line-height:1.7;">
+                <div style="font-size:14px; font-weight:700; color:#34d399; margin-bottom:6px;">
+                  【🛡️ Auditor 审计员 · 独立双重闭环核验通过 (VERIFY)】
+                </div>
+                <div style="color:#f8fafc; font-weight:600; margin-bottom:10px; background:rgba(16,185,129,0.08); padding:8px 10px; border-radius:6px; border-left:3px solid #10b981;">
+                  🎯 核心摘要：设备恢复达标与商品安全封存已完成独立反自验复核，确认符合安全关单标准！
+                </div>
+                <div style="color:#94a3b8; margin-bottom:10px; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">📊 独立核验证据：</b><br>
+                  • 设备恢复核验：冷柜温度已回落至 3.4℃（达标），风机转速 1180 RPM（达标）<br>
+                  • 商品安全核验：受影响 42 盒鲜奶已全量转移至报损冷库，柜台售出数为 0（未流入市场）<br>
+                  • 证据防篡改包：已生成不可逆证据哈希 <code style="color:#34d399;">sha256:7f83b1657ff1...</code>
+                </div>
+                <div style="color:#94a3b8; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">🚦 下步流转与指令：</b><br>
+                  • 下一责任人：@Orchestrator 满足双重安全关闭条件，建议予以结案归档<br>
+                  • 人工介入指示：✅ 审计合规，闭环通过
+                </div>
+                <div style="margin-top:12px; background:rgba(15,23,42,0.9); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11.5px; color:#34d399;">
+                  [审计追踪] incident_id: INC-COLD-A02-0918 | evidence_ref: EVI-PKG-20260918 | verify: PASS
+                </div>
+              </div>
+            </div>
+
+            <div style="background:rgba(14,23,38,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <b style="color:#cbd5e1; font-size:13px;">标准 Markdown 原文</b>
+                  <button onclick="copyRoleTemplate('auditor', this)" class="demo-btn secondary" style="font-size:11px; padding:4px 10px;">
+                    📋 复制模板
+                  </button>
+                </div>
+                <pre id="raw-tpl-auditor" style="background:#070d18; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:11.5px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; overflow-x:auto; margin:0;">【🛡️ Auditor 审计员 · 独立双重闭环核验通过 (VERIFY)】
+🎯 核心摘要：设备恢复达标与商品安全封存已完成独立反自验复核，确认符合安全关单标准！
+--------------------------------------------------
+📊 独立核验证据：
+• 设备恢复核验：冷柜温度已回落至 3.4℃（达标），风机转速 1180 RPM（达标）
+• 商品安全核验：受影响 42 盒鲜奶已全量转移至报损冷库，柜台售出数为 0（未流入市场）
+• 证据防篡改包：已生成不可逆证据哈希 `sha256:7f83b1657ff1...`
+--------------------------------------------------
+🚦 下步流转与指令：
+• 下一责任人：@Orchestrator 满足双重安全关闭条件，建议予以结案归档
+• 人工介入指示：✅ 审计合规，闭环通过
+`[审计追踪] incident_id: INC-COLD-A02-0918 | evidence_ref: EVI-PKG-20260918 | verify: PASS`</pre>
+              </div>
+              <div style="margin-top:14px; font-size:11.5px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                <b>调用契机</b>：动作执行完毕后触发。拥有独立隔离的验真逻辑，严禁使用 Executor 的自测结果替代关单复核。
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role 5: Orchestrator / Manager Panel -->
+        <div id="role-panel-orchestrator" class="role-panel" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:16px;">
+            <div style="background:rgba(14,23,38,0.9); border:1px solid #38bdf8; border-radius:12px; padding:18px; position:relative;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:20px;">📋</span>
+                  <div>
+                    <b style="color:#fff; font-size:14px;">Orchestrator / Manager · 闭环复盘卡片预览</b>
+                    <div style="font-size:11px; color:#38bdf8;">角色定位：任务派发、进度看板、全局总结归档</div>
+                  </div>
+                </div>
+                <span class="badge badge-ok">CLOSED 归档</span>
+              </div>
+
+              <div style="background:#070d18; border-radius:10px; padding:16px; border:1px solid rgba(56,189,248,0.3); font-size:13px; line-height:1.7;">
+                <div style="font-size:14px; font-weight:700; color:#38bdf8; margin-bottom:6px;">
+                  【📋 Orchestrator 编排员 · 事故闭环总结报告 (CLOSED)】
+                </div>
+                <div style="color:#f8fafc; font-weight:600; margin-bottom:10px; background:rgba(56,189,248,0.08); padding:8px 10px; border-radius:6px; border-left:3px solid #38bdf8;">
+                  🎯 核心摘要：INC-COLD-A02-0918 冷柜超温故障全链路处置完毕，耗时 18 分钟，挽损成功。
+                </div>
+                <div style="color:#94a3b8; margin-bottom:10px; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">📊 闭环指标全景：</b><br>
+                  • 处置时效：从 Sentry 报警到 Auditor 复核通过共耗时 18 分 24 秒（SLA ≤ 30 分钟）<br>
+                  • 挽损成效：保全冷柜内其他货品价值 4,800 元，隔离报损 680 元，客户零投诉<br>
+                  • 证据链完整度：4/4 环节全量通过审计（Sentry-A、Diag-B、Exec-C、Audit-D）
+                </div>
+                <div style="color:#94a3b8; font-size:12.5px;">
+                  <b style="color:#e2e8f0;">🚦 最终状态：</b><br>
+                  • 工单状态：✅ CLOSED (已归档并沉淀至门店知识库)<br>
+                  • 产出报告：《A02门店冷链故障自治处置复盘表》(REP-20260918-01)
+                </div>
+                <div style="margin-top:12px; background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.25); border-radius:6px; padding:6px 10px; font-family:var(--font-mono); font-size:11.5px; color:#38bdf8;">
+                  [审计追踪] incident_id: INC-COLD-A02-0918 | status: RESOLVED | duration: 18m24s
+                </div>
+              </div>
+            </div>
+
+            <div style="background:rgba(14,23,38,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:18px; display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <b style="color:#cbd5e1; font-size:13px;">标准 Markdown 原文</b>
+                  <button onclick="copyRoleTemplate('orchestrator', this)" class="demo-btn secondary" style="font-size:11px; padding:4px 10px;">
+                    📋 复制模板
+                  </button>
+                </div>
+                <pre id="raw-tpl-orchestrator" style="background:#070d18; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:11.5px; color:#e2e8f0; line-height:1.6; white-space:pre-wrap; overflow-x:auto; margin:0;">【📋 Orchestrator 编排员 · 事故闭环总结报告 (CLOSED)】
+🎯 核心摘要：INC-COLD-A02-0918 冷柜超温故障全链路处置完毕，耗时 18 分钟，挽损成功。
+--------------------------------------------------
+📊 闭环指标全景：
+• 处置时效：从 Sentry 报警到 Auditor 复核通过共耗时 18 分 24 秒（SLA ≤ 30 分钟）
+• 挽损成效：保全冷柜内其他货品价值 4,800 元，隔离报损 680 元，客户零投诉
+• 证据链完整度：4/4 环节全量通过审计（Sentry-A、Diag-B、Exec-C、Audit-D）
+--------------------------------------------------
+🚦 最终状态：
+• 工单状态：✅ CLOSED (已归档并沉淀至门店知识库)
+• 产出报告：《A02门店冷链故障自治处置复盘表》(REP-20260918-01)
+`[审计追踪] incident_id: INC-COLD-A02-0918 | status: RESOLVED | duration: 18m24s`</pre>
+              </div>
+              <div style="margin-top:14px; font-size:11.5px; color:#94a3b8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                <b>调用契机</b>：在整场事故闭环核验完成后发布，面向管理层沉淀 SLA 数据与知识库案例。
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Enforcement Guarantees (3-Layer Architecture) -->
+      <div style="margin-top:28px; background:rgba(11,19,34,0.7); border:1px solid var(--border-subtle); border-radius:12px; padding:18px;">
+        <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+          <span>🛡️</span> 全链路落地与执行保障机制 (3-Layer Enforcement Architecture)
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+            <b style="color:#38bdf8; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+              <span>1️⃣</span> Prompt 级强约束注入
+            </b>
+            <p style="font-size:12px; color:#cbd5e1; line-height:1.5; margin:0;">
+              在 5 个 Worker 的 <code style="color:#7dd3fc;">SOUL.md</code> 与 <code style="color:#7dd3fc;">AGENTS.md</code> 顶部强制写入四段式规则与禁止倾倒原始 JSON 的绝对负向约束。
+            </p>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+            <b style="color:#c084fc; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+              <span>2️⃣</span> 编排器动态校验与拦截
+            </b>
+            <p style="font-size:12px; color:#cbd5e1; line-height:1.5; margin:0;">
+              Orchestrator 接收下游 Worker 回执时校验格式标记；若检测到非标散乱输出，自动触发重构指令，要求重新格式化后入库。
+            </p>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px;">
+            <b style="color:#34d399; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+              <span>3️⃣</span> 人类决策体验极简升级
+            </b>
+            <p style="font-size:12px; color:#cbd5e1; line-height:1.5; margin:0;">
+              人类管理员在 Element 移动端或 PC 端群聊中，3 秒内抓取风险等级与待办事项，回复“批准”即完成闭环，彻底解除理解障碍。
+            </p>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -3150,6 +3690,102 @@ function handleTicket(id, decision) {
     statusEl.innerHTML = '<span style="color:var(--amber)">TIMEOUT (超时升级)</span>';
     logEl.innerHTML = `<span style="color:var(--amber)">[TIMEOUT]</span> 单据 #APPR-0${id} 在规定 SLA 内未获响应。系统触发保护逻辑：禁止擅自维修，自动升级至华南大区经理，同时保持食品停售！`;
   }
+}
+
+// Agent Role Template Switcher
+function switchRoleTemplate(roleKey, btn) {
+  document.querySelectorAll('.role-tpl-tab').forEach(b => {
+    b.classList.remove('active');
+    b.style.border = '1px solid rgba(255,255,255,0.1)';
+    b.style.background = 'rgba(255,255,255,0.04)';
+    b.style.color = '#94a3b8';
+  });
+  document.querySelectorAll('.role-panel').forEach(p => p.style.display = 'none');
+  
+  if (btn) {
+    btn.classList.add('active');
+    btn.style.border = '1px solid #38bdf8';
+    btn.style.background = 'rgba(56,189,248,0.18)';
+    btn.style.color = '#fff';
+  }
+  
+  const panel = document.getElementById('role-panel-' + roleKey);
+  if (panel) panel.style.display = 'block';
+}
+
+// Copy single role template to clipboard
+function copyRoleTemplate(roleKey, btn) {
+  const codeEl = document.getElementById('raw-tpl-' + roleKey);
+  if (!codeEl) return;
+  const text = codeEl.innerText || codeEl.textContent;
+  
+  const doFeedback = () => {
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ 已复制！';
+    btn.style.background = '#10b981';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2000);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(doFeedback).catch(() => {
+      fallbackCopy(text);
+      doFeedback();
+    });
+  } else {
+    fallbackCopy(text);
+    doFeedback();
+  }
+}
+
+// Copy all 5 role templates
+function copyAllRoleTemplates(btn) {
+  const roles = ['sentry', 'diagnoser', 'executor', 'auditor', 'orchestrator'];
+  const allTexts = roles.map(r => {
+    const el = document.getElementById('raw-tpl-' + r);
+    return el ? el.innerText || el.textContent : '';
+  }).filter(Boolean).join('\n\n==================================================\n\n');
+
+  const doFeedback = () => {
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ 5 大模板已全部复制！';
+    btn.style.background = '#10b981';
+    btn.style.color = '#fff';
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+    }, 2500);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(allTexts).then(doFeedback).catch(() => {
+      fallbackCopy(allTexts);
+      doFeedback();
+    });
+  } else {
+    fallbackCopy(allTexts);
+    doFeedback();
+  }
+}
+
+function fallbackCopy(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+  } catch (e) {}
+  document.body.removeChild(textarea);
 }
 </script>
 
