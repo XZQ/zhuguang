@@ -16,9 +16,16 @@
 - Incident、Action、Approval、Evidence 和 Trace 均传递 ID 与摘要，不复制或虚构整份外部数据。
 - 每次 MCP 调用携带同一 `runtime_trace_id`、`incident_id` 和唯一 `request_id`，但不得在消息或 Trace 中包含 Token。
 
-## 结构化交接
+## 结构化交接与四段式看板卡片标准
 
-每次回复至少包含：`incident_id`、`phase`、`status`、`summary`、`evidence_refs`、`next_owner`、`blocking_reason`、`context_version`、`assignment_id`、`attempt`、`lease_expires_at` 和 `checkpoint_ref`。调用 MCP 时保留返回的 `request_id` 与 `audit_ref`。
+所有 Agent 向团队群回复或交接任务时，**严禁倾倒未排版的原始 JSON 字符串、纯英文日志或调试堆栈**。输出必须严格遵循统一的「四段式看板卡片」排版：
+
+1. **【头部标识】**：`【[状态图标] 角色 · 当前阶段】`（如：`【🚨 Sentry · 发现冷链超温异常 (DETECT)】`）；
+2. **🎯 核心摘要**：一句话大白话业务结论（清晰说明发生了什么、结果如何，严禁含糊代码）；
+3. **📊 现场指标与证据**：使用清晰项目符号 `•` 列明设备编号、实测读数 vs 阈值、处置动作或排除项；
+4. **🚦 下步流转与指令**：明确指出下一责任人（如 `@Orchestrator`）、是否需要人类管理员 `@admin` 审批。
+5. **底层审计引用**：技术字段（`incident_id`、`phase`、`status`、`evidence_refs`、`next_owner`、`context_version`、`assignment_id`、`attempt`、`lease_expires_at`、`checkpoint_ref`、`audit_ref`）统一收敛至卡片底部单行紧凑代码块中，既满足机器解析，又保持人类界面清爽：
+   `[审计追踪] incident_id: <ID> | checkpoint: <REF> | trace: <ID> | next: <ROLE>`
 
 ## 协调生命周期
 
