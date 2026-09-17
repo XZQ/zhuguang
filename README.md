@@ -12,6 +12,8 @@
 
 服务端新增 `/operations` 只读事件追溯页，支持按门店身份查看设备、商品、Worker 输出和独立核验；已有运行库可用 `scripts/capture_runtime.py` 封存并离线回放。场景接入、AT 消息关联、PostgreSQL 导出及恢复对账命令见交接手册。
 
+2026-09-17 现场部署记录：广州承载控制端，Worker 分布于上海、首尔、新加坡及 AWS 东京；Executor 已从下线节点迁入东京。详见[部署与 Worker 核查](docs/operations/deployment-workers-20260917.md)。容器和心跳验证不代表 F02 真实业务主链通过。
+
 ## 历史复赛在线入口（部署版本须另行核验）
 
 当前材料见[文档中心](docs/README.md)与[决赛讲稿](docs/competition/决赛讲稿与问答.md)。09-12 准备稿中的 VeriAgent 为工作标题，不据此改变上面的仓库作品名。本地文档/门户重建不代表以下网站已同步发布。
