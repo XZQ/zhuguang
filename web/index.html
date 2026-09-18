@@ -936,6 +936,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       📋 Agent 结构化卡片标准
       <span class="badge-pill" style="background:rgba(16,185,129,0.2); color:#34d399;">四段式看板</span>
     </button>
+    <button class="nav-tab-btn" onclick="switchMainTab('video')">
+      🎬 智能体协同闭环视频
+      <span class="badge-pill" style="background:rgba(239,68,68,0.2); color:#f87171;">MiniMax-M3 实录</span>
+    </button>
     
     <button class="nav-tab-btn" onclick="switchMainTab('hitl')">
       🔒 高风险审批与审计
@@ -1876,6 +1880,64 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   </section>
 
   <!-- ==================== SECTION 3.5: AGENT TEMPLATES & OUTPUT STANDARD ==================== -->
+  
+  <!-- ==================== VIEW 9: VIDEO DEMO ==================== -->
+  <section id="view-video" class="view-section">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:28px 32px; box-shadow:0 8px 32px rgba(0,0,0,0.4); margin-bottom:24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--border-subtle); padding-bottom:16px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:24px;">🎬</span>
+            <h2 style="font-size:22px; font-weight:800; color:var(--text-primary);">VeriAgent · 逐光多智能体全流程协同闭环录屏实况</h2>
+            <span style="padding:4px 10px; border-radius:20px; font-size:12px; font-weight:700; background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.3);">
+              MiniMax-M3 网关直连 · 思维链深度隐藏
+            </span>
+          </div>
+          <p style="color:var(--text-secondary); font-size:14px; margin-top:6px;">
+            真实录制跨上海、首尔、东京、新加坡 4 地 5 大 Worker 在 Matrix 房间内从异常告警到独立核验的完整端到端闭环（配国语解说音画同步）
+          </p>
+        </div>
+        <div style="display:flex; gap:12px;">
+          <a href="/zhuguang/demo_video.mp4" download="VeriAgent_Live_Demo.mp4" class="btn-primary" style="text-decoration:none; padding:10px 20px; border-radius:8px; background:linear-gradient(135deg, #2563eb, #3b82f6); color:#fff; font-weight:700; font-size:14px; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(37,99,235,0.4);">
+            ⬇️ 下载高清 1080P MP4
+          </a>
+        </div>
+      </div>
+
+      <!-- Video Player -->
+      <div style="position:relative; width:100%; border-radius:14px; overflow:hidden; border:1px solid rgba(56,189,248,0.25); background:#000; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
+        <video controls autoplay muted loop playsinline style="width:100%; max-height:760px; display:block; outline:none;">
+          <source src="/zhuguang/demo_video.mp4" type="video/mp4">
+          您的浏览器不支持 HTML5 原生视频播放，请点击上方下载视频查阅。
+        </video>
+      </div>
+
+      <!-- Feature Grid -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:28px;">
+        <div style="background:rgba(14,23,38,0.7); border:1px solid var(--border-subtle); padding:20px; border-radius:12px; border-left:4px solid var(--cyan);">
+          <div style="color:var(--cyan); font-weight:700; font-size:15px; margin-bottom:6px;">🎯 1. 核心模型升级 MiniMax-M3</div>
+          <div style="color:var(--text-secondary); font-size:13.5px; line-height:1.7;">
+            Higress 网关已热切升级至 <b>MiniMax-M3</b> 旗舰基座，多轮推理更敏捷，彻底排除了原阿里千问套餐过期的 401 令牌失效与 Internal error。
+          </div>
+        </div>
+
+        <div style="background:rgba(14,23,38,0.7); border:1px solid var(--border-subtle); padding:20px; border-radius:12px; border-left:4px solid var(--green);">
+          <div style="color:var(--green); font-weight:700; font-size:15px; margin-bottom:6px;">🛡️ 2. 思维链深度剥离 (Zero Think)</div>
+          <div style="color:var(--text-secondary); font-size:13.5px; line-height:1.7;">
+            在 5 大 Agent 容器及网关层实现 <code>&lt;think&gt;</code> 逻辑拦截，群聊仅呈现干练规范的四段式卡片，拒绝未经消化的长篇推理过程污染群聊。
+          </div>
+        </div>
+
+        <div style="background:rgba(14,23,38,0.7); border:1px solid var(--border-subtle); padding:20px; border-radius:12px; border-left:4px solid var(--amber);">
+          <div style="color:var(--amber); font-weight:700; font-size:15px; margin-bottom:6px;">🌐 3. 四地五角色跨云分布式协同</div>
+          <div style="color:var(--text-secondary); font-size:13.5px; line-height:1.7;">
+            Sentry(上海) → Orchestrator(上海) → Diagnoser(首尔) → Executor(东京) → Auditor(新加坡)，毫秒级传递结构化引用，完成真实业务闭环。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="view-templates" class="view-section">
     <div class="panel-card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
