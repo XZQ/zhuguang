@@ -38,3 +38,8 @@ Thumbs.db
 
 # 本地助手记忆
 .workbuddy/
+
+# 媒体文件
+*.mp4
+*.mov
+*.webm

@@ -828,6 +828,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       </div>
     </div>
     <div class="header-actions">
+      <button class="header-btn" onclick="switchMainTab('video')" style="border-color:rgba(244,63,94,0.5); color:#fb7185; cursor:pointer;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        🎬 实机演示视频
+      </button>
       <a class="header-btn" href="./ppt/finals.html" target="_blank">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         方案 PPT 演示
@@ -984,11 +988,51 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       📑 答辩 PPT 与整改说明
       <span class="badge-pill">评审材料</span>
     </button>
+    <button class="nav-tab-btn" onclick="switchMainTab('video')" style="border-color:rgba(244,63,94,0.4); color:#fb7185;">
+      🎬 演示视频
+      <span class="badge-pill" style="background:#e11d48; color:#fff;">实机录屏</span>
+    </button>
     <button class="nav-tab-btn" onclick="switchMainTab('dossier')" style="border-color:rgba(56,189,248,0.5);">
       📖 答辩全景手册
       <span class="badge-pill" style="background:rgba(56,189,248,0.25); color:#38bdf8;">12章速查</span>
     </button>
   </nav>
+
+  <!-- ==================== SECTION: REAL DEMO VIDEO ==================== -->
+  <section id="view-video" class="view-section">
+    <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid rgba(244, 63, 94, 0.4); border-radius: 14px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 style="font-size: 20px; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+            <span>🎬 VeriAgent 决赛实机运行与多 Agent 协作演示视频</span>
+            <span style="font-size: 11px; background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); padding: 3px 10px; border-radius: 4px; font-weight: 700;">1080P MP4 · 4.1MB</span>
+          </h2>
+          <p style="color: var(--text-secondary); font-size: 13px; margin: 6px 0 0 0;">
+            现场实机录屏：时序去噪与异常分诊 ➔ 因果拓扑诊断 ➔ POS 毫秒级停售熔断 ➔ 异步维修工单调度 ➔ Auditor 带外独立验真闭环
+          </p>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <a href="./demo_video.mp4" download="VeriAgent_Demo.mp4" class="header-btn" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.5); color: #fb7185;">
+            ⬇️ 下载原片 (4.1MB)
+          </a>
+          <a href="./demo_video.mp4" target="_blank" class="header-btn primary" style="background:#e11d48; border-color:#f43f5e;">
+            ↗️ 新窗口全屏播放
+          </a>
+        </div>
+      </div>
+      <div style="border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 8px 30px rgba(0,0,0,0.7); max-width: 1020px; margin: 0 auto;">
+        <video controls preload="metadata" style="width: 100%; max-height: 580px; display: block;" playsinline>
+          <source src="./demo_video.mp4" type="video/mp4">
+          您的浏览器不支持 HTML5 视频播放，请点击右上角链接下载或直接在新窗口播放。
+        </video>
+      </div>
+      <div style="margin-top: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-secondary);">
+        <div>🎥 <b>视频编码</b>：H.264 / AAC 1080P</div>
+        <div>⏱️ <b>直链访问</b>：<a href="./demo_video.mp4" target="_blank" style="color:var(--cyan); text-decoration:underline;">https://mazhi.icu/zhuguang/demo_video.mp4</a></div>
+        <div>🛡️ <b>备份状态</b>：生产主站 + 镜像容灾站 + 本地副本全部持久化</div>
+      </div>
+    </div>
+  </section>
 
   <!-- ==================== SECTION 1: 1-MINUTE DEFENSE DEMO ==================== -->
   <section id="view-demo" class="view-section active">
