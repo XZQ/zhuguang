@@ -979,13 +979,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
   <!-- Main Navigation Tabs -->
   <nav class="main-nav-tabs" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
-    <button class="nav-tab-btn active" onclick="switchMainTab('demo')">
-      ⚡️ 全网实时事实演练
-      <span class="badge-pill">高光演示</span>
+    <button class="nav-tab-btn active" onclick="switchMainTab('phx-fleet')">
+      🏪 全国300店大盘 (全网实时事实演练)
+      <span class="badge-pill" style="background:rgba(16,185,129,0.2); color:#34d399;">PHX 孪生大屏</span>
     </button>
-    <button class="nav-tab-btn" onclick="switchMainTab('phx-fleet')">
-      🏪 全国300店大盘
-      <span class="badge-pill" style="background:rgba(16,185,129,0.2); color:#34d399;">PHX 仿真</span>
+    <button class="nav-tab-btn" onclick="switchMainTab('demo')">
+      ⚡️ 单店微观演练 (历史基线)
+      <span class="badge-pill">单店参考</span>
     </button>
     <button class="nav-tab-btn" onclick="switchMainTab('command')">
       📊 事故指挥台 (6大场景)
@@ -1026,7 +1026,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   </nav>
 
   <!-- ==================== SECTION 1: 1-MINUTE DEFENSE DEMO ==================== -->
-  <section id="view-demo" class="view-section active">
+  <section id="view-demo" class="view-section">
     <div class="demo-controller">
       <div class="demo-header">
         <div>
@@ -1409,7 +1409,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   </section>
 
   <!-- ==================== SECTION: PHX 300 STORES FLEET DASHBOARD ==================== -->
-  <section id="view-phx-fleet" class="view-section">
+  <section id="view-phx-fleet" class="view-section active">
     <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:18px 24px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
       <div>
         <h2 style="font-size:18px; color:#fff; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">

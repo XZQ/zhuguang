@@ -2410,7 +2410,7 @@ const FLEET_DRILL_STEPS = [
         avatar: "📋",
         avatarCls: "avatar-human",
         time: "09:07:01",
-        cardTitle: "👷 【抢修工单已派发 #WO-HZ-006】",
+        cardTitle: "👷 【抢修工单已派发 #WO-HZ-006】杭州 S006",
         cardColor: "#60a5fa",
         body: "• 派工标的: <b>杭州 S006 (金融街店)</b> 1号鲜奶柜<br>• 责任技工: <b>李建国 (工号 88021 · 距店 1.8km)</b><br>• 携带配件: 备用热力膨胀阀 + 测压表<br>• SLA 承诺: 30 分钟内到场抢修",
         meta: "channel: dingtalk_ops · template: workorder_dispatched",
@@ -2430,6 +2430,26 @@ const FLEET_DRILL_STEPS = [
         actions: [
           { label: "查看钉钉审批凭证", onClick: "alert('钉钉审批单号: APPR-20260919-01 · 签署人: 杭州金融街店长 · 状态: APPROVED')" }
         ]
+      },
+      {
+        sender: "IoT 电气自愈控制",
+        role: "设备控制网关 · MQTT 65Hz",
+        avatar: "⚡",
+        avatarCls: "avatar-sentry",
+        time: "09:07:03",
+        cardTitle: "🔄 【变频自愈完成】深圳 S014",
+        cardColor: "#fbbf24",
+        body: "科技园店鲜饮柜压缩机执行 65Hz 脉冲扫频反转，机械卡缸成功冲开，回油压差恢复至 0.22MPa，无需人工换件！"
+      },
+      {
+        sender: "北京冷链维保专线",
+        role: "维保中心调度 · 钉钉联动",
+        avatar: "❄️",
+        avatarCls: "avatar-human",
+        time: "09:07:04",
+        cardTitle: "🔧 【冷媒加注派单 #WO-BJ-021】北京 S021",
+        cardColor: "#a78bfa",
+        body: "国贸店 MEAT-02 深冷岛柜注氟任务已指派王工（携 R404A 罐体与卤素检漏仪），预计 20 分钟内到场补压。"
       }
     ]
   },
