@@ -1173,7 +1173,7 @@
     window.__lowPowerMode = stored === '1' || (stored === null && reduced);
     function updateHint(){
       const hint = document.getElementById('hint');
-      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+      if(hint) hint.textContent = `← → 翻页 · F 全屏 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
     }
     window.__setLowPowerMode = function(on, opts={}){
       window.__lowPowerMode = !!on;
@@ -1192,7 +1192,7 @@
 </script>
 
 <canvas id="bg-grid" class="bg"></canvas>
-<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+<div id="hint">← → 翻页 · F 全屏 · B 静态 · ESC 索引</div>
 
 <div id="deck">
 
@@ -1202,19 +1202,19 @@
   <div class="canvas-card">
     <canvas class="ascii-bg" aria-hidden="true"></canvas>
     <div class="chrome-min">
-      <div class="l">逐光 · ZHUGUANG</div>
-      <div class="r">01 / 12 · GOAI AGENT INFRA · FINALS</div>
+      <div class="l">团队 逐光｜夏志强（浙江吉利控股）、马荣（OPPO）</div>
+      <div class="r">领域 零售连锁 / Agent Infra · 01 / 12</div>
     </div>
     <div style="flex:1;display:grid;grid-template-rows:auto 1fr auto;gap:3vh">
-      <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.72);letter-spacing:.2em">VERIFIABLE MULTI-AGENT RUNTIME · PHYSICAL-DIGITAL WORKFLOWS</div>
+      <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">VERIFIABLE MULTI-AGENT RUNTIME · PHYSICAL-DIGITAL WORKFLOWS</div>
       <div data-anim="title" style="align-self:center">
-        <h1 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(7.5vw,12vh);line-height:.95;letter-spacing:-.03em;color:#fff">店巡 <span style="font-size:0.58em;font-weight:300;opacity:0.92;letter-spacing:0.02em;margin-left:0.15em">VeriPatrol</span></h1>
-        <div style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:min(3.2vw,5.5vh);line-height:1.2;color:rgba(255,255,255,.9);margin-top:2vh">面向物理实体流程的可验证多智能体运行时</div>
-        <div style="font-size:max(16px,1.1vw);color:rgba(255,255,255,.85);margin-top:1.2vh;letter-spacing:.05em">300 家门店 · 1,500 台设备 · 43.2 万条时序遥测 · 魔搭 ModelScope 开源生态</div>
+        <h1 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(7.2vw,11.5vh);line-height:.95;letter-spacing:-.03em;color:#fff">店巡 <span style="font-size:0.58em;font-weight:300;opacity:0.92;letter-spacing:0.02em;margin-left:0.15em">VeriPatrol</span></h1>
+        <div style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:min(2.8vw,4.8vh);line-height:1.25;color:var(--accent-bright);margin-top:2vh">设备修好不等于商品安全，独立验证每一次关键处置</div>
+        <div style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(16px,1.15vw);line-height:1.4;color:var(--text-secondary);margin-top:1.2vh">面向物理实体流程的可验证多智能体运行时 · 300 家门店 · 1,500 台设备 · 43.2 万条时序遥测</div>
       </div>
-      <div data-anim="bottom" style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid rgba(255,255,255,.24);padding-top:2vh">
-        <div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.5;color:rgba(255,255,255,.86);max-width:58ch">核心机制：物理-数字三大公理 · 反自验闭环 (Anti-Self-Verification) · 异步 Human-Tool 协议</div>
-        <div class="t-meta" style="color:rgba(255,255,255,.7);text-align:right">首发实跑基准: 零售高敏冷链零事故 (300家门店·1,500台设备·43.2万遥测)<br/>魔搭社区: 创空间 walle1991/veripatrol · 数据集 veripatrol-retail-telemetry-432k</div>
+      <div data-anim="bottom" style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid var(--border-subtle);padding-top:2vh">
+        <div style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,1.05vw);line-height:1.5;color:var(--text-secondary);max-width:58ch">核心机制：物理-数字三大公理 · 反自验闭环 (Anti-Self-Verification) · 异步 Human-Tool 协议</div>
+        <div class="t-meta" style="color:var(--text-helper);text-align:right">魔搭创空间: walle1991/veripatrol · 数据集: veripatrol-retail-telemetry-432k<br/>2026 全球开放智能体创新大赛 (GOAI) 决赛答辩方案</div>
       </div>
     </div>
   </div>
@@ -1228,22 +1228,24 @@
     </div>
     <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">VERIFIABLE RUNTIME · 3 PHYSICAL-DIGITAL AXIOMS · ANTI-SELF-VERIFICATION</div>
     <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.6vw,6.2vh);line-height:1.04;color:#fff">物理实体流程的三大不可逆公理：<span style="color:var(--accent-bright)">软件假设在物理世界必然崩溃</span></h2>
-    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1.05fr 1fr 1.2fr;gap:2.4vw;align-items:stretch;margin-top:2vh">
-      <div style="border-top:2px solid var(--accent-bright);padding-top:1.4vh">
+    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1.05fr 1fr 1.2fr;gap:2vw;align-items:stretch;margin-top:2.4vh">
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:2.6vh 1.6vw;border-radius:8px;display:flex;flex-direction:column;justify-content:flex-start">
         <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">AXIOM 1: STATE ASYMMETRY</div>
-        <div style="font-size:max(18px,1.1vw);line-height:1.45;color:#fff;font-weight:500">公理一：状态不对称<br/>硬件恢复 ≠ 承载资产安全</div>
-        <div style="font-size:max(15px,.88vw);line-height:1.5;color:rgba(255,255,255,.7);margin-top:1.2vh">纯软件视“环境恢复即任务完成”；但物理世界存在热力学惯性与不可逆损伤。冷柜降温不等于鲜奶未变质；机房降温不等于训练权重无损；反应釜降温不等于生化药剂无副反应。</div>
+        <div style="font-size:max(18px,1.15vw);line-height:1.4;color:#fff;font-weight:500">公理一：状态不对称<br/><span style="color:var(--accent-bright)">设备修好 ≠ 商品安全</span></div>
+        <div style="font-size:max(14px,.86vw);line-height:1.6;color:var(--text-secondary);margin-top:1.4vh">纯软件视“环境恢复即任务完成”；但物理世界存在热力学惯性与不可逆损伤。冷柜降温不等于鲜奶未变质；机房降温不等于训练权重无损；反应釜降温不等于生化药剂无副反应。</div>
       </div>
-      <div style="border-top:2px solid var(--accent-bright);padding-top:1.4vh">
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:2.6vh 1.6vw;border-radius:8px;display:flex;flex-direction:column;justify-content:flex-start">
         <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">AXIOM 2: IRREVERSIBLE ACTUATION</div>
-        <div style="font-size:max(18px,1.1vw);line-height:1.45;color:#fff;font-weight:500">公理二：执行不可逆<br/>物理动作无“代码假撤销”</div>
-        <div style="font-size:max(15px,.88vw);line-height:1.5;color:rgba(255,255,255,.7);margin-top:1.2vh">软件代码报错可一键 rollback；物理世界上门换件、零件拆装、切断电源、报损销毁产生真实物理事实与巨额责任，必须通过刚性前置安全门禁与幂等 Token 严格约束。</div>
+        <div style="font-size:max(18px,1.15vw);line-height:1.4;color:#fff;font-weight:500">公理二：执行不可逆<br/><span style="color:var(--accent-bright)">物理动作无“代码假撤销”</span></div>
+        <div style="font-size:max(14px,.86vw);line-height:1.6;color:var(--text-secondary);margin-top:1.4vh">软件代码报错可一键 rollback；物理世界上门换件、零件拆装、切断电源、报损销毁产生真实物理事实与巨额责任，必须通过刚性前置安全门禁与幂等 Token 严格约束。</div>
       </div>
-      <div style="background:rgba(255,255,255,.07);padding:1.8vh 1.5vw">
-        <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">AXIOM 3: ANTI-SELF-VERIFICATION</div>
-        <div style="font-size:max(18px,1.1vw);line-height:1.45;color:#fff;font-weight:500">公理三：反自验闭环<br/>执行者绝无权自证成功</div>
-        <div style="font-size:max(15px,.88vw);line-height:1.5;color:rgba(255,255,255,.8);margin-top:1.2vh">大模型执行者自查必然存在自证幻觉。Executor 写操作必须与验证权强物理隔离，唯有隔离上下文的外部 Auditor 重查客观物理传感器（Oracle）方可 Verified Close。</div>
-        <div style="border-top:1px solid rgba(255,255,255,.22);margin-top:1.2vh;padding-top:1vh;font-size:max(14px,.82vw);line-height:1.4;color:rgba(255,255,255,.72)"><strong style="color:#fff">压力测试基准 01：</strong>连锁高敏冷链（强时效、零容忍食安法规、1,500 台异构物理设备极限实跑）。</div>
+      <div style="background:var(--surface-elevated);border:1px solid var(--border-strong);border-top:3px solid var(--accent-bright);padding:2.6vh 1.6vw;border-radius:8px;box-shadow:0 12px 36px rgba(0,0,0,0.4);display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div class="t-meta" style="color:var(--accent-bright);margin-bottom:1vh">AXIOM 3: ANTI-SELF-VERIFICATION</div>
+          <div style="font-size:max(18px,1.15vw);line-height:1.4;color:#fff;font-weight:500">公理三：反自验闭环<br/><span style="color:var(--accent-bright)">执行者绝无权自证成功</span></div>
+          <div style="font-size:max(14px,.86vw);line-height:1.6;color:var(--text-secondary);margin-top:1.4vh">大模型执行者自查必然存在自证幻觉。Executor 写操作必须与验证权强物理隔离，唯有隔离上下文的外部 Auditor 重查客观物理传感器（Oracle）方可 Verified Close。</div>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle);margin-top:1.6vh;padding-top:1.2vh;font-size:max(13px,.8vw);line-height:1.45;color:var(--text-helper)"><strong style="color:#fff">压力测试基准 01：</strong>连锁高敏冷链（强时效、零容忍食安法规、1,500 台异构物理设备极限实跑）。</div>
       </div>
     </div>
   </div>
@@ -1408,6 +1410,10 @@
         <div style="font-size:max(18px,1.15vw);font-weight:500;color:#fff;margin:.6vh 0">接口 Partial 与网络分区</div>
         <div style="font-size:max(14px,.84vw);line-height:1.45;color:var(--text-secondary)">MCP 查询局部异常或数据断流，Auditor 绝不轻信动作片面回执，阻断并回开事件。</div>
       </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border-subtle);padding-top:1.4vh;margin-top:1.5vh">
+      <div class="t-meta" style="color:var(--accent-bright);font-weight:600">系统核心原则 · 对于证据不足、处置未完成或商品仍存在风险的情况，系统继续保持停售并阻止事件关闭，是设计中的正确结果，而不是流程失败。</div>
+      <div class="t-meta" style="color:var(--text-helper)">A-F 六大不变式全覆盖 · 161 项完整测试全通过</div>
     </div>
   </div>
 </section>
@@ -1640,7 +1646,7 @@
     <div data-anim="hero" style="flex:1;display:grid;grid-template-columns:1fr 1.2fr;gap:4.5vw;align-items:center">
       <div>
         <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.8vw,8vh);line-height:1.02;color:#fff">事件只有在<br/>证据闭环后<br/><span style="color:var(--accent-bright)">才能关闭</span></h2>
-        <div style="font-family:var(--sans),var(--sans-zh);font-size:max(18px,1.2vw);line-height:1.5;color:var(--text-secondary);margin-top:2.4vh">温度恢复不等于商品安全；Agent 的完成声明不等于业务事实。</div>
+        <div style="font-family:var(--sans),var(--sans-zh);font-size:max(17px,1.15vw);line-height:1.5;color:var(--text-secondary);margin-top:2.4vh"><b style="color:#fff">设备修好不等于商品安全，独立验证每一次关键处置。</b><br/>温度恢复不等于商品安全；Agent 的自评声明绝不等于业务客观事实。</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:1.6vh">
         <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-left:3px solid var(--accent-bright);padding:1.8vh 1.4vw;border-radius:6px">
@@ -1659,7 +1665,7 @@
           <div style="font-size:max(15px,.92vw);line-height:1.55;color:var(--text-primary);margin-top:.6vh">同一事故中的 Team Room 委派、Skill Trace、Worker → MCP Actor 正负向鉴权、真实 HITL 人工工单闭环。</div>
         </div>
         <div style="border-top:1px solid var(--border-subtle);padding-top:1.4vh;display:flex;justify-content:space-between;font-family:var(--mono);font-size:max(14px,.82vw);color:var(--text-helper)">
-          <span>逐光团队 · 2026 GOAI 决赛</span><span>EVIDENCE-DRIVEN VERIFICATION</span>
+          <span>团队 逐光｜夏志强（浙江吉利控股）、马荣（OPPO）</span><span>领域 零售连锁 / Agent Infra · 2026 GOAI 决赛</span>
         </div>
       </div>
     </div>
@@ -1891,6 +1897,15 @@ function toggleOverview(){
 
 addEventListener('keydown',e=>{
   if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if((e.key==='f'||e.key==='F') && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen().catch(()=>{});
+    }
+    return;
+  }
   if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
     e.preventDefault();
     window.__setLowPowerMode(!window.__lowPowerMode);
