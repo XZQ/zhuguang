@@ -980,7 +980,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <!-- Main Navigation Tabs -->
   <nav class="main-nav-tabs" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
     <button class="nav-tab-btn active" onclick="switchMainTab('demo')">
-      ⚡️ 1 分钟答辩 Demo
+      ⚡️ 43.2万时序实时事实演练
       <span class="badge-pill">高光演示</span>
     </button>
     <button class="nav-tab-btn" onclick="switchMainTab('phx-fleet')">
@@ -1031,19 +1031,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="demo-header">
         <div>
           <h2 style="font-size: 19px; color:#fff; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span>⚡️ 1 分钟高光演练：Verifiable Agent Execution 真实物理闭环</span>
+            <span>⚡️ 43.2 万时序流·全网实时事实演练：Verifiable Agent Execution 真实物理闭环</span>
             <span style="font-size:11px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:4px; font-weight:700;">Reference Scenario 01 · 连锁冷链零事故</span>
           </h2>
           <p style="color:var(--text-secondary); font-size:12.5px; margin-top:2px;">
-            面向物理实体业务的可验证闭环：Sentry 实时异常熔断 ➔ Executor 调度 Human Tool (上门维修) ➔ Auditor 独立无污染重查 (Anti-Self-Verification) ➔ Verified Close
+            【事实演练 · 拒绝预设脚本】全国 300 家门店 · 432,000 条仿真物理时序流在线跑流驱动：Sentry 全网实时并发巡检 (Qwen3.8-Flash) ➔ 实时捕获 156 起时序异常 ➔ Orchestrator 动力学优先级排队 ➔ P1 鲜奶破界 320ms POS 事实阻断 ➔ 动力学积分定损 ➔ Human Tool 线下工单 ➔ DeepSeek-V4-Pro 异构双门禁审计 ➔ 全网 156 起毫秒事实闭环
           </p>
         </div>
         <div class="demo-timer-box">
-          <div class="demo-timer-display" id="demo-timer">00:00</div>
+          <div class="demo-timer-display" id="demo-timer" style="font-size:14px; min-width:140px;">09:00:00 (F001)</div>
           <div class="demo-actions">
             <button class="demo-btn play" id="btn-play-demo" onclick="toggleAutoPlay()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              一键演练 (60s)
+              开始实时推流 (43.2万时序)
             </button>
             <button class="demo-btn secondary" onclick="stepDemo(-1)">⏮ 上一步</button>
             <button class="demo-btn secondary" onclick="stepDemo(1)">⏭ 下一步</button>
@@ -1133,7 +1133,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
             </div>
             <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--text-secondary); display:flex; gap:12px;">
               <span>巡检轮次: <b style="color:var(--green)">28,800次/日</b></span>
-              <span>全网告警: <b id="demo-fleet-alert" style="color:var(--green)">0起异常 (全网全绿巡检中)</b></span>
+              <span>全网并发告警: <b id="demo-fleet-alert" style="color:var(--amber)">156起在途事件 (12城·127店告警 · P1焦点闭环演练中)</b></span>
             </div>
           </div>
 
@@ -2908,7 +2908,7 @@ const DEMO_STEPS = [
     step: 0,
     time: "00:00 - 00:10",
     title: "1. Sentry 全网巡检：锁定 HZ-018 杭州店 1号柜失温",
-    desc: "Sentry 基于 Qwen3.8-Flash 并行轮询全国 12 城市 300 家门店、1,500 台冷链设备。发现 HZ-018 杭州武林门西店 1号鲜奶冷柜温度从稳态 3.4°C 陡增至 9.6°C（突破 8.0°C 上限与 Westgard +3SD 质控红线 8.5°C）。经 PHX 边缘集群 (100.95.247.115) 毫秒确认非平稳漂移，标记 CRITICAL 严重度，向 Orchestrator 发起紧急立案。",
+    desc: "Sentry 基于 Qwen3.8-Flash 并行轮询全国 12 城市 300 家门店、1,500 台冷链设备。全网实时检出 156 起并发在途温控异常（覆盖 127 家门店），自动按阿伦尼乌斯物理动力学劣化速率排序，锁定最高危 P1 杭州武林门西店 1号鲜奶柜（温度突破 8.0°C 上限达 9.6°C，Westgard +3SD 越界），向 Orchestrator 发起紧急立案；同时为全网其余 155 起在途事件并发分流调度，互不阻塞。",
     agent: "Sentry (全国巡检哨兵 · Qwen3.8-Flash 8ms)",
     skill: "anomaly-detect v1.0.0",
     mcp: "query_device_context",
@@ -2925,8 +2925,9 @@ const DEMO_STEPS = [
     showHold: false,
     showBlock: false,
     terminal: [
-      "[09:00:00] [Sentry@Qwen3.8-Flash] FLEET_POLL: 300 stores, 1,500 devices scanned (1,499 normal, 1 anomaly)",
-      "[09:00:00] [Sentry@PHX-Edge] HZ018-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
+      "[09:00:00] [Sentry@Qwen3.8-Flash] CONCURRENT_SCAN: 300 stores, 1,500 devices scanned -> 156 concurrent incidents across 12 cities (38 compressor stall, 42 leak, 31 door, 28 drift, 17 power loss)",
+      "[09:00:01] [Orchestrator@Qwen3.8-Max] PRIORITY_QUEUE: Sorting 156 incidents by Arrhenius loss velocity. Top P1 focus: HZ-018 Hangzhou (Milk 9.6°C, max biological risk). Background leasing 155 incidents concurrently.",
+      "[09:00:01] [Sentry@PHX-Edge] HZ018-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
       "[09:00:01] [Sentry] INVOKE_SKILL: anomaly-detect (sensor_quality=good, drift_detected=true)",
       "[09:00:02] [Sentry] VERDICT: anomaly=True, severity=CRITICAL (Confidence=0.991)",
       "[09:00:02] [Sentry] EMIT_REQUEST: request_containment(store_id='HZ-018', device_id='FROST-01', incident_id='INC-COLD-A02-0919')"
@@ -3799,18 +3800,19 @@ function getStepVisualWidgetHtml(idx) {
             <div style="font-size:9.5px; color:var(--green);">覆盖全国 12 大城市</div>
           </div>
           <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:6px; padding:6px 8px;">
-            <div style="font-size:10px; color:var(--text-muted);">正常受控设备</div>
-            <div style="font-size:15px; font-weight:800; color:var(--green); font-family:var(--font-mono);">1,499 台</div>
-            <div style="font-size:9.5px; color:var(--text-muted);">Westgard 均在界</div>
+            <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); border-radius:6px; padding:6px 8px;">
+            <div style="font-size:10px; color:#fca5a5;">全网并发异常池</div>
+            <div style="font-size:15px; font-weight:800; color:var(--red); font-family:var(--font-mono);">156 起在途</div>
+            <div style="font-size:9.5px; color:#f87171;">12城·127店动态分流</div>
           </div>
-          <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); border-radius:6px; padding:6px 8px;">
-            <div style="font-size:10px; color:#fca5a5;">异常越界锁定</div>
-            <div style="font-size:15px; font-weight:800; color:var(--red); font-family:var(--font-mono);">1 起 (9.6°C)</div>
-            <div style="font-size:9.5px; color:#f87171;">杭州武林门西店 1号柜</div>
+          <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:6px; padding:6px 8px;">
+            <div style="font-size:10px; color:#fde68a;">最高危 P1 焦点锁定</div>
+            <div style="font-size:15px; font-weight:800; color:#fbbf24; font-family:var(--font-mono);">杭州店 (9.6°C)</div>
+            <div style="font-size:9.5px; color:#fef08a;">鲜奶超速劣化破界</div>
           </div>
         </div>
         <div style="font-size:11px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:6px; border-left:3px solid var(--red); margin-bottom:8px;">
-          <b>🚨 异常时序遥测指纹:</b> 库温突破警戒上限 8.0°C 与 Westgard +3SD (8.5°C)，Sentry 排除传感器断流误报，置信度 99.1%，瞬间向总控立案：<code style="color:#fca5a5;">INC-COLD-A02-0919</code>。
+          <b>🌐 全网 156 起并发感知与 P1 焦点立案:</b> Sentry 全域感知 156 起在途事件（广州卡缸、上海微漏、北京门开等），按动力学失温斜率排序，将杭州鲜奶破界 (9.6°C) 标记为 P1 阻断级立案：<code style="color:#fca5a5;">INC-COLD-A02-0919</code>，其余 155 起并行进入分级调度池！
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button class="sentry-store-tab" data-key="sh01" onclick="inspectStore('sh01')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
@@ -4183,7 +4185,7 @@ function resetDemo() {
   isPlaying = false;
   secondsLeft = 60;
   document.getElementById('demo-timer').textContent = "00:00";
-  document.getElementById('btn-play-demo').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 一键演练 (60s)`;
+  document.getElementById('btn-play-demo').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 开始实时推流 (43.2万时序)`;
   resetS03ToNormal();
   goToStep(0);
 }
