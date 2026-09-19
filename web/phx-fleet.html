@@ -778,10 +778,86 @@ table.incident-table tr:hover td {
   color: #fff;
 }
 
+/* Stage Headline Punchline Banner */
+.drill-stage-headline-banner {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border: 1.5px solid var(--cyan);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.headline-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 340px;
+}
+
+.headline-badge {
+  background: linear-gradient(135deg, #0284c7, #4f46e5);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+.headline-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.2px;
+  line-height: 1.4;
+}
+
+.headline-kpi-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.headline-kpi-pill {
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 6px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+}
+
+.headline-kpi-num {
+  font-size: 15px;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  line-height: 1.1;
+}
+
+.headline-kpi-label {
+  font-size: 10.5px;
+  color: #cbd5e1;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
 /* 3-Column Drill Arena */
 .fleet-drill-arena {
   display: grid;
-  grid-template-columns: 1fr 1.25fr 1fr;
+  grid-template-columns: 1.05fr 1.35fr 1.1fr;
   gap: 14px;
 }
 
@@ -790,7 +866,7 @@ table.incident-table tr:hover td {
 }
 
 .drill-card-col {
-  background: rgba(3, 7, 18, 0.7);
+  background: rgba(3, 7, 18, 0.75);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 14px;
@@ -799,60 +875,75 @@ table.incident-table tr:hover td {
 }
 
 .drill-card-col-head {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
 }
 
-/* Left: Agent Info */
-.agent-banner {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.agent-name-row {
+/* Left: Agent Action Box */
+.agent-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .agent-name-tag {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .agent-model-pill {
-  font-size: 10px;
+  font-size: 10.5px;
   font-family: var(--font-mono);
-  background: rgba(56, 189, 248, 0.15);
+  background: rgba(56, 189, 248, 0.18);
   color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 2px 6px;
-  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 3px 8px;
+  border-radius: 5px;
 }
 
-.agent-desc-text {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 10px;
+.agent-action-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
 }
+
+.agent-bullet {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #e2e8f0;
+}
+
+.bullet-tag {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.bullet-tag.goal { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.bullet-tag.action { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.bullet-tag.result { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
 
 .agent-meta-kv {
   display: grid;
@@ -861,10 +952,14 @@ table.incident-table tr:hover td {
   font-size: 11px;
   font-family: var(--font-mono);
   color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .agent-meta-kv span b {
-  color: var(--text-primary);
+  color: #cbd5e1;
 }
 
 /* Center: Visual Domain Widget */
@@ -1416,6 +1511,28 @@ table.incident-table tr:hover td {
       </div>
     </div>
 
+    <!-- Executive Stage Headline Banner -->
+    <div class="drill-stage-headline-banner">
+      <div class="headline-left">
+        <span class="headline-badge" id="drill-headline-badge">阶段核心战果</span>
+        <span class="headline-title" id="drill-headline-title">【全网并发秒级初筛】Sentry 8ms 轮询 300 店，初筛捕获 156 起在途异常并锁定 5 大攻坚专线！</span>
+      </div>
+      <div class="headline-kpi-row" id="drill-headline-kpis">
+        <div class="headline-kpi-pill">
+          <span class="headline-kpi-num" style="color:#f87171">156 起</span>
+          <span class="headline-kpi-label">捕获在途异常</span>
+        </div>
+        <div class="headline-kpi-pill">
+          <span class="headline-kpi-num" style="color:#38bdf8">8.2 ms</span>
+          <span class="headline-kpi-label">P99 巡检延时</span>
+        </div>
+        <div class="headline-kpi-pill">
+          <span class="headline-kpi-num" style="color:#fbbf24">5 大专线</span>
+          <span class="headline-kpi-label">物理动力学分流</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 3-Column Drill Arena -->
     <div class="fleet-drill-arena">
       <!-- Col 1: Agent Decision & Rationale -->
@@ -1424,17 +1541,29 @@ table.incident-table tr:hover td {
           <span>智能体决策与物理模型</span>
           <span id="drill-model-badge" class="agent-model-pill">Qwen3.8-Flash</span>
         </div>
-        <div class="agent-banner">
-          <div class="agent-name-row">
-            <span id="drill-agent-name" class="agent-name-tag">
-              <span style="color:var(--cyan)">●</span> Sentry (全国巡检哨兵)
-            </span>
-            <span id="drill-step-time" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">00:00 - 00:10</span>
-          </div>
-          <p id="drill-step-desc" class="agent-desc-text">
-            Sentry 并行扫描全国 12 城 300 家门店、1,500 台冷链设备。检出 156 起并发在途异常，自动按阿伦尼乌斯物理动力学劣化速率排序，锁定最高危 P1 杭州武林门西店 1号鲜奶柜 (9.6°C，Westgard +3SD 越界)，向 Orchestrator 发起紧急立案；同时全网其余 155 起在途事件并发分流调度，互不阻塞！
-          </p>
+        
+        <div class="agent-header-row">
+          <span id="drill-agent-name" class="agent-name-tag">
+            <span style="color:var(--cyan)">●</span> Sentry (全国巡检哨兵)
+          </span>
+          <span id="drill-step-time" style="font-size:11px; font-family:var(--font-mono); color:var(--cyan);">09:00:00 (帧 0)</span>
         </div>
+
+        <div class="agent-action-box">
+          <div class="agent-bullet">
+            <span class="bullet-tag goal">🎯 核心目标</span>
+            <span class="bullet-text" id="drill-goal-text">全量扫描 12 城 300 家门店 43.2 万采样点，瞬时发现隐藏温控失衡与机械卡缸</span>
+          </div>
+          <div class="agent-bullet">
+            <span class="bullet-tag action">⚡️ 决策动作</span>
+            <span class="bullet-text" id="drill-act-text">按阿伦尼乌斯物理化学动力学劣变斜率排定优先级，锁定杭州 S006 (9.6°C) 为 P1 顶危</span>
+          </div>
+          <div class="agent-bullet">
+            <span class="bullet-tag result">📊 物理战果</span>
+            <span class="bullet-text" id="drill-res-text">5 条核心专线与 151 起并行工单分流派入工作池，全网无感知低延时并发调度</span>
+          </div>
+        </div>
+
         <div class="agent-meta-kv">
           <span>执行技能: <b id="drill-meta-skill">anomaly-detect v1.0</b></span>
           <span>MCP 协议: <b id="drill-meta-mcp">query_context</b></span>
@@ -2171,40 +2300,62 @@ const FLEET_DRILL_STEPS = [
   {
     step: 0,
     time: "2026-09-19 09:00:00 (采样帧 #001 - #030)",
-    title: "阶段0: Sentry 全网并发感知 (156 起异常实时动态分流)",
+    title: "阶段0: Sentry 全网并发感知 (156 起异常毫秒初筛)",
+    headline: "【全网并发秒级初筛】Sentry 8ms 轮询 300 店 1,500 台设备，初筛捕获 156 起在途异常并锁定 5 大攻坚专线！",
+    kpis: [
+      { num: "156 起", label: "捕获在途异常", color: "#f87171" },
+      { num: "8.2 ms", label: "P99 巡检延时", color: "#38bdf8" },
+      { num: "5 大专线", label: "物理动力学分流", color: "#fbbf24" }
+    ],
     agent: "Sentry (全国巡检哨兵 · Qwen3.8-Flash)",
     model: "Qwen3.8-Flash (8ms P99 · 3,600 rps 高吞吐并发)",
     skill: "fleet-anomaly-detect v1.0",
     mcp: "query_device_context",
     evidence: "EVID-SWARM-DETECT-156",
     trace: "tr-swarm-sentry-156",
-    desc: "Sentry 基于 Qwen3.8-Flash 实时扫描全国 12 城 300 店 432,000 条物理时序采样流。瞬时捕获 156 起并发在途异常（覆盖 127 家门店）。Sentry 按阿伦尼乌斯动力学失温斜率排定 5 大典型并发专线：杭州 S006 (鲜奶 9.6°C 破界)、深圳 S014 (卡缸 14.8A)、北京 S021 (冷媒慢泄 0.12MPa)、上海 S005 (柜门微开 12min)、成都 S024 (漂移 +2.3°C)；其余 151 起事件并发注入后台工作池，互不阻塞！",
+    goal: "全量扫描 12 城 300 家门店 43.2 万采样点，瞬时发现隐藏温控失衡与机械卡缸",
+    act: "按阿伦尼乌斯物理化学动力学劣变斜率排定优先级，锁定杭州 S006 (9.6°C) 为 P1 顶危",
+    res: "5 条核心专线与 151 起并行工单分流派入工作池，全网无感知低延时并发调度",
     widget: `
-      <div style="font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:6px; display:flex; justify-content:space-between;">
-        <span>🌐 5 大核心并发异常态势矩阵 (全部实时在跑)</span>
-        <span style="color:var(--red); font-family:var(--font-mono);">156 起在途事件并发调度</span>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10.5px; font-family:var(--font-mono);">
-        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S006')">
-          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">1. 杭州 S006</b><span style="color:var(--red)">9.6°C 极危</span></div>
-          <div style="color:#fca5a5; font-size:9.5px; margin-top:2px;">鲜奶柜 · Arrhenius 4.8x · 窗口18m</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:12px; font-weight:800; color:var(--cyan); display:flex; justify-content:space-between; align-items:center;">
+          <span>🌐 5 大攻坚主轨 (全部实时在线推流中)</span>
+          <span style="color:var(--red); font-family:var(--font-mono); font-size:11px; font-weight:700;">156 起在途事件并发调度</span>
         </div>
-        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S014')">
-          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">2. 深圳 S014</b><span style="color:var(--red)">9.2°C 极危</span></div>
-          <div style="color:#fca5a5; font-size:9.5px; margin-top:2px;">压缩机卡缸过载 14.8A · 窗口25m</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-family:var(--font-mono);">
+          <div style="background:rgba(239,68,68,0.12); border:1.5px solid rgba(239,68,68,0.4); padding:8px 10px; border-radius:8px; cursor:pointer;" onclick="focusIncidentTrack('S006')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:#fff; font-size:12px;">1. 杭州 S006</b>
+              <span style="color:var(--red); font-weight:800; font-size:12px;">9.6°C 极危</span>
+            </div>
+            <div style="color:#fca5a5; font-size:11px; margin-top:3px;">鲜奶柜 · 膨胀阀微漏 · 窗口18m</div>
+          </div>
+          <div style="background:rgba(239,68,68,0.12); border:1.5px solid rgba(239,68,68,0.4); padding:8px 10px; border-radius:8px; cursor:pointer;" onclick="focusIncidentTrack('S014')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:#fff; font-size:12px;">2. 深圳 S014</b>
+              <span style="color:var(--red); font-weight:800; font-size:12px;">9.2°C 极危</span>
+            </div>
+            <div style="color:#fca5a5; font-size:11px; margin-top:3px;">鲜饮保鲜 · 卡缸 14.8A · 窗口25m</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.12); border:1.5px solid rgba(245,158,11,0.4); padding:8px 10px; border-radius:8px; cursor:pointer;" onclick="focusIncidentTrack('S021')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:#fff; font-size:12px;">3. 北京 S021</b>
+              <span style="color:#fbbf24; font-weight:800; font-size:12px;">7.4°C 高危</span>
+            </div>
+            <div style="color:#fde68a; font-size:11px; margin-top:3px;">深冷岛柜 · 冷媒慢渗 0.12MPa</div>
+          </div>
+          <div style="background:rgba(245,158,11,0.12); border:1.5px solid rgba(245,158,11,0.4); padding:8px 10px; border-radius:8px; cursor:pointer;" onclick="focusIncidentTrack('S005')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:#fff; font-size:12px;">4. 上海 S005</b>
+              <span style="color:#fbbf24; font-weight:800; font-size:12px;">4.8°C 高危</span>
+            </div>
+            <div style="color:#fde68a; font-size:11px; margin-top:3px;">鲜肉冷柜 · 门虚掩 12min 对流</div>
+          </div>
         </div>
-        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S021')">
-          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">3. 北京 S021</b><span style="color:#fbbf24">7.4°C 高危</span></div>
-          <div style="color:#fde68a; font-size:9.5px; margin-top:2px;">深冷岛柜 · 慢泄 0.12MPa · 窗口40m</div>
+        <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; font-size:11.5px; font-family:var(--font-mono);">
+          <span style="color:#7dd3fc;">5. 成都 S024: 传感器零漂 +2.3°C (卡尔曼滤波自校)</span>
+          <span style="color:var(--green); font-weight:700;">⚙️ 其余 151 起并发工作池推进中</span>
         </div>
-        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S005')">
-          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">4. 上海 S005</b><span style="color:#fbbf24">4.8°C 高危</span></div>
-          <div style="color:#fde68a; font-size:9.5px; margin-top:2px;">鲜肉柜门微开 12min · 窗口50m</div>
-        </div>
-      </div>
-      <div style="background:#020617; border:1px solid var(--border-subtle); border-radius:6px; padding:6px 8px; margin-top:6px; display:flex; justify-content:space-between; font-size:10px; font-family:var(--font-mono);">
-        <span style="color:#7dd3fc;">5. 成都 S024: 蔬果立柜传感器漂移 +2.3°C</span>
-        <span style="color:var(--text-muted);">其余 151 起全域并行推演</span>
       </div>
     `,
     dingtalk: [
@@ -2238,40 +2389,49 @@ const FLEET_DRILL_STEPS = [
   {
     step: 1,
     time: "2026-09-19 09:02:15 (采样帧 #031 - #060)",
-    title: "阶段1: 全网多店毫秒级联动遏制 (POS 熔断 + 电气分闸 + 冻肉批次锁定)",
+    title: "阶段1: 毫秒级多店协同遏制 (320ms POS 事实锁止)",
+    headline: "【多店毫秒级事实遏制】POS 收银机 320ms 熔断鲜奶条码结算权限，物理世界拦截 2 次，0 盒劣品流出！",
+    kpis: [
+      { num: "320 ms", label: "POS 阻断用时", color: "#34d399" },
+      { num: "0 盒", label: "食安漏出事故", color: "#34d399" },
+      { num: "14 家", label: "多店联动阻断", color: "#38bdf8" }
+    ],
     agent: "Executor Swarm (多智能体受控执行池)",
     model: "Qwen3.8-Max (高精度受控并发组装)",
     skill: "sales-containment v1.0",
     mcp: "apply_sales_hold, device_control",
     evidence: "EVID-CONTAIN-SWARM-01",
     trace: "tr-swarm-contain-156",
-    desc: "食品安全与硬件资产双重零容忍！编排中枢向 Executor 线程池下发并行阻断指令：针对杭州 S006 鲜奶柜，320ms 熔断条码 6901028301024 结算权限（0 盒漏出）；针对深圳 S014，毫秒级下发保护性分闸防电机烧毁；针对北京 S021，锁定高危冻肉批次；针对上海 S005，触发柜门声光蜂鸣并向店长 PDA 推送强提醒！",
+    goal: "对食品安全绝对零容忍，在顾客结账前彻底掐断变质商品流出通道",
+    act: "通过 dianxun-mcp 联动 POS 收银系统，下发 apply_sales_hold 锁死条码 6901028301024",
+    res: "收银台扫码即刻红屏拦截！同时深圳 S014 压缩机紧急分闸，北京 S021 冻肉批次隔离",
     widget: `
-      <div style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px;">
-        <div style="font-size:11px; font-weight:700; color:#fca5a5; margin-bottom:4px; display:flex; justify-content:space-between;">
-          <span>⚡️ 多店多通道实时阻断生效中</span>
-          <span style="color:#fff; font-family:var(--font-mono); font-size:10px;">响应延时 < 500ms</span>
+      <div style="background:#090d16; border:2px solid var(--red); border-radius:10px; padding:12px; box-shadow:0 0 20px rgba(239,68,68,0.25);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(239,68,68,0.3); padding-bottom:6px;">
+          <span style="font-size:12px; font-weight:800; color:#fca5a5; display:flex; align-items:center; gap:6px;">
+            🛒 门店 POS 收银终端 · 机号 #POS-HZ-02 (杭州武林门西店)
+          </span>
+          <span style="font-size:11px; background:var(--red); color:#fff; font-weight:800; padding:2px 8px; border-radius:4px;">
+            🚫 紧急锁售中
+          </span>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
-          <div style="background:#020617; border:1px solid rgba(239,68,68,0.4); padding:5px 8px; border-radius:4px;">
-            <div style="color:var(--red); font-weight:700;">🚫 杭州 S006: POS 鲜奶锁止</div>
-            <div style="color:#fff;">条码 6901028301024 锁定</div>
-            <div style="color:var(--green)">拦截 2 次 · 漏出 0 件</div>
+        <div style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); border-radius:8px; padding:10px; margin-bottom:8px;">
+          <div style="font-size:13.5px; font-weight:900; color:#fff; margin-bottom:4px; display:flex; justify-content:space-between;">
+            <span>光明优倍鲜牛奶 (950ml 盒装)</span>
+            <span style="color:#fca5a5; font-family:var(--font-mono);">条码 6901028301024</span>
           </div>
-          <div style="background:#020617; border:1px solid rgba(239,68,68,0.4); padding:5px 8px; border-radius:4px;">
-            <div style="color:#fbbf24; font-weight:700;">⚡️ 深圳 S014: 压缩机分闸</div>
-            <div style="color:#fff;">过载保护防电机烧毁</div>
-            <div style="color:var(--cyan)">启动冷凝副风机强冷</div>
+          <div style="font-size:11.5px; color:#fca5a5; line-height:1.5;">
+            • 阻断指令: <code>apply_sales_hold</code> 下发成功 (响应用时 <b>320ms</b>)<br>
+            • 拦截原因: 1号鲜奶柜核心温区达 9.6°C (突破 Westgard +3SD 食安红线)<br>
+            • 现场战果: 成功拦截收银台扫码尝试 <b>2 次</b> ｜ 漏出流向顾客: <b style="color:#34d399; font-size:13px;">0 盒 (PASS ✅)</b>
           </div>
-          <div style="background:#020617; border:1px solid var(--border-subtle); padding:5px 8px; border-radius:4px;">
-            <div style="color:#fde68a; font-weight:700;">❄️ 北京 S021: 深冷批次隔离</div>
-            <div style="color:#fff;">锁定批次 BATCH-MEAT-021</div>
-            <div style="color:var(--green)">防止解冻化冻</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:11px; font-family:var(--font-mono);">
+          <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); padding:5px 8px; border-radius:4px; color:#fbbf24;">
+            ⚡ 深圳 S014: 压缩机分闸保护 (防电机烧毁)
           </div>
-          <div style="background:#020617; border:1px solid var(--border-subtle); padding:5px 8px; border-radius:4px;">
-            <div style="color:#7dd3fc; font-weight:700;">🔔 上海 S005: 门磁声光提醒</div>
-            <div style="color:#fff;">柜门蜂鸣 + 店长 PDA 震动</div>
-            <div style="color:var(--green)">店员前往闭门处理</div>
+          <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); padding:5px 8px; border-radius:4px; color:#a78bfa;">
+            ❄️ 北京 S021: 深冷冻肉批次隔离防解冻
           </div>
         </div>
       </div>
@@ -2306,41 +2466,45 @@ const FLEET_DRILL_STEPS = [
   {
     step: 2,
     time: "2026-09-19 09:04:30 (采样帧 #061 - #090)",
-    title: "阶段2: 阿伦尼乌斯动力学定损与机理归因 (多标的定损对比)",
+    title: "阶段2: 阿伦尼乌斯动力学精准定损",
+    headline: "【化学物理机理精准定损】动力学积分测算细菌超速繁殖 4.8x，定损鲜奶 ¥621，阻断十倍索赔 ¥6,216！",
+    kpis: [
+      { num: "¥621.6", label: "精准物理定损", color: "#f87171" },
+      { num: "¥6,216", label: "阻断十倍索赔", color: "#34d399" },
+      { num: "0.94", label: "膨胀阀微漏置信度", color: "#38bdf8" }
+    ],
     agent: "Diagnoser (动力学专家群 · Qwen3.8-Max)",
     model: "Qwen3.8-Max (深度物理机理推导)",
     skill: "arrhenius-kinetics-assess v1.0",
     mcp: "query_device_context, query_inventory",
     evidence: "EVID-SWARM-DIAG-156",
     trace: "tr-swarm-diag-156",
-    desc: "突破传统阈值盲目定损！针对杭州 S006，引入阿伦尼乌斯积分 k(T)=A*exp(-Ea/RT) 算出细菌繁殖倍增时间从 48h 降至 3.2h，劣变积分 Q_loss=1.48 > 1.0，定损鲜奶 ¥621.60，阻断十倍索赔 ¥6,216.00；针对深圳 S014 压缩机机械卡缸，抢救高品质鲜饮货值 ¥8,972；针对北京 S021 冷媒泄漏，抢救深冷冻肉 ¥10,022；全网 156 起在途事件综合防损保值 ¥248,600+！",
+    goal: "突破传统固定阈值“一刀切”盲目报损的巨大浪费，引入微积分物理机理精细化定损",
+    act: "沿时间积分阿伦尼乌斯公式 k(T)=A*exp(-Ea/RT)，算出 Q_loss=1.48 > 1.0 锁定 42 盒鲜奶报损",
+    res: "保全完好货值 ¥2,338.40，坚决销毁 42 盒涉险鲜奶，规避《食品安全法》十倍天价惩罚赔偿",
     widget: `
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:11px; font-family:var(--font-mono);">
-          <span style="color:var(--cyan); font-weight:700;">∫ k(T) dt = A · exp(-Ea / RT) 物理定损矩阵</span>
-          <span style="color:var(--green);">全网挽损 ¥248,600+</span>
+      <div style="background:#090d16; border:1.5px solid var(--amber); border-radius:10px; padding:12px; box-shadow:0 0 15px rgba(245,158,11,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:800; color:#fbbf24;">
+            ∫ k(T) dt = A · exp(-Ea / RT) 物理化学动力学定损
+          </span>
+          <span style="font-size:11px; background:rgba(245,158,11,0.2); color:#fde68a; border:1px solid rgba(245,158,11,0.4); padding:2px 8px; border-radius:4px; font-weight:700;">
+            置信度 0.94
+          </span>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
-          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--red);">
-            <div style="color:#fff; font-weight:700;">杭州 S006 (鲜奶 42盒)</div>
-            <div style="color:#fca5a5;">定损 ¥621.60 · 防索赔 ¥6,216</div>
-            <div style="color:var(--text-muted);">阿伦尼乌斯超速劣化 4.8x</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; font-size:11.5px;">
+          <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); border-radius:6px; padding:8px 10px;">
+            <div style="color:#fca5a5; font-weight:800; margin-bottom:2px;">传统经验粗放定损 (一刀切)</div>
+            <div style="color:#94a3b8; line-height:1.4;">整柜 200 盒全部盲目报损<br>货值直接损失: <b style="color:#f87171">¥2,960.00</b></div>
           </div>
-          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--red);">
-            <div style="color:#fff; font-weight:700;">深圳 S014 (鲜饮立柜)</div>
-            <div style="color:#34d399;">挽救货值 ¥8,972.00</div>
-            <div style="color:var(--text-muted);">防压缩机电机烧毁 ¥3,200</div>
+          <div style="background:rgba(16,185,129,0.12); border:1.5px solid rgba(16,185,129,0.4); border-radius:6px; padding:8px 10px;">
+            <div style="color:#34d399; font-weight:800; margin-bottom:2px;">店巡动力学积分精准定损</div>
+            <div style="color:#cbd5e1; line-height:1.4;">精确锁定超速劣变鲜奶 42 盒<br>实际定损: <b>¥621.60</b> ｜ 保全: <b style="color:#34d399">¥2,338.40</b></div>
           </div>
-          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--amber);">
-            <div style="color:#fff; font-weight:700;">北京 S021 (深冷冻肉)</div>
-            <div style="color:#34d399;">挽救货值 ¥10,022.00</div>
-            <div style="color:var(--text-muted);">避免深冷化冻滴水变质</div>
-          </div>
-          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--amber);">
-            <div style="color:#fff; font-weight:700;">上海 S005 (优质鲜肉)</div>
-            <div style="color:#34d399;">挽救货值 ¥9,318.00</div>
-            <div style="color:var(--text-muted);">排除门虚掩对流失温</div>
-          </div>
+        </div>
+        <div style="background:#020617; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:6px 10px; font-size:11px; font-family:var(--font-mono); display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#fff;">🛡️ 《食品安全法》十倍惩罚性赔偿防线:</span>
+          <span style="color:#34d399; font-weight:800;">阻断潜在索赔 ¥6,216.00</span>
         </div>
       </div>
     `,
@@ -2365,40 +2529,48 @@ const FLEET_DRILL_STEPS = [
   {
     step: 3,
     time: "2026-09-19 09:07:00 (采样帧 #091 - #120)",
-    title: "阶段3: 多智能体并行物理自愈与现场工单 (MQTT 升频 + 现场技工接单)",
+    title: "阶段3: 真实人机工单与店长指纹审批",
+    headline: "【真实人机协同与设备自愈】店长钉钉指纹签署 ¥680 换件单，李师傅 1.8km 接单到场；深圳 65Hz 变频自愈！",
+    kpis: [
+      { num: "30 min", label: "抢修 SLA 承诺", color: "#38bdf8" },
+      { num: "¥680", label: "店长指纹核准", color: "#34d399" },
+      { num: "65 Hz", label: "变频扫频自愈", color: "#fbbf24" }
+    ],
     agent: "Executor + Human Tool (物理世界异步工具协议)",
     model: "Qwen3.8-Max (结构化工单与 HITL 审批)",
     skill: "work-order-dispatch v1.0",
     mcp: "create_workorder, create_approval",
     evidence: "EVID-SWARM-WO-156",
     trace: "tr-swarm-exec-156",
-    desc: "物理世界无法纯软件虚拟化！Executor 多线程并行处置：对深圳 S014 下发 MQTT 超频 65Hz 补冷指令；对杭州 S006 自动生成 P1 抢修工单派发至驻点技工李建国 (店长移动端 PDA 指纹审批核准换件预算 ¥680)；对北京 S021 自动调度冷媒技工携带 R404A 到场注氟；对上海 S005 店长 PDA 现场闭门核实；全网 156 张工单全部精准推送到人！",
+    goal: "打通最后 100 米物理闭环：不能纯软件模拟，线下动作通过钉钉标准化协议调度",
+    act: "预算超限自动唤醒店长钉钉指纹审批，工单机器人派单李建国；MQTT 协议触发变频器扫频",
+    res: "李师傅接单携膨胀阀前往杭州 S006；深圳 S014 机械卡缸成功冲开；北京注氟王工已在途中",
     widget: `
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
-        <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; display:flex; justify-content:space-between;">
-          <span>📱 多地现场工单与物理自愈并发流</span>
-          <span style="color:var(--green); font-family:var(--font-mono); font-size:10px;">156 张工单全部派发</span>
+      <div style="background:#090d16; border:1.5px solid var(--blue); border-radius:10px; padding:12px; box-shadow:0 0 15px rgba(59,130,246,0.2);">
+        <div style="font-size:12.5px; font-weight:800; color:#93c5fd; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>📱 真实人机协同与设备自愈并发落地</span>
+          <span style="color:var(--green); font-family:var(--font-mono); font-size:11px; font-weight:700;">156 张工单调度在途</span>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
-          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
-            <div style="color:var(--cyan); font-weight:700;">杭州 S006: 换件抢修单</div>
-            <div style="color:#fff;">技工李建国 (88021) 距店1.8km</div>
-            <div style="color:var(--green)">✅ 店长指纹审批 ¥680 通过</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11.5px;">
+          <div style="background:#020617; border:1px solid rgba(56,189,248,0.3); padding:8px 10px; border-radius:6px;">
+            <div style="color:#38bdf8; font-weight:800;">👷 杭州 S006: 换件抢修工单</div>
+            <div style="color:#fff; margin-top:2px;">技工李建国 (工号88021 · 距店1.8km)</div>
+            <div style="color:var(--green); font-size:10.5px; margin-top:2px;">✅ 店长指纹核准 ¥680 换件预算</div>
           </div>
-          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
-            <div style="color:var(--cyan); font-weight:700;">深圳 S014: MQTT 超频</div>
-            <div style="color:#fff;">变频压缩机 65Hz 强制补冷</div>
-            <div style="color:var(--green)">⚡ 物理温升已成功遏制</div>
+          <div style="background:#020617; border:1px solid rgba(245,158,11,0.3); padding:8px 10px; border-radius:6px;">
+            <div style="color:#fbbf24; font-weight:800;">⚡ 深圳 S014: 65Hz 变频自愈</div>
+            <div style="color:#fff; margin-top:2px;">MQTT 脉冲反转扫频冲击成功</div>
+            <div style="color:var(--green); font-size:10.5px; margin-top:2px;">✅ 卡缸解除 · 压差恢复 0.22MPa</div>
           </div>
-          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
-            <div style="color:#fbbf24; font-weight:700;">北京 S021: 注氟工单</div>
-            <div style="color:#fff;">技工张工携 R404A 赶赴现场</div>
-            <div style="color:var(--amber)">SLA 28:15 倒计时</div>
+          <div style="background:#020617; border:1px solid rgba(167,139,250,0.3); padding:8px 10px; border-radius:6px;">
+            <div style="color:#a78bfa; font-weight:800;">🔧 北京 S021: 冷媒加注工单</div>
+            <div style="color:#fff; margin-top:2px;">技工王工携带 R404A 罐体上门</div>
+            <div style="color:#fde68a; font-size:10.5px; margin-top:2px;">⏱ SLA 承诺 28 分钟内完成补压</div>
           </div>
-          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
-            <div style="color:#7dd3fc; font-weight:700;">上海 S005: 现场闭门核销</div>
-            <div style="color:#fff;">当班店员移动端确认闭严</div>
-            <div style="color:var(--green)">门磁密封恢复 100%</div>
+          <div style="background:#020617; border:1px solid rgba(52,211,153,0.3); padding:8px 10px; border-radius:6px;">
+            <div style="color:#34d399; font-weight:800;">🚪 上海 S005: 现场关门核销</div>
+            <div style="color:#fff; margin-top:2px;">当班店员巡查确认密封到位</div>
+            <div style="color:var(--green); font-size:10.5px; margin-top:2px;">✅ 门磁 100% 密闭 · 温区已下降</div>
           </div>
         </div>
       </div>
@@ -2456,44 +2628,52 @@ const FLEET_DRILL_STEPS = [
   {
     step: 4,
     time: "2026-09-19 09:10:00 (采样帧 #121 - #150)",
-    title: "阶段4: 12 城多 Agent 并发矩阵推进 (156 起工单并行推进 100%)",
+    title: "阶段4: 12 城 156 起并发矩阵推进",
+    headline: "【300 店级企业高并发治理】编排中枢调遣 12 城多 Worker 线程池，156 起工单推进率达 100%！",
+    kpis: [
+      { num: "156/156", label: "工单推进完成", color: "#34d399" },
+      { num: "12 大城市", label: "并发线程池覆盖", color: "#38bdf8" },
+      { num: "8.6 秒", label: "全网批量耗时", color: "#34d399" }
+    ],
     agent: "Orchestrator Swarm (全网并发调度工作池)",
     model: "Qwen3.8-Max (超大并发线程池协同)",
     skill: "fleet-concurrency-orchestrator v1.0",
     mcp: "IncidentService, dispatch_batch",
     evidence: "EVID-SWARM-12CITY-156",
     trace: "tr-swarm-matrix-156",
-    desc: "展现 300 店级企业真实高并发治理能力！编排中枢调遣 12 城并发 Worker 线程池，同时推进全国 12 大城市的 156 起在途事件：广州（18起）、深圳（15起）、上海（14起）、杭州（14起）、北京（12起）、成都（13起）、武汉（11起）等全部并发完成压缩机复位、制冷剂补液、除霜循环和传感器自校，并行推进率达 100%！",
+    goal: "证明店巡系统具备 300 家门店级的大规模高并发承载能力，杜绝单点阻塞",
+    act: "Orchestrator 调遣广州、深圳、上海、杭州、北京、成都等 12 城 Worker 线程池并发消化",
+    res: "卡缸自愈 38 台、冷媒补压 42 处、密封修复 31 台全部并行完成，推进率达 100%",
     widget: `
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
-        <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; display:flex; justify-content:space-between;">
-          <span>🌐 12 大城市多 Agent 并发处置进度</span>
-          <span style="color:var(--green); font-family:var(--font-mono);">156/156 全部推进 100%</span>
+      <div style="background:#090d16; border:1.5px solid var(--indigo); border-radius:10px; padding:12px; box-shadow:0 0 15px rgba(99,102,241,0.2);">
+        <div style="font-size:12.5px; font-weight:800; color:#c7d2fe; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>🌐 12 大城市多 Agent 并发处置工作池</span>
+          <span style="color:var(--green); font-family:var(--font-mono); font-size:11px; font-weight:700;">156/156 推进完成 100%</span>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
-          <div style="background:#020617; padding:4px 8px; border-radius:4px;">
-            <div style="display:flex; justify-content:space-between;"><span>广州 (18起)</span><span style="color:var(--green)">100%</span></div>
-            <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px; font-family:var(--font-mono);">
+          <div style="background:#020617; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#fff;">广州 (18起工单)</span><span style="color:var(--green); font-weight:800;">100% 完成</span></div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin-top:4px;"><div style="background:var(--green); width:100%; height:100%; border-radius:3px;"></div></div>
           </div>
-          <div style="background:#020617; padding:4px 8px; border-radius:4px;">
-            <div style="display:flex; justify-content:space-between;"><span>深圳 (15起)</span><span style="color:var(--green)">100%</span></div>
-            <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
+          <div style="background:#020617; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#fff;">深圳 (15起工单)</span><span style="color:var(--green); font-weight:800;">100% 完成</span></div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin-top:4px;"><div style="background:var(--green); width:100%; height:100%; border-radius:3px;"></div></div>
           </div>
-          <div style="background:#020617; padding:4px 8px; border-radius:4px;">
-            <div style="display:flex; justify-content:space-between;"><span>上海 (14起)</span><span style="color:var(--green)">100%</span></div>
-            <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
+          <div style="background:#020617; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#fff;">上海 (14起工单)</span><span style="color:var(--green); font-weight:800;">100% 完成</span></div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin-top:4px;"><div style="background:var(--green); width:100%; height:100%; border-radius:3px;"></div></div>
           </div>
-          <div style="background:#020617; padding:4px 8px; border-radius:4px;">
-            <div style="display:flex; justify-content:space-between;"><span>杭州 (14起)</span><span style="color:var(--green)">100%</span></div>
-            <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
+          <div style="background:#020617; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#fff;">杭州 (14起工单)</span><span style="color:var(--green); font-weight:800;">100% 完成</span></div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin-top:4px;"><div style="background:var(--green); width:100%; height:100%; border-radius:3px;"></div></div>
           </div>
-          <div style="background:#020617; padding:4px 8px; border-radius:4px;">
-            <div style="display:flex; justify-content:space-between;"><span>北京 (12起)</span><span style="color:var(--green)">100%</span></div>
-            <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
+          <div style="background:#020617; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#fff;">北京 (12起工单)</span><span style="color:var(--green); font-weight:800;">100% 完成</span></div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin-top:4px;"><div style="background:var(--green); width:100%; height:100%; border-radius:3px;"></div></div>
           </div>
-          <div style="background:#020617; padding:4px 8px; border-radius:4px;">
-            <div style="display:flex; justify-content:space-between;"><span>其余 7 城 (83起)</span><span style="color:var(--green)">100%</span></div>
-            <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
+          <div style="background:#020617; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex; justify-content:space-between;"><span style="color:#fff;">其余 7 城 (83起)</span><span style="color:var(--green); font-weight:800;">100% 完成</span></div>
+            <div style="background:rgba(255,255,255,0.1); height:5px; border-radius:3px; margin-top:4px;"><div style="background:var(--green); width:100%; height:100%; border-radius:3px;"></div></div>
           </div>
         </div>
       </div>
@@ -2518,30 +2698,39 @@ const FLEET_DRILL_STEPS = [
   {
     step: 5,
     time: "2026-09-19 09:14:00 (采样帧 #151 - #288)",
-    title: "阶段5: 异构独立双门禁事实闭环 (DeepSeek-V4-Pro 独立全量仲裁)",
+    title: "阶段5: 异构独立双门禁事实闭环",
+    headline: "【拒绝同源自证 · 异构独立双门禁】DeepSeek-V4-Pro 独立审计通过：POS 零漏出 + 物理温区回归，300 店全绿闭环！",
+    kpis: [
+      { num: "PASS ✅", label: "Gate-1 POS零漏出", color: "#34d399" },
+      { num: "PASS ✅", label: "Gate-2 物理稳态回归", color: "#34d399" },
+      { num: "300 店", label: "大盘恢复100%全绿", color: "#34d399" }
+    ],
     agent: "Auditor (Anti-Self-Verification · DeepSeek-V4-Pro)",
     model: "DeepSeek-V4-Pro-0813 (独立模型仲裁 · 拒绝同源自证)",
     skill: "outcome-verify v1.1",
     mcp: "verify_dual_gate, archive_case",
     evidence: "EVID-AUDIT-FLEET-156",
     trace: "tr-audit-ds-156",
-    desc: "核心安全铁律：执行者绝不能宣告自身成功！裁判 Auditor 采用独立异构模型 DeepSeek-V4-Pro-0813 独立带外重查：Gate-1 独立抓取全国 POS 收银流水，核验 156 起事件全部结账漏出为 0 件 (PASS)；Gate-2 独立抓取物理遥测流与 RFID 盘点流，核验 300 店设备全部稳态回归安全温区 1.8°C~3.2°C (PASS)！全网 156 起事件全部事实闭环，告警数归零，300 家门店冷链大盘恢复 100% 全绿！",
+    goal: "守牢系统安全底座最高铁律：执行者绝不能宣告自身成功！裁判必须带外独立核验",
+    act: "裁判 Auditor 采用独立模型 DeepSeek-V4-Pro-0813 带外抓取收银数据库与物理遥测流",
+    res: "核验 156 起事件结账漏出为 0 件，300 店设备全部稳态回归 1.8°C~3.2°C，全网大盘恢复全绿！",
     widget: `
-      <div style="background:rgba(16,185,129,0.12); border:1.5px solid var(--green); border-radius:8px; padding:8px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-size:11.5px; font-weight:800; color:#34d399;">🛡️ 独立异构双门禁可验证审计合格证书 (156/156 闭环)</span>
-          <span style="font-size:10px; background:rgba(16,185,129,0.2); color:var(--green); border:1px solid rgba(16,185,129,0.4); padding:1px 6px; border-radius:4px; font-family:var(--font-mono);">
-            Gate-1 PASS | Gate-2 PASS
+      <div style="background:rgba(16,185,129,0.08); border:2px solid var(--green); border-radius:10px; padding:12px; box-shadow:0 0 20px rgba(16,185,129,0.25);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:900; color:#34d399; display:flex; align-items:center; gap:6px;">
+            🛡️ 独立异构双门禁事实闭环仲裁令
+          </span>
+          <span style="font-size:11px; background:rgba(16,185,129,0.2); color:var(--green); border:1px solid var(--green); padding:2px 8px; border-radius:4px; font-weight:800;">
+            Gate-1 PASS ｜ Gate-2 PASS
           </span>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono); margin-bottom:6px;">
-          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">杭州 S006: 🟢 已核验闭环 (0漏出)</div>
-          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">深圳 S014: 🟢 已核验闭环 (温区2.1°)</div>
-          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">北京 S021: 🟢 已核验闭环 (压力正常)</div>
-          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">上海 S005: 🟢 已核验闭环 (密封达标)</div>
+        <div style="background:#020617; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 10px; margin-bottom:8px; font-size:11.5px; color:#e2e8f0; line-height:1.5;">
+          • <b>Gate-1 (POS 交易流水数据库带外审查)</b>: 156 起事件结账漏出数全部为 <b style="color:#34d399;">0 盒 [PASS ✅]</b><br>
+          • <b>Gate-2 (物理温控遥测与 RFID 盘点)</b>: 300 家门店冷链设备全部稳态回归 <b style="color:#34d399;">1.8°C ~ 3.2°C [PASS ✅]</b><br>
+          • <b>终审裁定</b>: 全国 12 城 156 起在途事件全部事实闭环，告警归零，大盘恢复 100% 全绿！
         </div>
-        <div style="font-size:10.5px; font-weight:700; color:#fff; text-align:center; background:#020617; border-radius:4px; padding:4px;">
-          🎉 裁判 Auditor@DeepSeek-V4-Pro-0813 独立核验通过 · 全国 300 店冷链全绿！
+        <div style="font-size:12px; font-weight:800; color:#fff; text-align:center; background:linear-gradient(90deg, #065f46, #047857); border-radius:6px; padding:6px;">
+          🎉 裁判 Auditor@DeepSeek-V4-Pro 独立全量核准 · 知识飞轮已持久化归档！
         </div>
       </div>
     `,
@@ -2584,20 +2773,52 @@ function updateFleetDrillUI(stepIdx) {
     tab.classList.toggle('completed', idx < stepIdx);
   });
 
-  // 2. Update Left Info
-  document.getElementById('drill-model-badge').textContent = data.model.split(' ')[0];
-  document.getElementById('drill-agent-name').innerHTML = `<span style="color:var(--cyan)">●</span> ${data.agent}`;
-  document.getElementById('drill-step-time').textContent = data.time;
-  document.getElementById('drill-step-desc').textContent = data.desc;
-  document.getElementById('drill-meta-skill').textContent = data.skill;
-  document.getElementById('drill-meta-mcp').textContent = data.mcp;
-  document.getElementById('drill-meta-evid').textContent = data.evidence;
-  document.getElementById('drill-meta-trace').textContent = data.trace;
+  // 2. Update Executive Stage Headline & KPIs
+  const headlineTitle = document.getElementById('drill-headline-title');
+  if (headlineTitle) headlineTitle.innerHTML = data.headline || data.title;
+  
+  const kpisContainer = document.getElementById('drill-headline-kpis');
+  if (kpisContainer && data.kpis) {
+    let kpiHtml = '';
+    data.kpis.forEach(k => {
+      kpiHtml += `
+        <div class="headline-kpi-pill">
+          <span class="headline-kpi-num" style="color:${k.color || 'var(--cyan)'};">${k.num}</span>
+          <span class="headline-kpi-label">${k.label}</span>
+        </div>
+      `;
+    });
+    kpisContainer.innerHTML = kpiHtml;
+  }
 
-  // 3. Update Center Widget
+  // 3. Update Left Info
+  const modelBadge = document.getElementById('drill-model-badge');
+  if (modelBadge) modelBadge.textContent = data.model.split(' ')[0];
+  const agentName = document.getElementById('drill-agent-name');
+  if (agentName) agentName.innerHTML = `<span style="color:var(--cyan)">●</span> ${data.agent}`;
+  const stepTime = document.getElementById('drill-step-time');
+  if (stepTime) stepTime.textContent = data.time;
+
+  const goalEl = document.getElementById('drill-goal-text');
+  if (goalEl) goalEl.textContent = data.goal || data.desc;
+  const actEl = document.getElementById('drill-act-text');
+  if (actEl) actEl.textContent = data.act || '';
+  const resEl = document.getElementById('drill-res-text');
+  if (resEl) resEl.textContent = data.res || '';
+
+  const metaSkill = document.getElementById('drill-meta-skill');
+  if (metaSkill) metaSkill.textContent = data.skill;
+  const metaMcp = document.getElementById('drill-meta-mcp');
+  if (metaMcp) metaMcp.textContent = data.mcp;
+  const metaEvid = document.getElementById('drill-meta-evid');
+  if (metaEvid) metaEvid.textContent = data.evidence;
+  const metaTrace = document.getElementById('drill-meta-trace');
+  if (metaTrace) metaTrace.textContent = data.trace;
+
+  // 4. Update Center Widget
   document.getElementById('drill-widget-stage').innerHTML = data.widget;
 
-  // 4. Update Right Column: DingTalk Group Chat Cards
+  // 5. Update Right Column: DingTalk Group Chat Cards
   if (data.dingtalk && typeof renderDingTalkMessages === 'function') {
     renderDingTalkMessages(data.dingtalk);
   }
