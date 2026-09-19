@@ -1,6 +1,6 @@
-# 逐光店巡 Multi-Agent 聊天输出结构化管控标准 (v2.0)
+# 店巡 Multi-Agent 聊天输出结构化管控标准 (v2.0)
 
-> **生效范围**：逐光店巡团队所有 Agent（Orchestrator、Sentry、Diagnoser、Executor、Auditor、Manager）在 Matrix 团队群及所有协作频道中的消息输出。  
+> **生效范围**：逐光团队「店巡」系统所有 Agent（Orchestrator、Sentry、Diagnoser、Executor、Auditor、Manager）在 Matrix 团队群及所有协作频道中的消息输出。  
 > **制定目的**：彻底消除原始 JSON 堆砌、纯英文报错、机器碎屑与晦涩日志，实现“人类一眼看懂业务进度，系统完备保留审计线索”。
 
 ---
