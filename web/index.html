@@ -2907,7 +2907,7 @@ const DEMO_STEPS = [
   {
     step: 0,
     time: "00:00 - 00:10",
-    title: "1. Sentry 全网巡检：锁定 HZ-018 杭州店 1号柜失温",
+    title: "1. Sentry 全网并发感知：156 起异常初筛与 5 大并发通道锁定",
     desc: "Sentry 基于 Qwen3.8-Flash 并行轮询全国 12 城市 300 家门店、1,500 台冷链设备。全网实时检出 156 起并发在途温控异常（覆盖 127 家门店），自动按阿伦尼乌斯物理动力学劣化速率排序，锁定最高危 P1 杭州武林门西店 1号鲜奶柜（温度突破 8.0°C 上限达 9.6°C，Westgard +3SD 越界），向 Orchestrator 发起紧急立案；同时为全网其余 155 起在途事件并发分流调度，互不阻塞。",
     agent: "Sentry (全国巡检哨兵 · Qwen3.8-Flash 8ms)",
     skill: "anomaly-detect v1.0.0",
@@ -2936,7 +2936,7 @@ const DEMO_STEPS = [
   {
     step: 1,
     time: "00:10 - 00:20",
-    title: "2. HZ-018 店 Executor 紧急停售遏制 (POS 离线熔断终端)",
+    title: "2. 全网多店毫秒级联动遏制 (杭州POS熔断 + 深圳分闸 + 冻肉隔离)",
     desc: "食品安全绝对零容忍！总控调度 Executor 立即下发 L1 预授权操作 apply_sales_hold，通过 dianxun-mcp 联动 POS 收银系统，将鲜奶（BATCH-DAIRY-001）与熟食（BATCH-FRESH-001）结算权限锁死。收银台扫码即刻红屏拦截，680ms 极速生效，彻底阻断顾客结账出店，其余 1,499 台设备零干扰。",
     agent: "Executor (受控执行 · dianxun-mcp POS锁)",
     skill: "sales-containment v1.0.0",
@@ -2964,7 +2964,7 @@ const DEMO_STEPS = [
   {
     step: 2,
     time: "00:20 - 00:30",
-    title: "3. Diagnoser 动力学定损与膨胀阀机理归因",
+    title: "3. Diagnoser 多维度动力学定损 (鲜奶阿伦尼乌斯 + 压缩机防烧 + 冷媒测漏)",
     desc: "突破传统阈值定损局限！Diagnoser 综合门磁与除霜电流，排除柜门未关，锁定膨胀阀微漏 (吸气压力 0.12MPa，制冷衰减 68%，置信度 0.94)。同时引入阿伦尼乌斯物理化学动力学公式 k(T)=A*exp(-Ea/RT) 沿时间积分，算出累积劣变系数 Q_loss = 1.48 > 1.0，精准锁定 42 件鲜奶报损 (货值 ¥621.60，防潜在十倍赔偿 ¥6,216.00)。",
     agent: "Diagnoser (动力学定损 · Qwen3.8-Max 深度思维链)",
     skill: "rootcause-drilldown / arrhenius-kinetics-assess",
@@ -2992,7 +2992,7 @@ const DEMO_STEPS = [
   {
     step: 3,
     time: "00:30 - 00:40",
-    title: "4. Human Tool 物理世界异步调用与店长移动端审批",
+    title: "4. 多地并行物理自愈与人机工单 (MQTT 65Hz + 现场技工接单)",
     desc: "物理动作无法纯软件虚拟化！系统将线下维修工程师抽象为标准【Human-as-a-Physical-Tool】协议：具备确定性超时 SLA (30min)、结构化入参与工单回传。换件预算超限触发店长移动端 PDA 指纹审批核准后，异步调度驻点技工到场抢修换件；PDA 引导 42 件涉险货品转移备用冷库 B02 (2.1°C)。",
     agent: "Executor + Human Tool (物理世界异步工具协议)",
     skill: "work-order-dispatch v1.0.0",
@@ -3020,7 +3020,7 @@ const DEMO_STEPS = [
   {
     step: 4,
     time: "00:40 - 00:50",
-    title: "5. Anti-Self-Verification 异构双门禁反自验 (拒绝同源自证)",
+    title: "5. 12 城 156 起并发矩阵推进与 DeepSeek 异构独立双门禁审计",
     desc: "核心安全底座红线：执行者绝不能宣告自身成功！裁判 Auditor 采用异构模型 DeepSeek-V4-Pro-0813 独立带外重查。执行双重硬门禁：Gate-1 独立抓取收银流水数据库日志，核验拦截 2 次、售出 0 件 (PASS)；Gate-2 独立读取备用冷库温控 (2.1°C) 与 RFID 盘点流 (PASS)。即使冷柜降温至 4.8°C 恢复硬件指标，鲜奶仍坚决销毁不予放行！",
     agent: "Auditor (Anti-Self-Verification · DeepSeek-V4-Pro-0813)",
     skill: "outcome-verify v1.1.0",

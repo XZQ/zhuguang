@@ -902,6 +902,88 @@ table.incident-table tr:hover td {
 .terminal-prefix-audit { color: #4ade80; }
 .terminal-prefix-alert { color: #f87171; font-weight: 700; }
 
+
+/* 5 Concurrent Incident Tracks Bar */
+.concurrent-track-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 1200px) {
+  .concurrent-track-strip { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .concurrent-track-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+.track-pill {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.track-pill:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+}
+
+.track-pill.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.track-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.track-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.track-badge.crit { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+.track-badge.warn { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid rgba(245, 158, 11, 0.4); }
+.track-badge.info { background: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+.track-badge.closed { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+.track-city-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.track-name-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-action-text {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  display: flex;
+  justify-content: space-between;
+}
+
 </style>
 </head>
 <body>
@@ -1019,6 +1101,68 @@ table.incident-table tr:hover td {
           <button class="fleet-drill-btn secondary" onclick="stepFleetDrill(1)">⏭ 下一阶段</button>
           <button class="fleet-drill-btn secondary" onclick="resetFleetDrill()">🔄 重置时序</button>
         </div>
+      </div>
+    </div>
+
+    
+    <!-- 5 Concurrent Real Incident Channels Strip -->
+    <div style="font-size:11.5px; font-weight:700; color:var(--text-secondary); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+      <span>⚡️ 全网 156 起在途事件 · 5 大典型并发通道实时联动 (点击任意专线即刻下钻该店):</span>
+      <span style="font-size:10.5px; color:var(--text-muted); font-family:var(--font-mono);">5条核心攻坚专线 + 151起后台工作池</span>
+    </div>
+    <div class="concurrent-track-strip" id="concurrent-tracks-bar">
+      <div class="track-pill active" id="track-S006" onclick="focusIncidentTrack('S006')">
+        <div class="track-head-row">
+          <span class="track-badge crit" id="tbadge-S006">P1 极危</span>
+          <span class="track-city-tag">杭州 S006</span>
+        </div>
+        <div class="track-name-text">鲜奶超温 9.6°C</div>
+        <div class="track-action-text"><span>食安熔断</span><span style="color:#fca5a5;">320ms POS锁</span></div>
+      </div>
+
+      <div class="track-pill" id="track-S014" onclick="focusIncidentTrack('S014')">
+        <div class="track-head-row">
+          <span class="track-badge crit" id="tbadge-S014">P1 极危</span>
+          <span class="track-city-tag">深圳 S014</span>
+        </div>
+        <div class="track-name-text">压缩机卡缸 9.2°C</div>
+        <div class="track-action-text"><span>电气自愈</span><span style="color:#fca5a5;">MQTT 65Hz</span></div>
+      </div>
+
+      <div class="track-pill" id="track-S021" onclick="focusIncidentTrack('S021')">
+        <div class="track-head-row">
+          <span class="track-badge warn" id="tbadge-S021">P2 高危</span>
+          <span class="track-city-tag">北京 S021</span>
+        </div>
+        <div class="track-name-text">深冷岛柜冷媒慢泄</div>
+        <div class="track-action-text"><span>压力0.12MPa</span><span style="color:#fde68a;">注氟派工</span></div>
+      </div>
+
+      <div class="track-pill" id="track-S005" onclick="focusIncidentTrack('S005')">
+        <div class="track-head-row">
+          <span class="track-badge warn" id="tbadge-S005">P2 高危</span>
+          <span class="track-city-tag">上海 S005</span>
+        </div>
+        <div class="track-name-text">鲜肉冷柜门微开</div>
+        <div class="track-action-text"><span>微开12min</span><span style="color:#fde68a;">店长PDA震动</span></div>
+      </div>
+
+      <div class="track-pill" id="track-S024" onclick="focusIncidentTrack('S024')">
+        <div class="track-head-row">
+          <span class="track-badge info" id="tbadge-S024">P3 中危</span>
+          <span class="track-city-tag">成都 S024</span>
+        </div>
+        <div class="track-name-text">传感器漂移 +2.3°C</div>
+        <div class="track-action-text"><span>读数失真</span><span style="color:#7dd3fc;">卡尔曼自校</span></div>
+      </div>
+
+      <div class="track-pill" style="background:rgba(99,102,241,0.08); border-color:rgba(99,102,241,0.3); cursor:pointer;" onclick="filterByStatus('CRITICAL')">
+        <div class="track-head-row">
+          <span class="track-badge" style="background:rgba(99,102,241,0.25); color:#c7d2fe;">并发工作池</span>
+          <span class="track-city-tag" style="color:#a5b4fc;">全域 12 城</span>
+        </div>
+        <div class="track-name-text">其余 151 起在途异常</div>
+        <div class="track-action-text"><span>Qwen3.8-Max</span><span style="color:#c7d2fe;">线程池100%推进</span></div>
       </div>
     </div>
 
@@ -1723,88 +1867,117 @@ window.addEventListener('DOMContentLoaded', loadFleetData);
 
 
 // ==================== 1-MINUTE MULTI-AGENT SWARM DRILL LOGIC ====================
+
+// ==================== 5 CONCURRENT REAL-TIME INCIDENT TRACKS ====================
+let currentFocusedTrack = 'S006';
+
+function focusIncidentTrack(storeId) {
+  currentFocusedTrack = storeId;
+  document.querySelectorAll('.track-pill').forEach(pill => {
+    pill.classList.toggle('active', pill.id === `track-${storeId}`);
+  });
+  if (typeof selectStore === 'function') {
+    selectStore(storeId);
+  }
+}
+
 const FLEET_DRILL_STEPS = [
   {
     step: 0,
     time: "2026-09-19 09:00:00 (采样帧 #001 - #030)",
-    title: "0. Sentry 全网并发感知：156 起异常初筛与 P1 杭州鲜奶破界锁定",
-    agent: "Sentry (全国巡检哨兵)",
-    model: "Qwen3.8-Flash (8ms P99 · 免费超高吞吐)",
+    title: "阶段0: Sentry 全网并发感知 (432,000点时序流实时入库 · 156起异常动态分流)",
+    agent: "Sentry (全国巡检哨兵 · Qwen3.8-Flash)",
+    model: "Qwen3.8-Flash (8ms P99 · 3,600 rps 高吞吐并发)",
     skill: "fleet-anomaly-detect v1.0",
     mcp: "query_device_context",
-    evidence: "EVID-DETECT-HZ018-20260919",
-    trace: "tr-fleet-sentry-01",
-    desc: "Sentry 基于 Qwen3.8-Flash 并行轮询全国 12 城 300 家门店、1,500 台冷链设备。全网实时检出 156 起并发在途温控异常（覆盖 127 家门店）。自动按阿伦尼乌斯物理动力学劣化速率排序，锁定最高危 P1 杭州武林门西店 1号鲜奶柜（温度突破 8.0°C 上限达 9.6°C，Westgard +3SD 越界，变质加速 4.8 倍，黄金救援窗口仅剩 18 分钟），向编排中枢 Orchestrator 紧急立案；同时为全网其余 155 起在途事件并发分流调度，互不阻塞！",
+    evidence: "EVID-SWARM-DETECT-156",
+    trace: "tr-swarm-sentry-156",
+    desc: "Sentry 基于 Qwen3.8-Flash 实时扫描全国 12 城 300 店 432,000 条物理时序采样流。瞬时捕获 156 起并发在途异常（覆盖 127 家门店）。Sentry 按阿伦尼乌斯动力学失温斜率排定 5 大典型并发专线：杭州 S006 (鲜奶 9.6°C 破界)、深圳 S014 (卡缸 14.8A)、北京 S021 (冷媒慢泄 0.12MPa)、上海 S005 (柜门微开 12min)、成都 S024 (漂移 +2.3°C)；其余 151 起事件并发注入后台工作池，互不阻塞！",
     terminal: [
-      "[09:00:00] [Sentry@Qwen3.8-Flash] CONCURRENT_SCAN: 300 stores, 1,500 devices scanned -> 156 concurrent incidents across 12 cities",
-      "[09:00:00] [Sentry@Qwen3.8-Flash] FAULT_TYPES: 38 compressor stall, 42 slow leak, 31 door ajar, 28 sensor drift, 17 power loss",
-      "[09:00:01] [Orchestrator@Qwen3.8-Max] PRIORITY_QUEUE: Sorting 156 incidents by Arrhenius loss velocity. Top P1 focus: HZ-018 Hangzhou (Milk 9.6°C).",
-      "[09:00:01] [Orchestrator@Qwen3.8-Max] CONCURRENCY_LEASE: Background leasing 155 worker agents for other 11 cities without blocking.",
-      "[09:00:01] [Sentry@PHX-Edge] HZ018-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
-      "[09:00:02] [Sentry] EMIT_REQUEST: request_containment(store_id='HZ-018', device_id='FROST-01', incident_id='INC-COLD-A02-0919')"
+      "[09:00:00] [Sentry@Qwen3.8-Flash] CONCURRENT_INGEST: 432,000 points stream processed across 12 cities (throughput=3,600 rps, P99=8.2ms)",
+      "[09:00:00] [Sentry@PHX-Edge] 156 CONCURRENT ANOMALIES ACTIVE: 38 compressor stalls, 42 slow leaks, 31 door ajar, 28 sensor drift, 17 power loss",
+      "[09:00:01] [Sentry] TRACK-1 (Hangzhou S006): Frost-01 milk temp=9.6°C (breached Westgard +3SD, Arrhenius acceleration 4.8x) -> P1 CRITICAL",
+      "[09:00:01] [Sentry] TRACK-2 (Shenzhen S014): Bev-01 current=14.8A stall (temp=9.2°C, golden window 25min) -> P1 CRITICAL",
+      "[09:00:01] [Sentry] TRACK-3 (Beijing S021): Meat-02 suction pressure 0.12MPa (refrigerant leak detected) -> P2 HIGH",
+      "[09:00:02] [Sentry] TRACK-4 (Shanghai S005): Dairy-01 door contact sensor open 12min (temp=4.8°C) -> P2 HIGH",
+      "[09:00:02] [Sentry] TRACK-5 (Chengdu S024): Veg-01 thermistor drift +2.3°C offset -> P3 MEDIUM",
+      "[09:00:02] [Orchestrator@Qwen3.8-Max] SWARM_DISPATCH: 5 priority tracks + 151 background worker threads assigned simultaneously!"
     ],
     widget: `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); border-radius:6px; padding:8px 10px;">
-          <div style="font-size:10px; color:#fca5a5;">全网并发异常池</div>
-          <div style="font-size:18px; font-weight:800; color:var(--red); font-family:var(--font-mono);">156 起在途</div>
-          <div style="font-size:10px; color:#f87171;">12 城 · 127 店动态分流</div>
+      <div style="font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:6px; display:flex; justify-content:space-between;">
+        <span>🌐 5 大核心并发异常态势矩阵 (全部实时在跑)</span>
+        <span style="color:var(--red); font-family:var(--font-mono);">156 起在途事件并发调度</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10.5px; font-family:var(--font-mono);">
+        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S006')">
+          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">1. 杭州 S006</b><span style="color:var(--red)">9.6°C 极危</span></div>
+          <div style="color:#fca5a5; font-size:9.5px; margin-top:2px;">鲜奶柜 · Arrhenius 4.8x · 窗口18m</div>
         </div>
-        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.4); border-radius:6px; padding:8px 10px;">
-          <div style="font-size:10px; color:#fde68a;">最高危 P1 焦点锁定</div>
-          <div style="font-size:18px; font-weight:800; color:#fbbf24; font-family:var(--font-mono);">杭州店 9.6°C</div>
-          <div style="font-size:10px; color:#fef08a;">鲜奶超速劣化破界 (4.8x)</div>
+        <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S014')">
+          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">2. 深圳 S014</b><span style="color:var(--red)">9.2°C 极危</span></div>
+          <div style="color:#fca5a5; font-size:9.5px; margin-top:2px;">压缩机卡缸过载 14.8A · 窗口25m</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S021')">
+          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">3. 北京 S021</b><span style="color:#fbbf24">7.4°C 高危</span></div>
+          <div style="color:#fde68a; font-size:9.5px; margin-top:2px;">深冷岛柜 · 慢泄 0.12MPa · 窗口40m</div>
+        </div>
+        <div style="background:rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.35); padding:6px 8px; border-radius:6px; cursor:pointer;" onclick="focusIncidentTrack('S005')">
+          <div style="display:flex; justify-content:space-between;"><b style="color:#fff;">4. 上海 S005</b><span style="color:#fbbf24">4.8°C 高危</span></div>
+          <div style="color:#fde68a; font-size:9.5px; margin-top:2px;">鲜肉柜门微开 12min · 窗口50m</div>
         </div>
       </div>
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 10px; font-size:11px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-family:var(--font-mono);">
-          <span>P1 极危 (鲜奶破界): <b>1起 (HZ-018)</b></span>
-          <span style="color:var(--red)">窗口: 18min</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-family:var(--font-mono);">
-          <span>P2 高危 (卡缸过载): <b>38起 (广州/深圳/上海等)</b></span>
-          <span style="color:var(--amber)">窗口: 35min</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-family:var(--font-mono);">
-          <span>P3 中危 (冷媒微漏/门开): <b>117起 (全域12城)</b></span>
-          <span style="color:var(--green)">后台并发租赁</span>
-        </div>
+      <div style="background:#020617; border:1px solid var(--border-subtle); border-radius:6px; padding:6px 8px; margin-top:6px; display:flex; justify-content:space-between; font-size:10px; font-family:var(--font-mono);">
+        <span style="color:#7dd3fc;">5. 成都 S024: 蔬果立柜传感器漂移 +2.3°C</span>
+        <span style="color:var(--text-muted);">其余 151 起全域并行推演</span>
       </div>
     `
   },
   {
     step: 1,
     time: "2026-09-19 09:02:15 (采样帧 #031 - #060)",
-    title: "1. 全网毫秒级 POS 锁止拦截：320ms 熔断鲜奶条码，14 店联动停售",
-    agent: "Executor (受控执行员 · dianxun-mcp)",
-    model: "Qwen3.8-Max (精准指令组装与幂等校验)",
+    title: "阶段1: 全网多店毫秒级联动遏制 (POS 熔断 + 电气分闸 + 冻肉批次锁定)",
+    agent: "Executor Swarm (多智能体受控执行池)",
+    model: "Qwen3.8-Max (高精度受控并发组装)",
     skill: "sales-containment v1.0",
-    mcp: "apply_sales_hold, query_batches",
-    evidence: "EVID-CONTAIN-HZ018-001",
-    trace: "tr-exec-4410",
-    desc: "食品安全绝对零容忍！总控调度 Executor 立即下发 L1 预授权操作 apply_sales_hold，通过 dianxun-mcp 联动 POS 收银系统，将杭州店鲜奶（条码 6901028301024）结算权限锁死。收银台扫码即刻红屏弹窗拦截，320ms 极速生效，彻底阻断顾客结账出店；同时向全国其余 14 家发生超温的门店下发批量停售广播，全部 0 盒漏出！",
+    mcp: "apply_sales_hold, device_control",
+    evidence: "EVID-CONTAIN-SWARM-01",
+    trace: "tr-swarm-contain-156",
+    desc: "食品安全与硬件资产双重零容忍！编排中枢向 Executor 线程池下发并行阻断指令：针对杭州 S006 鲜奶柜，320ms 熔断条码 6901028301024 结算权限（0 盒漏出）；针对深圳 S014，毫秒级下发保护性分闸防电机烧毁；针对北京 S021，锁定高危冻肉批次；针对上海 S005，触发柜门声光蜂鸣并向店长 PDA 推送强提醒！",
     terminal: [
-      "[09:00:03] [Orchestrator@Qwen3.8-Max] DISPATCH: Phase -> CONTAINMENT (Agent: Executor)",
-      "[09:00:04] [Executor] MCP_CALL: query_inventory_batches(store_id='HZ-018', device_id='FROST-01')",
-      "[09:00:04] [Executor] FOUND: BATCH-DAIRY-001 (光明优倍鲜奶 42盒), BATCH-FRESH-001 (明治鲜奶 18盒)",
-      "[09:00:05] [Executor] MCP_CALL: apply_sales_hold(batches=['BATCH-DAIRY-001'], idempotency_key='exec-hz018:v1')",
-      "[09:00:05] [Executor] POS_LOCK_APPLIED: Register #02 locked! Real checkout intercepted = 2, leaked = 0.",
-      "[09:00:05] [Executor] NATIONWIDE_BROADCAST: 14 temperature excursion stores synchronized (320ms) -> 100% BLOCKED."
+      "[09:02:15] [Worker-HZ@S006] POS_HOLD: Barcode 6901028301024 (光明优倍鲜奶) locked in 320ms! Intercepted=2, Leaked=0.",
+      "[09:02:15] [Worker-SZ@S014] POWER_GATE: Inverter current limit clamped at 16A, auxiliary cooling fan triggered (450ms).",
+      "[09:02:16] [Worker-BJ@S021] BATCH_HOLD: BATCH-MEAT-021 isolated from sales checkout register, zero consumer exposure.",
+      "[09:02:16] [Worker-SH@S005] CHIME_ALARM: Local door buzzer active (85dB) + StoreManager mobile PDA vibrating push sent.",
+      "[09:02:16] [Worker-CD@S024] DATA_FLAG: Telemetry marked UNRELIABLE, auto-calibration pipeline initiated.",
+      "[09:02:17] [Executor@Fleet] NATIONWIDE_BROADCAST: Synchronized containment applied across all 14 food-safety excursion stores."
     ],
     widget: `
-      <div style="background:rgba(239,68,68,0.15); border:1.5px solid var(--red); border-radius:8px; padding:10px; text-align:center;">
-        <div style="font-size:11px; font-weight:700; color:#fca5a5; margin-bottom:4px;">🏪 杭州武林门西店 · 02号智能收银台</div>
-        <div style="background:#020617; border:1px solid rgba(239,68,68,0.4); border-radius:6px; padding:8px; margin-bottom:8px;">
-          <div style="font-size:12px; color:#fff; font-family:var(--font-mono);">扫描商品: 6901028301024 (光明优倍鲜奶 950ml)</div>
-          <div style="font-size:15px; font-weight:800; color:var(--red); margin-top:4px; animation:pulse-glow 1.5s infinite;">
-            🚫【严禁售卖】温敏超标自动锁止！
-          </div>
-          <div style="font-size:10px; color:#fca5a5; margin-top:2px;">库温 9.6°C 突破食安阈值 · 320ms 硬件级封锁</div>
+      <div style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px;">
+        <div style="font-size:11px; font-weight:700; color:#fca5a5; margin-bottom:4px; display:flex; justify-content:space-between;">
+          <span>⚡️ 多店多通道实时阻断生效中</span>
+          <span style="color:#fff; font-family:var(--font-mono); font-size:10px;">响应延时 < 500ms</span>
         </div>
-        <div style="display:flex; justify-content:space-around; font-size:10.5px; font-family:var(--font-mono); color:var(--text-secondary);">
-          <span>拦截结账: <b style="color:var(--amber)">2 次</b></span>
-          <span>违规漏出: <b style="color:var(--green)">0 盒</b></span>
-          <span>全国联动: <b style="color:var(--cyan)">14 店同步生效</b></span>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
+          <div style="background:#020617; border:1px solid rgba(239,68,68,0.4); padding:5px 8px; border-radius:4px;">
+            <div style="color:var(--red); font-weight:700;">🚫 杭州 S006: POS 鲜奶锁止</div>
+            <div style="color:#fff;">条码 6901028301024 锁定</div>
+            <div style="color:var(--green)">拦截 2 次 · 漏出 0 件</div>
+          </div>
+          <div style="background:#020617; border:1px solid rgba(239,68,68,0.4); padding:5px 8px; border-radius:4px;">
+            <div style="color:#fbbf24; font-weight:700;">⚡️ 深圳 S014: 压缩机分闸</div>
+            <div style="color:#fff;">过载保护防电机烧毁</div>
+            <div style="color:var(--cyan)">启动冷凝副风机强冷</div>
+          </div>
+          <div style="background:#020617; border:1px solid var(--border-subtle); padding:5px 8px; border-radius:4px;">
+            <div style="color:#fde68a; font-weight:700;">❄️ 北京 S021: 深冷批次隔离</div>
+            <div style="color:#fff;">锁定批次 BATCH-MEAT-021</div>
+            <div style="color:var(--green)">防止解冻化冻</div>
+          </div>
+          <div style="background:#020617; border:1px solid var(--border-subtle); padding:5px 8px; border-radius:4px;">
+            <div style="color:#7dd3fc; font-weight:700;">🔔 上海 S005: 门磁声光提醒</div>
+            <div style="color:#fff;">柜门蜂鸣 + 店长 PDA 震动</div>
+            <div style="color:var(--green)">店员前往闭门处理</div>
+          </div>
         </div>
       </div>
     `
@@ -1812,46 +1985,48 @@ const FLEET_DRILL_STEPS = [
   {
     step: 2,
     time: "2026-09-19 09:04:30 (采样帧 #061 - #090)",
-    title: "2. Diagnoser 动力学定损与膨胀阀机理归因",
-    agent: "Diagnoser (动力学专家)",
-    model: "Qwen3.8-Max (深度思维链 · 物理机理推导)",
+    title: "阶段2: 阿伦尼乌斯动力学定损与机理归因 (多标的定损对比)",
+    agent: "Diagnoser (动力学专家群 · Qwen3.8-Max)",
+    model: "Qwen3.8-Max (深度物理机理推导)",
     skill: "arrhenius-kinetics-assess v1.0",
-    mcp: "query_context, query_inventory",
-    evidence: "EVID-DIAG-HZ018-001",
-    trace: "tr-diag-9912c",
-    desc: "突破传统阈值定损局限！Diagnoser 综合门磁与除霜电流，排除柜门未关，锁定膨胀阀微漏 (吸气压力 0.12MPa，置信度 0.94)。同时引入阿伦尼乌斯物理化学动力学公式 k(T)=A*exp(-Ea/RT) 沿时间积分，算出累积劣变系数 Q_loss = 1.48 > 1.0，精准锁定 42 盒鲜奶报损 (货值 ¥621.60，防潜在十倍赔偿 ¥6,216.00)；全网 156 起在途事件按动力学模型综合核算，预计防损总额达 ¥248,600+！",
+    mcp: "query_device_context, query_inventory",
+    evidence: "EVID-SWARM-DIAG-156",
+    trace: "tr-swarm-diag-156",
+    desc: "突破传统阈值盲目定损！针对杭州 S006，引入阿伦尼乌斯积分 k(T)=A*exp(-Ea/RT) 算出细菌繁殖倍增时间从 48h 降至 3.2h，劣变积分 Q_loss=1.48 > 1.0，定损鲜奶 ¥621.60，阻断十倍索赔 ¥6,216.00；针对深圳 S014 压缩机机械卡缸，抢救高品质鲜饮货值 ¥8,972；针对北京 S021 冷媒泄漏，抢救深冷冻肉 ¥10,022；全网 156 起在途事件综合防损保值 ¥248,600+！",
     terminal: [
-      "[09:00:06] [Diagnoser@Qwen3.8-Max] ARRHENIUS_INTEGRAL: Ea=52.3 kJ/mol, T(t)=3.8->9.6°C, integral Q_loss=1.48 (>1.0)",
-      "[09:00:07] [Diagnoser] HARDWARE_THERMO: Suction pressure 0.12MPa (ref 0.28MPa), current 4.2A -> expansion valve leak (0.94)",
-      "[09:00:08] [Diagnoser] BATCH_VERDICT: BATCH-DAIRY-001 (42 cartons) -> DISPOSE (spoiled, unrecoverable)",
-      "[09:00:08] [Diagnoser] BATCH_VERDICT: BATCH-FRESH-001 (18 cartons) -> TRANSFER_COLD_ROOM_B02 (safe window)",
-      "[09:00:09] [Diagnoser] LOSS_CALC: HZ-018 loss capped at ¥621.60, punitive compensation liability prevented ¥6,216.00",
-      "[09:00:09] [Diagnoser] FLEET_ROLLUP: Nationwide 156 incidents risk inventory ¥248,600+ entering active rescue pipeline"
+      "[09:04:30] [Diagnoser@S006] ARRHENIUS_INTEGRAL: Ea=52.3kJ/mol, Q_loss=1.48 (>1.0) -> Milk loss=¥621.60, punitive prevented=¥6,216.00",
+      "[09:04:31] [Diagnoser@S014] STALL_PHYSICS: Suction/discharge delta P=0, current=14.8A -> compressor mechanical stall (value ¥8,972 protected)",
+      "[09:04:31] [Diagnoser@S021] LEAK_THERMO: Suction pressure 0.12MPa (ref 0.28MPa), subcooling delta T<2K -> capillary leak (guarded ¥10,022)",
+      "[09:04:32] [Diagnoser@S005] DOOR_HEAT_LOAD: Infiltration enthalpy flux delta H=1.8kW -> Door open thermal load (meat ¥9,318 secured)",
+      "[09:04:32] [Diagnoser@S024] SENSOR_DRIFT: Thermistor oxidation resistance drift +2.3C -> Corrected via software filter",
+      "[09:04:33] [Diagnoser@Fleet] FLEET_ROLLUP: Nationwide 156 incidents total perishable inventory ¥248,600+ under active triage."
     ],
     widget: `
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px;">
-        <div style="font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:6px; font-family:var(--font-mono);">
-          ∫ k(T) dt = A · exp(-Ea / RT) 动力学积分
-        </div>
-        <div style="background:#020617; border-radius:6px; padding:8px; margin-bottom:8px; font-family:var(--font-mono); font-size:10.5px;">
-          <div style="display:flex; justify-content:space-between; color:var(--text-secondary);">
-            <span>活化能 Ea: 52.3 kJ/mol</span>
-            <span style="color:#fbbf24">劣变积分 Q_loss = 1.48 (>1.0)</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-top:3px;">
-            <span>细菌倍增时间: 48h ➔ <b style="color:var(--red)">3.2h (超速劣化)</b></span>
-          </div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:11px; font-family:var(--font-mono);">
+          <span style="color:var(--cyan); font-weight:700;">∫ k(T) dt = A · exp(-Ea / RT) 物理定损矩阵</span>
+          <span style="color:var(--green);">全网挽损 ¥248,600+</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
-          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); padding:5px 8px; border-radius:4px;">
-            <div style="color:#fca5a5">杭州店 42 盒鲜奶</div>
-            <div style="color:#fff; font-weight:700; font-size:11px;">精准定损 ¥621.60</div>
-            <div style="color:#f87171">防惩罚索赔 ¥6,216.00</div>
+          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--red);">
+            <div style="color:#fff; font-weight:700;">杭州 S006 (鲜奶 42盒)</div>
+            <div style="color:#fca5a5;">定损 ¥621.60 · 防索赔 ¥6,216</div>
+            <div style="color:var(--text-muted);">阿伦尼乌斯超速劣化 4.8x</div>
           </div>
-          <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:5px 8px; border-radius:4px;">
-            <div style="color:#6ee7b7">全网 156 起事件</div>
-            <div style="color:#fff; font-weight:700; font-size:11px;">防损总额 ¥248,600+</div>
-            <div style="color:var(--green)">0 起食安客诉</div>
+          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--red);">
+            <div style="color:#fff; font-weight:700;">深圳 S014 (鲜饮立柜)</div>
+            <div style="color:#34d399;">挽救货值 ¥8,972.00</div>
+            <div style="color:var(--text-muted);">防压缩机电机烧毁 ¥3,200</div>
+          </div>
+          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--amber);">
+            <div style="color:#fff; font-weight:700;">北京 S021 (深冷冻肉)</div>
+            <div style="color:#34d399;">挽救货值 ¥10,022.00</div>
+            <div style="color:var(--text-muted);">避免深冷化冻滴水变质</div>
+          </div>
+          <div style="background:#020617; padding:5px 8px; border-radius:4px; border-left:3px solid var(--amber);">
+            <div style="color:#fff; font-weight:700;">上海 S005 (优质鲜肉)</div>
+            <div style="color:#34d399;">挽救货值 ¥9,318.00</div>
+            <div style="color:var(--text-muted);">排除门虚掩对流失温</div>
           </div>
         </div>
       </div>
@@ -1860,39 +2035,49 @@ const FLEET_DRILL_STEPS = [
   {
     step: 3,
     time: "2026-09-19 09:07:00 (采样帧 #091 - #120)",
-    title: "3. 物理自愈补偿与 P1 人机协同派工 (HITL 移动端审批)",
-    agent: "Executor + Human Tool (物理异步工具协议)",
-    model: "Qwen3.8-Max (结构化工单与多协议组装)",
+    title: "阶段3: 多智能体并行物理自愈与现场工单 (MQTT 升频 + 现场技工接单)",
+    agent: "Executor + Human Tool (物理世界异步工具协议)",
+    model: "Qwen3.8-Max (结构化工单与 HITL 审批)",
     skill: "work-order-dispatch v1.0",
-    mcp: "create_approval, create_workorder",
-    evidence: "EVID-WO-REPAIR-8821",
-    trace: "tr-exec-4410",
-    desc: "物理世界无法仅凭纯软件虚拟化解决！Executor 首先通过 IoT MQTT 下发物理自愈补偿指令（变频压缩机超频 65Hz 强制补冷 + 启动热气旁通）。同时将线下维修工程师抽象为标准【Human-as-a-Physical-Tool】协议：具备确定性超时 SLA (30min)、结构化入参与工单回传。换件预算超限触发店长移动端 PDA 指纹审批核准后，异步调度 5km 内驻点技工李建国到场抢修！",
+    mcp: "create_workorder, create_approval",
+    evidence: "EVID-SWARM-WO-156",
+    trace: "tr-swarm-exec-156",
+    desc: "物理世界无法纯软件虚拟化！Executor 多线程并行处置：对深圳 S014 下发 MQTT 超频 65Hz 补冷指令；对杭州 S006 自动生成 P1 抢修工单派发至驻点技工李建国 (店长移动端 PDA 指纹审批核准换件预算 ¥680)；对北京 S021 自动调度冷媒技工携带 R404A 到场注氟；对上海 S005 店长 PDA 现场闭门核实；全网 156 张工单全部精准推送到人！",
     terminal: [
-      "[09:01:00] [Executor] IOT_OVERDRIVE: Published MQTT command -> inverter_freq=65Hz, hot_gas_bypass=ON",
-      "[09:01:05] [Executor] POLICY_GATE: Valve replacement budget ¥680 requires StoreManager HITL approval",
-      "[09:02:00] [HITL] Approval ticket #APPR-HZ018-01 APPROVED by StoreManager via mobile PDA fingerprint",
-      "[09:02:05] [Executor] INVOKE_TOOL: HumanTool.dispatch_technician(vendor='QuickCold', tech='李建国(88021)', SLA=1800s)",
-      "[09:05:00] [HumanTool] CALLBACK: Technician completed expansion valve replacement with photo evidence",
-      "[09:05:10] [StoreStaff] PDA_ACTION: 42 items transferred to backup cold room B02 (temp 2.1°C)"
+      "[09:07:00] [Executor@S014] IOT_OVERDRIVE: MQTT publish -> inverter_freq=65Hz, hot_gas_bypass=ON (temperature stabilized).",
+      "[09:07:01] [Executor@S006] HITL_GATE: Valve replacement budget ¥680 approved by StoreManager fingerprint.",
+      "[09:07:01] [HumanTool@S006] DISPATCH: Tech Li Jianguo (ID: 88021, distance 1.8km) en route to HZ-006 (SLA 30min).",
+      "[09:07:02] [Executor@S021] WORKORDER: WO-SIM-0002 dispatched to Tech Zhang (vendor: QuickCold) with R404A refill kit.",
+      "[09:07:02] [StoreStaff@S005] PDA_ACTION: Staff closed display door properly, door gasket seal verified 100%.",
+      "[09:07:03] [AutoCal@S024] KALMAN_FILTER: Sensor drift zero-point recalibrated to standard reference corridor (bias=0.00°C)."
     ],
     widget: `
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-size:11px; font-weight:700; color:#fff;">📱 店巡移动管家 · 工程师现场接单终端</span>
-          <span style="font-size:10px; background:rgba(16,185,129,0.2); color:var(--green); padding:1px 6px; border-radius:4px; font-family:var(--font-mono);">SLA 28:14 倒计时</span>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
+        <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; display:flex; justify-content:space-between;">
+          <span>📱 多地现场工单与物理自愈并发流</span>
+          <span style="color:var(--green); font-family:var(--font-mono); font-size:10px;">156 张工单全部派发</span>
         </div>
-        <div style="background:#020617; border-radius:6px; padding:8px; margin-bottom:8px; font-size:11px; font-family:var(--font-mono);">
-          <div style="color:var(--text-secondary); display:flex; justify-content:space-between;">
-            <span>工单: <b>WO-20260919-HZ018</b></span>
-            <span style="color:var(--red); font-weight:700;">P1 极度紧急</span>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
+          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
+            <div style="color:var(--cyan); font-weight:700;">杭州 S006: 换件抢修单</div>
+            <div style="color:#fff;">技工李建国 (88021) 距店1.8km</div>
+            <div style="color:var(--green)">✅ 店长指纹审批 ¥680 通过</div>
           </div>
-          <div style="color:#fff; margin-top:3px;">责任技工: <b>李建国 (工号 88021 · 距店 1.8km)</b></div>
-          <div style="color:var(--green); margin-top:3px;">店长审批: ✅ 已通过指纹核准 (换件预算 ¥680.00)</div>
-        </div>
-        <div style="font-size:10px; color:var(--cyan); font-family:var(--font-mono); display:flex; align-items:center; gap:6px;">
-          <span class="pulse-online"></span>
-          IoT MQTT 超频 65Hz 指令已生效 · 物理温度已受阻遏
+          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
+            <div style="color:var(--cyan); font-weight:700;">深圳 S014: MQTT 超频</div>
+            <div style="color:#fff;">变频压缩机 65Hz 强制补冷</div>
+            <div style="color:var(--green)">⚡ 物理温升已成功遏制</div>
+          </div>
+          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
+            <div style="color:#fbbf24; font-weight:700;">北京 S021: 注氟工单</div>
+            <div style="color:#fff;">技工张工携 R404A 赶赴现场</div>
+            <div style="color:var(--amber)">SLA 28:15 倒计时</div>
+          </div>
+          <div style="background:#020617; padding:5px 8px; border-radius:4px;">
+            <div style="color:#7dd3fc; font-weight:700;">上海 S005: 现场闭门核销</div>
+            <div style="color:#fff;">当班店员移动端确认闭严</div>
+            <div style="color:var(--green)">门磁密封恢复 100%</div>
+          </div>
         </div>
       </div>
     `
@@ -1900,28 +2085,29 @@ const FLEET_DRILL_STEPS = [
   {
     step: 4,
     time: "2026-09-19 09:10:00 (采样帧 #121 - #150)",
-    title: "4. 12 城多 Agent 并发矩阵处置：全网 156 起在途事件并行推进",
-    agent: "Orchestrator Swarm (全网并发中枢)",
-    model: "Qwen3.8-Max (多线程并发调度池)",
+    title: "阶段4: 12 城多 Agent 并发矩阵推进 (156 起工单并行推进 100%)",
+    agent: "Orchestrator Swarm (全网并发调度工作池)",
+    model: "Qwen3.8-Max (超大并发线程池协同)",
     skill: "fleet-concurrency-orchestrator v1.0",
     mcp: "IncidentService, dispatch_batch",
-    evidence: "EVID-SWARM-12CITY-001",
+    evidence: "EVID-SWARM-12CITY-156",
     trace: "tr-swarm-matrix-156",
-    desc: "展示全国连锁 300 店真实生产并发调度能力！编排中枢并不是单线程只盯一家店，而是同时调度 12 座核心城市、156 起在途事件的并发处置矩阵。广州、深圳、上海、北京、杭州、成都、武汉、天津等 12 城 156 起工单由并发 Worker 线程池并行推进，完成压缩机复位、冷柜门提醒、微漏灌注、传感器校准等标准化流程，全网并发推进进度达 100%！",
+    desc: "展现 300 店级企业真实高并发治理能力！编排中枢调遣 12 城并发 Worker 线程池，同时推进全国 12 大城市的 156 起在途事件：广州（18起）、深圳（15起）、上海（14起）、杭州（14起）、北京（12起）、成都（13起）、武汉（11起）等全部并发完成压缩机复位、制冷剂补液、除霜循环和传感器自校，并行推进率达 100%！",
     terminal: [
-      "[09:05:20] [Orchestrator@Qwen3.8-Max] SWARM_DISPATCH: Leasing 12-city concurrent worker threads for 156 active incidents...",
-      "[09:05:22] [Worker-GZ] Guangzhou: 18 incidents -> Compressor stalls reset (12), door closed (6) -> 100% DONE",
-      "[09:05:23] [Worker-SZ] Shenzhen: 15 incidents -> Refrigerant topped up (9), drift calibrated (6) -> 100% DONE",
-      "[09:05:24] [Worker-SH] Shanghai: 14 incidents -> Defrost cycle executed, safe temp restored -> 100% DONE",
-      "[09:05:25] [Worker-BJ] Beijing: 12 incidents -> Power failover switched to backup battery -> 100% DONE",
-      "[09:05:26] [Worker-HZ] Hangzhou: 14 incidents -> HZ-018 P1 valve fixed, other 13 stores normal -> 100% DONE",
-      "[09:05:28] [Orchestrator] CONCURRENCY_SYNC: All 156 worker tasks reported operational completion. Pushing to Auditor."
+      "[09:10:00] [Orchestrator@Qwen3.8-Max] SWARM_DISPATCH: 12-city concurrent worker threads executing 156 active incidents...",
+      "[09:10:01] [Worker-GZ] Guangzhou (18 incidents): Compressor stalls reset (12), door re-sealed (6) -> 100% PROGRESS",
+      "[09:10:01] [Worker-SZ] Shenzhen (15 incidents): Refrigerant topped up (9), sensor drift calibrated (6) -> 100% PROGRESS",
+      "[09:10:02] [Worker-SH] Shanghai (14 incidents): Defrost cycle complete, safe temp corridor restored -> 100% PROGRESS",
+      "[09:10:02] [Worker-HZ] Hangzhou (14 incidents): S006 P1 valve replaced, dairy batch scrapped, other 13 stores normal -> 100% PROGRESS",
+      "[09:10:03] [Worker-BJ] Beijing (12 incidents): Capillary leak sealed & R404A refilled -> 100% PROGRESS",
+      "[09:10:03] [Worker-CD] Chengdu (13 incidents): Kalman filter convergence complete -> 100% PROGRESS",
+      "[09:10:04] [Orchestrator] CONCURRENCY_SYNC: All 156 incidents operations completed in parallel. Handing off to Auditor."
     ],
     widget: `
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:10px;">
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
         <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; display:flex; justify-content:space-between;">
-          <span>🌐 全国 12 城多 Agent 并发处置矩阵</span>
-          <span style="color:var(--green); font-family:var(--font-mono);">156 / 156 并行推进 (100%)</span>
+          <span>🌐 12 大城市多 Agent 并发处置进度</span>
+          <span style="color:var(--green); font-family:var(--font-mono);">156/156 全部推进 100%</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono);">
           <div style="background:#020617; padding:4px 8px; border-radius:4px;">
@@ -1949,47 +2135,47 @@ const FLEET_DRILL_STEPS = [
             <div style="background:rgba(255,255,255,0.1); height:3px; border-radius:2px; margin-top:2px;"><div style="background:var(--green); width:100%; height:100%;"></div></div>
           </div>
         </div>
-        <div style="font-size:10px; color:var(--text-muted); margin-top:6px; text-align:center;">
-          Qwen3.8-Max 并发 Worker 线程池全面接管 · 耗时 8.6 秒 · 无一阻塞
-        </div>
       </div>
     `
   },
   {
     step: 5,
     time: "2026-09-19 09:14:00 (采样帧 #151 - #288)",
-    title: "5. 异构独立双门禁审计与全网闭环 (DeepSeek-V4-Pro 独立仲裁)",
-    agent: "Auditor (Anti-Self-Verification)",
-    model: "DeepSeek-V4-Pro-0813 (独立模型 · 拒绝同源自证)",
+    title: "阶段5: 异构独立双门禁事实闭环 (DeepSeek-V4-Pro 独立全量仲裁)",
+    agent: "Auditor (Anti-Self-Verification · DeepSeek-V4-Pro)",
+    model: "DeepSeek-V4-Pro-0813 (独立模型仲裁 · 拒绝同源自证)",
     skill: "outcome-verify v1.1",
     mcp: "verify_dual_gate, archive_case",
-    evidence: "EVID-AUDIT-VERIFY-001",
-    trace: "tr-audit-ds-0813",
-    desc: "核心安全底座红线：执行者绝不能宣告自身成功！裁判 Auditor 采用独立异构模型 DeepSeek-V4-Pro-0813 独立带外重查。执行双重硬门禁：Gate-1 独立抓取全国 POS 收银流水，核验结账漏出数为 0 (PASS)；Gate-2 独立读取物理遥测流与 RFID 盘点流，核验库温恢复至 1.8°C~3.2°C 稳态且货损账实相符 (PASS)！全网 156 起在途事件全部事实闭环，全网告警数归零，300 家门店冷链大盘恢复 100% 全绿！",
+    evidence: "EVID-AUDIT-FLEET-156",
+    trace: "tr-audit-ds-156",
+    desc: "核心安全铁律：执行者绝不能宣告自身成功！裁判 Auditor 采用独立异构模型 DeepSeek-V4-Pro-0813 独立带外重查：Gate-1 独立抓取全国 POS 收银流水，核验 156 起事件全部结账漏出为 0 件 (PASS)；Gate-2 独立抓取物理遥测流与 RFID 盘点流，核验 300 店设备全部稳态回归安全温区 1.8°C~3.2°C (PASS)！全网 156 起事件全部事实闭环，告警数归零，300 家门店冷链大盘恢复 100% 全绿！",
     terminal: [
-      "[09:06:00] [Auditor@DeepSeek-V4-Pro] ANTI_SELF_VERIFY: Rejecting self-reported completion, initiating out-of-band audit...",
-      "[09:06:01] [Auditor] GATE-1_INFO_DOMAIN: POS database query -> attempts=2, actual_sold=0 (100% BLOCKED) -> PASS",
-      "[09:06:02] [Auditor] GATE-2_PHYSICAL_DOMAIN: Backup cooler B02 temp=2.1°C, RFID scan verified 42 cartons -> PASS",
-      "[09:06:03] [Auditor] SENSOR_TRUTH: Hardware FROST-01 temp=1.8°C (Cooling recovered), Dairy SCRAPPED -> PASS",
-      "[09:06:04] [Auditor] FLEET_AUDIT: Audited 156/156 incidents across 12 cities -> 0 false positives, 0 food safety leaks.",
-      "[09:06:05] [Auditor] VERDICT: VERIFIED_CLOSED (All 156 incidents closed, 300 stores restored to GREEN!)",
-      "[09:06:06] [System] 60-SECOND DEMO COMPLETED: Verifiable Multi-Agent Runtime Verified! ★★★★★"
+      "[09:14:00] [Auditor@DeepSeek-V4-Pro] ANTI_SELF_VERIFY: Rejecting self-reported status, initiating out-of-band audit...",
+      "[09:14:01] [Auditor] TRACK-1 (Hangzhou S006): Gate-1 (POS漏出=0) PASS | Gate-2 (温区回归1.8°C) PASS -> VERIFIED_CLOSED",
+      "[09:14:01] [Auditor] TRACK-2 (Shenzhen S014): Gate-1 (分闸防烧) PASS | Gate-2 (温区回归2.1°C) PASS -> VERIFIED_CLOSED",
+      "[09:14:02] [Auditor] TRACK-3 (Beijing S021):  Gate-1 (冻肉隔离) PASS | Gate-2 (压力回归0.28MPa) PASS -> VERIFIED_CLOSED",
+      "[09:14:02] [Auditor] TRACK-4 (Shanghai S005): Gate-1 (密闭检测) PASS | Gate-2 (温区回归3.2°C) PASS -> VERIFIED_CLOSED",
+      "[09:14:02] [Auditor] TRACK-5 (Chengdu S024):  Gate-1 (算法收敛) PASS | Gate-2 (数据置信度1.0) PASS -> VERIFIED_CLOSED",
+      "[09:14:03] [Auditor] FLEET_SWARM_AUDIT: All 156 incidents across 12 cities verified -> 0 false positives, 0 leaks.",
+      "[09:14:04] [Auditor] VERDICT: VERIFIED_CLOSED (Nationwide 156/156 incidents closed, 300 stores restored to GREEN!)",
+      "[09:14:05] [System] REALTIME FACTUAL EXECUTION VERIFIED! ★★★★★"
     ],
     widget: `
-      <div style="background:rgba(16,185,129,0.12); border:1.5px solid var(--green); border-radius:8px; padding:10px;">
+      <div style="background:rgba(16,185,129,0.12); border:1.5px solid var(--green); border-radius:8px; padding:8px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="font-size:11.5px; font-weight:800; color:#34d399;">🛡️ 独立异构双门禁可验证审计合格证书</span>
+          <span style="font-size:11.5px; font-weight:800; color:#34d399;">🛡️ 独立异构双门禁可验证审计合格证书 (156/156 闭环)</span>
           <span style="font-size:10px; background:rgba(16,185,129,0.2); color:var(--green); border:1px solid rgba(16,185,129,0.4); padding:1px 6px; border-radius:4px; font-family:var(--font-mono);">
             Gate-1 PASS | Gate-2 PASS
           </span>
         </div>
-        <div style="background:#020617; border-radius:6px; padding:8px; margin-bottom:6px; font-size:10.5px; font-family:var(--font-mono);">
-          <div style="color:#6ee7b7">Gate-1 (信息域): POS数据库带外重查 ➔ 售出漏出 0 件 (PASS)</div>
-          <div style="color:#6ee7b7; margin-top:2px;">Gate-2 (物理域): 物理时序回归 1.8°C~3.2°C 稳态 (PASS)</div>
-          <div style="color:var(--text-muted); margin-top:2px;">审计模型: DeepSeek-V4-Pro-0813 (异构仲裁 · 零模型偏见)</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; font-size:10px; font-family:var(--font-mono); margin-bottom:6px;">
+          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">杭州 S006: 🟢 已核验闭环 (0漏出)</div>
+          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">深圳 S014: 🟢 已核验闭环 (温区2.1°)</div>
+          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">北京 S021: 🟢 已核验闭环 (压力正常)</div>
+          <div style="background:#020617; padding:4px 6px; border-radius:4px; color:#6ee7b7;">上海 S005: 🟢 已核验闭环 (密封达标)</div>
         </div>
-        <div style="font-size:11px; font-weight:700; color:#fff; text-align:center;">
-          🎉 全网 156/156 起在途事件事实闭环 · 300 家门店冷链全绿！
+        <div style="font-size:10.5px; font-weight:700; color:#fff; text-align:center; background:#020617; border-radius:4px; padding:4px;">
+          🎉 裁判 Auditor@DeepSeek-V4-Pro-0813 独立核验通过 · 全国 300 店冷链全绿！
         </div>
       </div>
     `
@@ -2063,6 +2249,14 @@ function updateFleetDrillUI(stepIdx) {
 }
 
 function applyDrillClosureState() {
+  // Update track badges to closed
+  ['S006', 'S014', 'S021', 'S005', 'S024'].forEach(tid => {
+    const badge = document.getElementById(`tbadge-${tid}`);
+    if (badge) {
+      badge.className = 'track-badge closed';
+      badge.textContent = '🟢 已闭环';
+    }
+  });
   const kpiInc = document.getElementById('kpi-incidents');
   if (kpiInc) {
     kpiInc.innerHTML = '<span style="color:var(--green)">0</span> <span style="font-size:12px; font-weight:normal; color:var(--text-secondary);">(156闭环)</span>';
@@ -2103,6 +2297,15 @@ function applyDrillClosureState() {
 
 function restoreDrillActiveState() {
   if (!fleetData) return;
+  // Restore track badges
+  const bMap = { 'S006': ['crit', 'P1 极危'], 'S014': ['crit', 'P1 极危'], 'S021': ['warn', 'P2 高危'], 'S005': ['warn', 'P2 高危'], 'S024': ['info', 'P3 中危'] };
+  for (const tid in bMap) {
+    const badge = document.getElementById(`tbadge-${tid}`);
+    if (badge) {
+      badge.className = `track-badge ${bMap[tid][0]}`;
+      badge.textContent = bMap[tid][1];
+    }
+  }
   const kpiInc = document.getElementById('kpi-incidents');
   if (kpiInc) {
     kpiInc.innerHTML = fleetData.summary.active_incidents.toLocaleString();
