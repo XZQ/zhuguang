@@ -980,7 +980,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   <!-- Main Navigation Tabs -->
   <nav class="main-nav-tabs" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
     <button class="nav-tab-btn active" onclick="switchMainTab('demo')">
-      ⚡️ 43.2万时序实时事实演练
+      ⚡️ 全网实时事实演练
       <span class="badge-pill">高光演示</span>
     </button>
     <button class="nav-tab-btn" onclick="switchMainTab('phx-fleet')">
@@ -1031,11 +1031,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       <div class="demo-header">
         <div>
           <h2 style="font-size: 19px; color:#fff; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span>⚡️ 43.2 万时序流·全网实时事实演练：Verifiable Agent Execution 真实物理闭环</span>
+            <span>⚡️ 全网实时事实演练：Verifiable Multi-Agent Swarm 真实物理闭环</span>
             <span style="font-size:11px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:2px 8px; border-radius:4px; font-weight:700;">Reference Scenario 01 · 连锁冷链零事故</span>
           </h2>
           <p style="color:var(--text-secondary); font-size:12.5px; margin-top:2px;">
-            【事实演练 · 拒绝预设脚本】全国 300 家门店 · 432,000 条仿真物理时序流在线跑流驱动：Sentry 全网实时并发巡检 (Qwen3.8-Flash) ➔ 实时捕获 156 起时序异常 ➔ Orchestrator 动力学优先级排队 ➔ P1 鲜奶破界 320ms POS 事实阻断 ➔ 动力学积分定损 ➔ Human Tool 线下工单 ➔ DeepSeek-V4-Pro 异构双门禁审计 ➔ 全网 156 起毫秒事实闭环
+            【事实演练 · 拒绝预设脚本】全国 12 城 300 家门店实时在线：Sentry 并发感知 ➔ 钉钉作战群联动 ➔ POS 事实阻断 ➔ 线下人机工单 ➔ DeepSeek-V4-Pro 异构双门禁审计 ➔ 全网 156 起在途事件事实闭环
           </p>
         </div>
         <div class="demo-timer-box">
@@ -1043,7 +1043,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
           <div class="demo-actions">
             <button class="demo-btn play" id="btn-play-demo" onclick="toggleAutoPlay()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              开始实时推流 (43.2万时序)
+              开始实时事实演练
             </button>
             <button class="demo-btn secondary" onclick="stepDemo(-1)">⏮ 上一步</button>
             <button class="demo-btn secondary" onclick="stepDemo(1)">⏭ 下一步</button>
@@ -4185,7 +4185,7 @@ function resetDemo() {
   isPlaying = false;
   secondsLeft = 60;
   document.getElementById('demo-timer').textContent = "00:00";
-  document.getElementById('btn-play-demo').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 开始实时推流 (43.2万时序)`;
+  document.getElementById('btn-play-demo').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 开始实时事实演练`;
   resetS03ToNormal();
   goToStep(0);
 }

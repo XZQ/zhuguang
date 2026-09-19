@@ -1224,7 +1224,7 @@ table.incident-table tr:hover td {
     <div class="header-actions">
       <span style="font-family:var(--font-mono); font-size:12px; color:var(--green); display:inline-flex; align-items:center; gap:6px;">
         <span class="pulse-online"></span>
-        43.2万条物理时序流实时在线跑流中 (3,600 rps · P99 8.2ms)
+        全网 300 店冷链数字孪生实时在线 · 钉钉作战群就绪
       </span>
       <a href="./index.html" class="nav-link-btn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -1295,13 +1295,13 @@ table.incident-table tr:hover td {
     <div class="fleet-drill-header">
       <div class="fleet-drill-title-box">
         <h2>
-          <span>⚡️ 43.2 万时序流·全网实时事实演练：Verifiable Multi-Agent Swarm 真实物理闭环</span>
+          <span>⚡️ 全网实时事实演练：Verifiable Multi-Agent Swarm 真实物理闭环</span>
           <span class="fleet-drill-badge" style="background:rgba(16,185,129,0.15); color:var(--green); border-color:rgba(16,185,129,0.35);">
-            432,000 点物理时序流实时在线跑流 · 事实演练
+            156 起在途事件并发调度 · 事实演练
           </span>
         </h2>
         <p class="fleet-drill-subtitle">
-          【拒绝预设脚本 · 事实时序流在线推演】基于全国 300 店 1,500 设备 432,000 条真实物理时序流实时驱动：Sentry 实时并发感知 (Qwen3.8-Flash 8ms) ➔ 实时捕获 156 起时序异常 ➔ 阿伦尼乌斯动力学排队 ➔ P1 杭州鲜奶 320ms POS 事实阻断 ➔ 线下人机工单 ➔ DeepSeek-V4-Pro-0813 实时异构双门禁事实审计 ➔ 156 起全网事实闭环
+          【事实演练 · 拒绝预设脚本】全国 12 城 300 家门店实时在线：Sentry 并发感知 ➔ 钉钉作战群联动 ➔ POS 事实阻断 ➔ 线下人机工单 ➔ DeepSeek-V4-Pro 异构双门禁审计 ➔ 全网 156 起在途事件事实闭环
         </p>
       </div>
       <div class="fleet-drill-controls">
@@ -1312,7 +1312,7 @@ table.incident-table tr:hover td {
         <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
           <button class="fleet-drill-btn primary" id="fleet-drill-play-btn" onclick="toggleFleetDrillPlay()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            开始实时推流 (43.2万时序)
+            开始实时事实演练
           </button>
           <div class="stream-speed-selector" style="display:flex; gap:3px; background:rgba(255,255,255,0.05); border-radius:6px; padding:2px; border:1px solid var(--border-subtle);">
             <button class="speed-btn active" id="speed-1x" onclick="setStreamSpeed(1)" style="font-size:10.5px; padding:3px 7px; color:#fff; border-radius:4px; background:rgba(56,189,248,0.25); border:none; cursor:pointer;">1x</button>
@@ -1392,7 +1392,7 @@ table.incident-table tr:hover td {
     <div class="fleet-drill-steps">
       <div class="fleet-step-tab active" id="fstep-0" onclick="jumpFleetDrill(0)">
         <div class="fleet-step-tab-num"><span>STEP 0</span><span>09:00:00</span></div>
-        <div class="fleet-step-tab-name">阶段0: 43.2万点时序并发感知</div>
+        <div class="fleet-step-tab-name">阶段0: 全网并发感知</div>
       </div>
       <div class="fleet-step-tab" id="fstep-1" onclick="jumpFleetDrill(1)">
         <div class="fleet-step-tab-num"><span>STEP 1</span><span>09:02:15</span></div>
@@ -2171,7 +2171,7 @@ const FLEET_DRILL_STEPS = [
   {
     step: 0,
     time: "2026-09-19 09:00:00 (采样帧 #001 - #030)",
-    title: "阶段0: Sentry 全网并发感知 (432,000点时序流实时入库 · 156起异常动态分流)",
+    title: "阶段0: Sentry 全网并发感知 (156 起异常实时动态分流)",
     agent: "Sentry (全国巡检哨兵 · Qwen3.8-Flash)",
     model: "Qwen3.8-Flash (8ms P99 · 3,600 rps 高吞吐并发)",
     skill: "fleet-anomaly-detect v1.0",
@@ -2809,7 +2809,7 @@ function stopFleetDrillPlay() {
   }
   const playBtn = document.getElementById('fleet-drill-play-btn');
   if (playBtn) {
-    playBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 开始实时推流 (43.2万时序)';
+    playBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> 开始实时事实演练';
     playBtn.classList.add('primary');
     playBtn.classList.remove('secondary');
   }
