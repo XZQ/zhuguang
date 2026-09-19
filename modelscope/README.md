@@ -1,5 +1,5 @@
 ---
-title: 店巡｜面向物理实体流程的可验证多智能体运行时
+title: 店巡 (VeriPatrol)｜面向物理实体流程的可验证多智能体运行时
 emoji: 🏪
 colorFrom: blue
 colorTo: indigo
@@ -9,10 +9,10 @@ app_file: app.py
 pinned: false
 ---
 
-# 🏪 店巡｜面向物理实体流程的可验证多智能体运行时
+# 🏪 店巡 (VeriPatrol)｜面向物理实体流程的可验证多智能体运行时
 
 > **世界人工智能开源大赛 (GOAI 2026) 决赛参赛作品**  
-> **作品名称**：店巡  
+> **作品名称**：店巡 ｜ **英文名**：VeriPatrol  
 > **参赛队名**：逐光  
 > **赛道分类**：Agent Infra（智能体基础设施）  
 > **GitHub 开源仓库**：[marongwork/zhuguang](https://github.com/marongwork/zhuguang)  

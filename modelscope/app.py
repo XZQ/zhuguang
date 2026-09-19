@@ -1,5 +1,5 @@
 """
-GOAI 2026 决赛参赛作品：店巡 (逐光团队)
+GOAI 2026 决赛参赛作品：店巡 (VeriPatrol) (逐光团队)
 ModelScope 创空间展示应用
 """
 import gradio as gr
@@ -19,9 +19,9 @@ iframe {
 """
 
 MARKDOWN_OVERVIEW = """
-# 🏪 店巡｜面向物理实体流程的可验证多智能体运行时
+# 🏪 店巡 (VeriPatrol)｜面向物理实体流程的可验证多智能体运行时
 > **世界人工智能开源大赛 (GOAI 2026) 决赛参赛作品**  
-> **参赛队名**：逐光 ｜ **作品名称**：店巡 ｜ **赛道**：Agent Infra (智能体基础设施)  
+> **参赛队名**：逐光 ｜ **作品名称**：店巡 (VeriPatrol) ｜ **赛道**：Agent Infra (智能体基础设施)  
 > **开源代码仓库**：[GitHub - marongwork/zhuguang](https://github.com/marongwork/zhuguang)  
 > **线上生产端点**：[https://sh.mazhi.icu/zhuguang/](https://sh.mazhi.icu/zhuguang/)
 
@@ -39,7 +39,7 @@ MARKDOWN_OVERVIEW = """
 """
 
 def create_demo():
-    with gr.Blocks(title="店巡｜面向物理实体流程的可验证多智能体运行时 (逐光团队)", css=CUSTOM_CSS, theme=gr.themes.Default(primary_hue="blue", neutral_hue="slate")) as demo:
+    with gr.Blocks(title="店巡 (VeriPatrol)｜面向物理实体流程的可验证多智能体运行时 (逐光团队)", css=CUSTOM_CSS, theme=gr.themes.Default(primary_hue="blue", neutral_hue="slate")) as demo:
         gr.Markdown(MARKDOWN_OVERVIEW)
         
         with gr.Tabs():
