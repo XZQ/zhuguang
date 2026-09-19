@@ -984,6 +984,228 @@ table.incident-table tr:hover td {
   justify-content: space-between;
 }
 
+
+/* ================= DINGTALK WAR-ROOM CHAT STYLING ================= */
+.dingtalk-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #080f1d;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dingtalk-top-bar {
+  background: linear-gradient(90deg, #1e3a8a 0%, #0f172a 100%);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.dingtalk-group-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dingtalk-logo-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #007fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 11px;
+  box-shadow: 0 0 8px rgba(0, 127, 255, 0.6);
+}
+
+.dingtalk-group-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.dingtalk-group-sub {
+  font-size: 9.5px;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+}
+
+.dingtalk-channel-tag {
+  font-size: 9.5px;
+  background: rgba(0, 127, 255, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(0, 127, 255, 0.4);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.dingtalk-chat-body {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: radial-gradient(circle at 50% 0%, rgba(30, 58, 138, 0.15), transparent 70%), #070d19;
+}
+
+.dingtalk-msg-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.dingtalk-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.avatar-sentry { background: #0369a1; border-color: #38bdf8; }
+.avatar-exec { background: #047857; border-color: #34d399; }
+.avatar-diag { background: #b45309; border-color: #fbbf24; }
+.avatar-human { background: #1d4ed8; border-color: #60a5fa; }
+.avatar-audit { background: #4338ca; border-color: #a78bfa; }
+
+.dingtalk-msg-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dingtalk-msg-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.dingtalk-sender-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.dingtalk-role-badge {
+  font-size: 9px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.dingtalk-msg-time {
+  font-size: 9.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+.dingtalk-action-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 8px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dingtalk-card-title {
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dingtalk-card-text {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.dingtalk-card-meta {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  color: #94a3b8;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.dingtalk-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dingtalk-card-btn {
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 127, 255, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(0, 127, 255, 0.35);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dingtalk-card-btn:hover {
+  background: rgba(0, 127, 255, 0.3);
+  color: #fff;
+}
+
+.dingtalk-bottom-bar {
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dingtalk-input-box {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ding-btn-icon {
+  background: #007fff;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -1232,16 +1454,37 @@ table.incident-table tr:hover td {
         </div>
       </div>
 
-      <!-- Col 3: Real-time Multi-Agent Console -->
+            <!-- Col 3: DingTalk Enterprise Swarm Chat -->
       <div class="drill-card-col">
         <div class="drill-card-col-head">
-          <span>多智能体协同作战终端 (Live Terminal)</span>
-          <span style="color:var(--green); font-family:var(--font-mono); display:flex; align-items:center; gap:4px;">
-            <span class="pulse-online"></span> STREAMING
+          <span style="display:flex; align-items:center; gap:6px;">
+            <span style="background:#007fff; color:#fff; font-size:10px; font-weight:800; padding:1px 5px; border-radius:3px;">钉</span>
+            钉钉 · 全国冷链应急作战群 (DingTalk Ops)
           </span>
+          <span class="dingtalk-channel-tag">channel: dingtalk_ops</span>
         </div>
-        <div class="drill-terminal-box" id="drill-terminal-container">
-          <!-- Dynamically filled by JS -->
+        <div class="dingtalk-panel">
+          <div class="dingtalk-top-bar">
+            <div class="dingtalk-group-info">
+              <div class="dingtalk-logo-badge">钉</div>
+              <div>
+                <div class="dingtalk-group-name">全国冷链智能应急指挥群 (300店)</div>
+                <div class="dingtalk-group-sub">Sentry 哨兵 / 编排中枢 / 各城技工 / 12城店长在线</div>
+              </div>
+            </div>
+            <span style="font-size:9.5px; color:var(--green); display:flex; align-items:center; gap:4px; font-family:var(--font-mono);">
+              <span class="pulse-online"></span> mcp-im 在线
+            </span>
+          </div>
+          <div class="dingtalk-chat-body" id="dingtalk-chat-body">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="dingtalk-bottom-bar">
+            <div class="dingtalk-input-box">
+              <span>向全国冷链作战群发送指令 (支持 @机器人 /ding 催办)...</span>
+              <span class="ding-btn-icon">钉一下</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1881,6 +2124,49 @@ function focusIncidentTrack(storeId) {
   }
 }
 
+
+function renderDingTalkMessages(messages) {
+  const container = document.getElementById('dingtalk-chat-body');
+  if (!container) return;
+  
+  let html = '';
+  messages.forEach(msg => {
+    let btnsHtml = '';
+    if (msg.actions && msg.actions.length > 0) {
+      btnsHtml = '<div class="dingtalk-card-actions">' + 
+        msg.actions.map(a => `<button class="dingtalk-card-btn" onclick="${a.onClick || ''}">${a.label}</button>`).join('') + 
+        '</div>';
+    }
+    
+    html += `
+      <div class="dingtalk-msg-item">
+        <div class="dingtalk-avatar ${msg.avatarCls}">${msg.avatar}</div>
+        <div class="dingtalk-msg-content">
+          <div class="dingtalk-msg-header">
+            <span class="dingtalk-sender-name">${msg.sender}</span>
+            <span class="dingtalk-role-badge">${msg.role}</span>
+            <span class="dingtalk-msg-time">${msg.time}</span>
+          </div>
+          <div class="dingtalk-action-card" style="border-left: 3px solid ${msg.cardColor || '#38bdf8'};">
+            <div class="dingtalk-card-title" style="color:${msg.cardColor || '#38bdf8'};">
+              ${msg.cardTitle}
+            </div>
+            <div class="dingtalk-card-text">
+              ${msg.body}
+            </div>
+            ${msg.meta ? `<div class="dingtalk-card-meta">${msg.meta}</div>` : ''}
+            ${btnsHtml}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+  container.scrollTop = container.scrollHeight;
+}
+
+
 const FLEET_DRILL_STEPS = [
   {
     step: 0,
@@ -1893,16 +2179,6 @@ const FLEET_DRILL_STEPS = [
     evidence: "EVID-SWARM-DETECT-156",
     trace: "tr-swarm-sentry-156",
     desc: "Sentry 基于 Qwen3.8-Flash 实时扫描全国 12 城 300 店 432,000 条物理时序采样流。瞬时捕获 156 起并发在途异常（覆盖 127 家门店）。Sentry 按阿伦尼乌斯动力学失温斜率排定 5 大典型并发专线：杭州 S006 (鲜奶 9.6°C 破界)、深圳 S014 (卡缸 14.8A)、北京 S021 (冷媒慢泄 0.12MPa)、上海 S005 (柜门微开 12min)、成都 S024 (漂移 +2.3°C)；其余 151 起事件并发注入后台工作池，互不阻塞！",
-    terminal: [
-      "[09:00:00] [Sentry@Qwen3.8-Flash] CONCURRENT_INGEST: 432,000 points stream processed across 12 cities (throughput=3,600 rps, P99=8.2ms)",
-      "[09:00:00] [Sentry@PHX-Edge] 156 CONCURRENT ANOMALIES ACTIVE: 38 compressor stalls, 42 slow leaks, 31 door ajar, 28 sensor drift, 17 power loss",
-      "[09:00:01] [Sentry] TRACK-1 (Hangzhou S006): Frost-01 milk temp=9.6°C (breached Westgard +3SD, Arrhenius acceleration 4.8x) -> P1 CRITICAL",
-      "[09:00:01] [Sentry] TRACK-2 (Shenzhen S014): Bev-01 current=14.8A stall (temp=9.2°C, golden window 25min) -> P1 CRITICAL",
-      "[09:00:01] [Sentry] TRACK-3 (Beijing S021): Meat-02 suction pressure 0.12MPa (refrigerant leak detected) -> P2 HIGH",
-      "[09:00:02] [Sentry] TRACK-4 (Shanghai S005): Dairy-01 door contact sensor open 12min (temp=4.8°C) -> P2 HIGH",
-      "[09:00:02] [Sentry] TRACK-5 (Chengdu S024): Veg-01 thermistor drift +2.3°C offset -> P3 MEDIUM",
-      "[09:00:02] [Orchestrator@Qwen3.8-Max] SWARM_DISPATCH: 5 priority tracks + 151 background worker threads assigned simultaneously!"
-    ],
     widget: `
       <div style="font-size:11px; font-weight:700; color:var(--cyan); margin-bottom:6px; display:flex; justify-content:space-between;">
         <span>🌐 5 大核心并发异常态势矩阵 (全部实时在跑)</span>
@@ -1930,7 +2206,34 @@ const FLEET_DRILL_STEPS = [
         <span style="color:#7dd3fc;">5. 成都 S024: 蔬果立柜传感器漂移 +2.3°C</span>
         <span style="color:var(--text-muted);">其余 151 起全域并行推演</span>
       </div>
-    `
+    `,
+    dingtalk: [
+      {
+        sender: "Sentry 巡检哨兵",
+        role: "AI 机器人 · Qwen3.8-Flash",
+        avatar: "🤖",
+        avatarCls: "avatar-sentry",
+        time: "09:00:01",
+        cardTitle: "🚨 【全网冷链异常感知通知】156 起在途事件分流",
+        cardColor: "#f87171",
+        body: "已完成全国 12 城 300 家门店 432,000 条时序采样初筛。<br>• <b>杭州 S006 (金融街店)</b>: 鲜奶柜温升至 9.6°C (突破 Westgard +3SD) ➔ 触发 P1 极危响应！<br>• <b>深圳 S014 (科技园店)</b>: 鲜饮柜压缩机卡缸电流 14.8A ➔ 触发 P1 自愈！<br>• <b>北京 S021</b> 慢泄 0.12MPa · <b>上海 S005</b> 门微开 12min。<br>其余 151 起工单由 Swarm 线程池并行处理中。",
+        meta: "来源: mcp-im channel: dingtalk_ops · 吞吐 3,600 rps · P99 8.2ms",
+        actions: [
+          { label: "下钻杭州 S006", onClick: "focusIncidentTrack('S006')" },
+          { label: "下钻深圳 S014", onClick: "focusIncidentTrack('S014')" }
+        ]
+      },
+      {
+        sender: "Orchestrator 编排中枢",
+        role: "AI 调度总控 · Qwen3.8-Max",
+        avatar: "🌐",
+        avatarCls: "avatar-exec",
+        time: "09:00:02",
+        cardTitle: "⚡️ 【协同调度令】5 大攻坚专线并行推进",
+        cardColor: "#38bdf8",
+        body: "阿伦尼乌斯动力学优先级队列已排定，正在并发呼叫 Executor 执行池与各城运维专线，保证全网 156 起事件互不阻塞！"
+      }
+    ]
   },
   {
     step: 1,
@@ -1943,14 +2246,6 @@ const FLEET_DRILL_STEPS = [
     evidence: "EVID-CONTAIN-SWARM-01",
     trace: "tr-swarm-contain-156",
     desc: "食品安全与硬件资产双重零容忍！编排中枢向 Executor 线程池下发并行阻断指令：针对杭州 S006 鲜奶柜，320ms 熔断条码 6901028301024 结算权限（0 盒漏出）；针对深圳 S014，毫秒级下发保护性分闸防电机烧毁；针对北京 S021，锁定高危冻肉批次；针对上海 S005，触发柜门声光蜂鸣并向店长 PDA 推送强提醒！",
-    terminal: [
-      "[09:02:15] [Worker-HZ@S006] POS_HOLD: Barcode 6901028301024 (光明优倍鲜奶) locked in 320ms! Intercepted=2, Leaked=0.",
-      "[09:02:15] [Worker-SZ@S014] POWER_GATE: Inverter current limit clamped at 16A, auxiliary cooling fan triggered (450ms).",
-      "[09:02:16] [Worker-BJ@S021] BATCH_HOLD: BATCH-MEAT-021 isolated from sales checkout register, zero consumer exposure.",
-      "[09:02:16] [Worker-SH@S005] CHIME_ALARM: Local door buzzer active (85dB) + StoreManager mobile PDA vibrating push sent.",
-      "[09:02:16] [Worker-CD@S024] DATA_FLAG: Telemetry marked UNRELIABLE, auto-calibration pipeline initiated.",
-      "[09:02:17] [Executor@Fleet] NATIONWIDE_BROADCAST: Synchronized containment applied across all 14 food-safety excursion stores."
-    ],
     widget: `
       <div style="background:rgba(239,68,68,0.1); border:1.5px solid var(--red); border-radius:8px; padding:8px;">
         <div style="font-size:11px; font-weight:700; color:#fca5a5; margin-bottom:4px; display:flex; justify-content:space-between;">
@@ -1980,7 +2275,33 @@ const FLEET_DRILL_STEPS = [
           </div>
         </div>
       </div>
-    `
+    `,
+    dingtalk: [
+      {
+        sender: "Executor 执行员",
+        role: "AI 交易控制 · dianxun-mcp",
+        avatar: "⚡",
+        avatarCls: "avatar-exec",
+        time: "09:02:15",
+        cardTitle: "🛡️ 【POS 自动停售熔断执行成功】",
+        cardColor: "#f87171",
+        body: "<b>杭州 S006</b>: 光明优倍鲜奶条码 <code>6901028301024</code> 已于 320ms 内锁死！<br>• 收银台扫码拦截次数: <b>2 次</b><br>• 违规流出顾客商品数: <b>0 盒</b><br>• 全国 14 家失温门店 POS 联动停售广播同步执行完毕，彻底杜绝食安风险。",
+        meta: "指令: apply_sales_hold · 状态: 100% 物理拦截",
+        actions: [
+          { label: "核验 POS 拦截日志", onClick: "alert('POS核验凭证: 拦截2次，售出0件，未发生食品安全事故！')" }
+        ]
+      },
+      {
+        sender: "IoT 电气自愈控制",
+        role: "设备控制网关 · MQTT",
+        avatar: "🔌",
+        avatarCls: "avatar-sentry",
+        time: "09:02:16",
+        cardTitle: "⚡️ 【硬件应急降载通知】深圳 S014",
+        cardColor: "#fbbf24",
+        body: "鲜饮柜检测到机械卡缸电流 14.8A，已执行紧急分闸降载保护，并启用水冷副回路，成功阻断电机绕组过热烧毁事故！"
+      }
+    ]
   },
   {
     step: 2,
@@ -1993,14 +2314,6 @@ const FLEET_DRILL_STEPS = [
     evidence: "EVID-SWARM-DIAG-156",
     trace: "tr-swarm-diag-156",
     desc: "突破传统阈值盲目定损！针对杭州 S006，引入阿伦尼乌斯积分 k(T)=A*exp(-Ea/RT) 算出细菌繁殖倍增时间从 48h 降至 3.2h，劣变积分 Q_loss=1.48 > 1.0，定损鲜奶 ¥621.60，阻断十倍索赔 ¥6,216.00；针对深圳 S014 压缩机机械卡缸，抢救高品质鲜饮货值 ¥8,972；针对北京 S021 冷媒泄漏，抢救深冷冻肉 ¥10,022；全网 156 起在途事件综合防损保值 ¥248,600+！",
-    terminal: [
-      "[09:04:30] [Diagnoser@S006] ARRHENIUS_INTEGRAL: Ea=52.3kJ/mol, Q_loss=1.48 (>1.0) -> Milk loss=¥621.60, punitive prevented=¥6,216.00",
-      "[09:04:31] [Diagnoser@S014] STALL_PHYSICS: Suction/discharge delta P=0, current=14.8A -> compressor mechanical stall (value ¥8,972 protected)",
-      "[09:04:31] [Diagnoser@S021] LEAK_THERMO: Suction pressure 0.12MPa (ref 0.28MPa), subcooling delta T<2K -> capillary leak (guarded ¥10,022)",
-      "[09:04:32] [Diagnoser@S005] DOOR_HEAT_LOAD: Infiltration enthalpy flux delta H=1.8kW -> Door open thermal load (meat ¥9,318 secured)",
-      "[09:04:32] [Diagnoser@S024] SENSOR_DRIFT: Thermistor oxidation resistance drift +2.3C -> Corrected via software filter",
-      "[09:04:33] [Diagnoser@Fleet] FLEET_ROLLUP: Nationwide 156 incidents total perishable inventory ¥248,600+ under active triage."
-    ],
     widget: `
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:11px; font-family:var(--font-mono);">
@@ -2030,7 +2343,24 @@ const FLEET_DRILL_STEPS = [
           </div>
         </div>
       </div>
-    `
+    `,
+    dingtalk: [
+      {
+        sender: "Diagnoser 动力学专家",
+        role: "物理化学模型 · Qwen3.8-Max",
+        avatar: "🧠",
+        avatarCls: "avatar-diag",
+        time: "09:04:30",
+        cardTitle: "📊 【阿伦尼乌斯动力学定损报告】",
+        cardColor: "#fbbf24",
+        body: "<b>∫ k(T) dt 反应动力学积分推导完成</b>：<br>• <b>杭州 S006</b>: 细菌倍增时间降至 3.2h，定损 42 盒鲜奶 <b>¥621.60</b>，防十倍惩罚索赔 <b>¥6,216.00</b>。<br>• <b>深圳 S014</b>: 机械卡缸定性，抢救在库鲜饮货值 <b>¥8,972.00</b>。<br>• <b>北京 S021</b>: 毛细管慢漏，锁定高品质深冷肉 <b>¥10,022.00</b>。<br>• <b>全网 156 起累计保值</b>: <b>¥248,600.00</b>！",
+        meta: "公式: k(T)=A*exp(-Ea/RT) · 激活能 Ea=52.3kJ/mol",
+        actions: [
+          { label: "下钻查看杭州定损", onClick: "focusIncidentTrack('S006')" },
+          { label: "下钻查看北京冻肉", onClick: "focusIncidentTrack('S021')" }
+        ]
+      }
+    ]
   },
   {
     step: 3,
@@ -2043,14 +2373,6 @@ const FLEET_DRILL_STEPS = [
     evidence: "EVID-SWARM-WO-156",
     trace: "tr-swarm-exec-156",
     desc: "物理世界无法纯软件虚拟化！Executor 多线程并行处置：对深圳 S014 下发 MQTT 超频 65Hz 补冷指令；对杭州 S006 自动生成 P1 抢修工单派发至驻点技工李建国 (店长移动端 PDA 指纹审批核准换件预算 ¥680)；对北京 S021 自动调度冷媒技工携带 R404A 到场注氟；对上海 S005 店长 PDA 现场闭门核实；全网 156 张工单全部精准推送到人！",
-    terminal: [
-      "[09:07:00] [Executor@S014] IOT_OVERDRIVE: MQTT publish -> inverter_freq=65Hz, hot_gas_bypass=ON (temperature stabilized).",
-      "[09:07:01] [Executor@S006] HITL_GATE: Valve replacement budget ¥680 approved by StoreManager fingerprint.",
-      "[09:07:01] [HumanTool@S006] DISPATCH: Tech Li Jianguo (ID: 88021, distance 1.8km) en route to HZ-006 (SLA 30min).",
-      "[09:07:02] [Executor@S021] WORKORDER: WO-SIM-0002 dispatched to Tech Zhang (vendor: QuickCold) with R404A refill kit.",
-      "[09:07:02] [StoreStaff@S005] PDA_ACTION: Staff closed display door properly, door gasket seal verified 100%.",
-      "[09:07:03] [AutoCal@S024] KALMAN_FILTER: Sensor drift zero-point recalibrated to standard reference corridor (bias=0.00°C)."
-    ],
     widget: `
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
         <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; display:flex; justify-content:space-between;">
@@ -2080,7 +2402,36 @@ const FLEET_DRILL_STEPS = [
           </div>
         </div>
       </div>
-    `
+    `,
+    dingtalk: [
+      {
+        sender: "维修工单派发助手",
+        role: "钉钉工单机器人 · mcp-im",
+        avatar: "📋",
+        avatarCls: "avatar-human",
+        time: "09:07:01",
+        cardTitle: "👷 【抢修工单已派发 #WO-HZ-006】",
+        cardColor: "#60a5fa",
+        body: "• 派工标的: <b>杭州 S006 (金融街店)</b> 1号鲜奶柜<br>• 责任技工: <b>李建国 (工号 88021 · 距店 1.8km)</b><br>• 携带配件: 备用热力膨胀阀 + 测压表<br>• SLA 承诺: 30 分钟内到场抢修",
+        meta: "channel: dingtalk_ops · template: workorder_dispatched",
+        actions: [
+          { label: "拨打技工李师傅电话", onClick: "alert('正在通过钉钉呼叫李建国 (工号 88021)...')" }
+        ]
+      },
+      {
+        sender: "杭州金融街店长",
+        role: "门店责任人 · 钉钉审批",
+        avatar: "📱",
+        avatarCls: "avatar-human",
+        time: "09:07:02",
+        cardTitle: "✅ 【钉钉移动审批单 #APPR-20260919-01】",
+        cardColor: "#34d399",
+        body: "换件预算 <b>¥680.00</b> [已核准 ✅ (指纹签署)]<br>“已通知当班店员配合李师傅更换膨胀阀，涉险鲜奶已移入备用冷库 (2.1°C)！”",
+        actions: [
+          { label: "查看钉钉审批凭证", onClick: "alert('钉钉审批单号: APPR-20260919-01 · 签署人: 杭州金融街店长 · 状态: APPROVED')" }
+        ]
+      }
+    ]
   },
   {
     step: 4,
@@ -2093,16 +2444,6 @@ const FLEET_DRILL_STEPS = [
     evidence: "EVID-SWARM-12CITY-156",
     trace: "tr-swarm-matrix-156",
     desc: "展现 300 店级企业真实高并发治理能力！编排中枢调遣 12 城并发 Worker 线程池，同时推进全国 12 大城市的 156 起在途事件：广州（18起）、深圳（15起）、上海（14起）、杭州（14起）、北京（12起）、成都（13起）、武汉（11起）等全部并发完成压缩机复位、制冷剂补液、除霜循环和传感器自校，并行推进率达 100%！",
-    terminal: [
-      "[09:10:00] [Orchestrator@Qwen3.8-Max] SWARM_DISPATCH: 12-city concurrent worker threads executing 156 active incidents...",
-      "[09:10:01] [Worker-GZ] Guangzhou (18 incidents): Compressor stalls reset (12), door re-sealed (6) -> 100% PROGRESS",
-      "[09:10:01] [Worker-SZ] Shenzhen (15 incidents): Refrigerant topped up (9), sensor drift calibrated (6) -> 100% PROGRESS",
-      "[09:10:02] [Worker-SH] Shanghai (14 incidents): Defrost cycle complete, safe temp corridor restored -> 100% PROGRESS",
-      "[09:10:02] [Worker-HZ] Hangzhou (14 incidents): S006 P1 valve replaced, dairy batch scrapped, other 13 stores normal -> 100% PROGRESS",
-      "[09:10:03] [Worker-BJ] Beijing (12 incidents): Capillary leak sealed & R404A refilled -> 100% PROGRESS",
-      "[09:10:03] [Worker-CD] Chengdu (13 incidents): Kalman filter convergence complete -> 100% PROGRESS",
-      "[09:10:04] [Orchestrator] CONCURRENCY_SYNC: All 156 incidents operations completed in parallel. Handing off to Auditor."
-    ],
     widget: `
       <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:8px;">
         <div style="font-size:11px; font-weight:700; color:#fff; margin-bottom:6px; display:flex; justify-content:space-between;">
@@ -2136,7 +2477,23 @@ const FLEET_DRILL_STEPS = [
           </div>
         </div>
       </div>
-    `
+    `,
+    dingtalk: [
+      {
+        sender: "全国运维总控群",
+        role: "Swarm 调度中枢 · Qwen3.8-Max",
+        avatar: "🌐",
+        avatarCls: "avatar-exec",
+        time: "09:10:02",
+        cardTitle: "🚀 【12 城 156 起在途事件并发推进通报】",
+        cardColor: "#38bdf8",
+        body: "全国 12 大城市 156 起工单正在由 Worker 线程池并发消化：<br>• 广州 (18起)、深圳 (15起)、上海 (14起)、杭州 (14起)、北京 (12起) 等 12 城进度全部达 <b>100%</b>！<br>• 压缩机卡缸自愈 38 台全部恢复，冷媒注氟 42 处完成，密封修复 31 台完成。<br>• 耗时: 8.6 秒 · 156 起任务无一阻塞！",
+        meta: "并发工作池: Qwen3.8-Max leased workers · 状态: 100% OPERATIONAL",
+        actions: [
+          { label: "查看全国 12 城推进明细", onClick: "alert('全国12城156起工单并发进度: 广州18/18, 深圳15/15, 上海14/14, 杭州14/14, 北京12/12, 成都13/13, 武汉11/11, 天津10/10, 南京12/12, 苏州13/13, 东莞12/12, 佛山12/12 全部完成！')" }
+        ]
+      }
+    ]
   },
   {
     step: 5,
@@ -2149,17 +2506,6 @@ const FLEET_DRILL_STEPS = [
     evidence: "EVID-AUDIT-FLEET-156",
     trace: "tr-audit-ds-156",
     desc: "核心安全铁律：执行者绝不能宣告自身成功！裁判 Auditor 采用独立异构模型 DeepSeek-V4-Pro-0813 独立带外重查：Gate-1 独立抓取全国 POS 收银流水，核验 156 起事件全部结账漏出为 0 件 (PASS)；Gate-2 独立抓取物理遥测流与 RFID 盘点流，核验 300 店设备全部稳态回归安全温区 1.8°C~3.2°C (PASS)！全网 156 起事件全部事实闭环，告警数归零，300 家门店冷链大盘恢复 100% 全绿！",
-    terminal: [
-      "[09:14:00] [Auditor@DeepSeek-V4-Pro] ANTI_SELF_VERIFY: Rejecting self-reported status, initiating out-of-band audit...",
-      "[09:14:01] [Auditor] TRACK-1 (Hangzhou S006): Gate-1 (POS漏出=0) PASS | Gate-2 (温区回归1.8°C) PASS -> VERIFIED_CLOSED",
-      "[09:14:01] [Auditor] TRACK-2 (Shenzhen S014): Gate-1 (分闸防烧) PASS | Gate-2 (温区回归2.1°C) PASS -> VERIFIED_CLOSED",
-      "[09:14:02] [Auditor] TRACK-3 (Beijing S021):  Gate-1 (冻肉隔离) PASS | Gate-2 (压力回归0.28MPa) PASS -> VERIFIED_CLOSED",
-      "[09:14:02] [Auditor] TRACK-4 (Shanghai S005): Gate-1 (密闭检测) PASS | Gate-2 (温区回归3.2°C) PASS -> VERIFIED_CLOSED",
-      "[09:14:02] [Auditor] TRACK-5 (Chengdu S024):  Gate-1 (算法收敛) PASS | Gate-2 (数据置信度1.0) PASS -> VERIFIED_CLOSED",
-      "[09:14:03] [Auditor] FLEET_SWARM_AUDIT: All 156 incidents across 12 cities verified -> 0 false positives, 0 leaks.",
-      "[09:14:04] [Auditor] VERDICT: VERIFIED_CLOSED (Nationwide 156/156 incidents closed, 300 stores restored to GREEN!)",
-      "[09:14:05] [System] REALTIME FACTUAL EXECUTION VERIFIED! ★★★★★"
-    ],
     widget: `
       <div style="background:rgba(16,185,129,0.12); border:1.5px solid var(--green); border-radius:8px; padding:8px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -2178,7 +2524,24 @@ const FLEET_DRILL_STEPS = [
           🎉 裁判 Auditor@DeepSeek-V4-Pro-0813 独立核验通过 · 全国 300 店冷链全绿！
         </div>
       </div>
-    `
+    `,
+    dingtalk: [
+      {
+        sender: "Auditor 独立裁判",
+        role: "异构裁决 · DeepSeek-V4-Pro-0813",
+        avatar: "🛡️",
+        avatarCls: "avatar-audit",
+        time: "09:14:02",
+        cardTitle: "🎉 【异构双门禁全网事实闭环核准裁定令】",
+        cardColor: "#34d399",
+        body: "<b>坚决拒绝同源自证，独立带外事实重查通过</b>：<br>• <b>Gate-1 (POS 交易数据库)</b>: 156 起事件结账漏出数均为 <b>0 件 [PASS ✅]</b><br>• <b>Gate-2 (物理遥测与 RFID 盘点)</b>: 300 店设备全部稳态回归 <b>1.8°C~3.2°C 安全温区 [PASS ✅]</b><br>• 裁决: <b>全国 12 城 156/156 起在途事件全部事实闭环！</b><br>• 大盘告警数归零，300 家门店冷链恢复 100% 全绿！",
+        meta: "独立异构仲裁: DeepSeek-V4-Pro-0813 · 零自验偏见 · 事实闭环",
+        actions: [
+          { label: "查看双门禁仲裁报告", onClick: "alert('异构双门禁审计通过：Gate-1 PASS (0漏出) | Gate-2 PASS (物理温区恢复)')" },
+          { label: "归档入知识飞轮库", onClick: "alert('闭环 Trace 已存入向量知识飞轮！')" }
+        ]
+      }
+    ]
   }
 ];
 
@@ -2214,22 +2577,10 @@ function updateFleetDrillUI(stepIdx) {
   // 3. Update Center Widget
   document.getElementById('drill-widget-stage').innerHTML = data.widget;
 
-  // 4. Update Right Terminal
-  const termBox = document.getElementById('drill-terminal-container');
-  let termHtml = '';
-  data.terminal.forEach(line => {
-    let cls = '';
-    if (line.includes('[Sentry')) cls = 'terminal-prefix-sentry';
-    else if (line.includes('[Orchestrator')) cls = 'terminal-prefix-orch';
-    else if (line.includes('[Executor') || line.includes('[HumanTool')) cls = 'terminal-prefix-exec';
-    else if (line.includes('[Diagnoser')) cls = 'terminal-prefix-diag';
-    else if (line.includes('[Auditor')) cls = 'terminal-prefix-audit';
-    else if (line.includes('CRITICAL') || line.includes('breached') || line.includes('ALERT')) cls = 'terminal-prefix-alert';
-    
-    termHtml += `<div class="terminal-line ${cls}">${escapeHtml(line)}</div>`;
-  });
-  termBox.innerHTML = termHtml;
-  termBox.scrollTop = termBox.scrollHeight;
+  // 4. Update Right Column: DingTalk Group Chat Cards
+  if (data.dingtalk && typeof renderDingTalkMessages === 'function') {
+    renderDingTalkMessages(data.dingtalk);
+  }
 
   // 5. Dashboard Linkage
   if (stepIdx === 0) {
