@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>店巡 VeriPatrol · 决赛答辩现场提词与演练系统 (逐光队 · GOAI 2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070d18;
+      --surface-card: #0e1726;
+      --surface-elevated: #152238;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(56, 189, 248, 0.28);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-helper: #64748b;
+      --accent: #0ea5e9;
+      --accent-bright: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.2);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+      --font-sans: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+      --script-font-size: 19px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Sticky Control Header */
+    header.teleprompter-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(7, 13, 24, 0.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      background: linear-gradient(135deg, var(--accent), #3b82f6);
+      color: #fff;
+      font-weight: 800;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .brand-title small {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    /* Timer Widget */
+    .timer-widget {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface-card);
+      border: 1px solid var(--border-strong);
+      padding: 6px 14px;
+      border-radius: 30px;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .timer-display {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-bright);
+      min-width: 76px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    .timer-display.warn { color: var(--warning); }
+    .timer-display.danger { color: var(--danger); animation: blink 1s infinite alternate; }
+    @keyframes blink { from { opacity: 1; } to { opacity: 0.4; } }
+
+    .timer-controls {
+      display: flex;
+      gap: 6px;
+    }
+    .btn-timer {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-timer:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* Controls: Font size, Views, Links */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-action {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-action:hover, .btn-action.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+      border-color: var(--accent-bright);
+    }
+    .btn-action.primary {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    /* Main Container */
+    .main-container {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+
+    /* Sidebar Navigation */
+    .slide-sidebar {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+      position: sticky;
+      top: 75px;
+      height: calc(100vh - 100px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sidebar-header {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-helper);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      padding: 4px 8px;
+      margin-bottom: 4px;
+    }
+    .slide-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-secondary);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .slide-nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+    .slide-nav-item.active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: var(--accent-bright);
+      color: #fff;
+      font-weight: 600;
+    }
+    .nav-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-bright);
+      margin-right: 8px;
+    }
+    .nav-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-helper);
+    }
+
+    /* Content Area */
+    .content-area {
+      min-width: 0;
+    }
+
+    /* Slide Card */
+    .slide-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 32px 36px;
+      margin-bottom: 28px;
+      position: relative;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .slide-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .slide-card.active-target {
+      border-color: var(--accent-bright);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .slide-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .slide-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .slide-index-badge {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--accent-bright);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .slide-title-group h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .slide-title-group small {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+    .slide-timing-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--success);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* Key Cue Box */
+    .cue-box {
+      background: rgba(56, 189, 248, 0.05);
+      border-left: 4px solid var(--accent-bright);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .cue-text {
+      font-size: 14px;
+      color: #bae6fd;
+      font-weight: 500;
+    }
+    .cue-tag {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-bright);
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* Script Text Body */
+    .script-body {
+      font-size: var(--script-font-size);
+      line-height: 1.85;
+      color: #e2e8f0;
+      font-weight: 400;
+    }
+    .script-body p {
+      margin-bottom: 16px;
+    }
+    .script-body strong {
+      color: #fff;
+      font-weight: 700;
+    }
+    .script-body .hl-accent {
+      color: var(--accent-bright);
+      font-weight: 600;
+    }
+    .script-body .hl-success {
+      color: var(--success);
+      font-weight: 600;
+    }
+    .script-body .hl-warning {
+      color: var(--warning);
+      font-weight: 600;
+    }
+    .script-body .hl-danger {
+      color: var(--danger);
+      font-weight: 600;
+    }
+    .script-body .stage-direction {
+      font-size: 14px;
+      font-family: var(--font-mono);
+      color: var(--purple);
+      background: rgba(168, 85, 247, 0.1);
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: inline-block;
+      margin: 8px 0;
+    }
+
+    /* Interactive Live Demo Preview Panel in Slide 10 */
+    .demo-showcase-panel {
+      background: #030712;
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .demo-half {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .demo-half-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .demo-data-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .demo-data-item {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .demo-data-num {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-bright);
+    }
+    .demo-data-label {
+      font-size: 11px;
+      color: var(--text-helper);
+    }
+    .btn-link-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-decoration: none;
+      margin-top: 8px;
+    }
+
+    /* QA Cards Section */
+    .qa-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 20px 24px;
+      margin-bottom: 18px;
+    }
+    .qa-question {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .qa-golden-quote {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #34d399;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+    .qa-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+    .qa-points li {
+      position: relative;
+      padding-left: 18px;
+    }
+    .qa-points li::before {
+      content: "•";
+      position: absolute;
+      left: 4px;
+      color: var(--accent-bright);
+      font-weight: bold;
+    }
+
+    /* Single Slide Teleprompter Mode (Focus Mode) */
+    body.focus-mode .slide-card:not(.active-focus) {
+      display: none;
+    }
+    body.focus-mode .slide-card.active-focus {
+      border: none;
+      background: transparent;
+      padding: 20px 0;
+      box-shadow: none;
+    }
+    body.focus-mode .script-body {
+      font-size: calc(var(--script-font-size) * 1.25);
+      line-height: 2.1;
+    }
+
+    /* Floating Navigation Pill for Focus Mode */
+    .focus-nav-bar {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: rgba(14, 23, 38, 0.95);
+      border: 1px solid var(--border-strong);
+      border-radius: 30px;
+      padding: 8px 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      align-items: center;
+      gap: 14px;
+    }
+    body.focus-mode .focus-nav-bar {
+      display: flex;
+    }
+
+    /* Print Styles */
+    @media print {
+      header.teleprompter-header, .slide-sidebar, .focus-nav-bar, .header-actions {
+        display: none !important;
+      }
+      body {
+        background: #fff;
+        color: #000;
+      }
+      .main-container {
+        display: block;
+        padding: 0;
+      }
+      .slide-card {
+        background: #fff;
+        color: #000;
+        border: 1px solid #ccc;
+        page-break-after: always;
+        box-shadow: none;
+      }
+      .script-body {
+        color: #111;
+        font-size: 14pt;
+      }
+      .cue-box {
+        border-left: 4px solid #000;
+        background: #f0f0f0;
+        color: #000;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Teleprompter Sticky Bar -->
+  <header class="teleprompter-header">
+    <div class="brand-section">
+      <span class="brand-badge">GOAI 决赛</span>
+      <div class="brand-title">
+        店巡 VeriPatrol
+        <small>逐页答辩提词演练系统</small>
+      </div>
+    </div>
+
+    <!-- Timer Widget -->
+    <div class="timer-widget">
+      <span id="timerModeLabel" style="font-size: 11px; color: var(--text-helper);">6分倒计时</span>
+      <div class="timer-display" id="timerDisplay">06:00</div>
+      <div class="timer-controls">
+        <button class="btn-timer" id="btnTimerToggle" onclick="toggleTimer()">启动</button>
+        <button class="btn-timer" onclick="resetTimer()">重置</button>
+        <button class="btn-timer" onclick="switchTimerMode()">切模式</button>
+      </div>
+    </div>
+
+    <!-- View & Font Controls -->
+    <div class="header-actions">
+      <div style="display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 8px;">
+        <span style="font-size: 11px; color: var(--text-helper);">字号</span>
+        <button class="btn-action" style="padding: 2px 8px;" onclick="changeFontSize(-2)">A-</button>
+        <button class="btn-action" style="padding: 2px 8px;" onclick="changeFontSize(2)">A+</button>
+      </div>
+
+      <button class="btn-action" id="btnFocusMode" onclick="toggleFocusMode()">🎯 提词器单页模式</button>
+      <a href="../ppt/index.html" target="_blank" class="btn-action">📊 打开 PPT (12页)</a>
+      <a href="phx-fleet.html" target="_blank" class="btn-action">🏪 300店大盘</a>
+      <button class="btn-action primary" onclick="window.print()">🖨️ 打印讲稿</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Left Navigation -->
+    <aside class="slide-sidebar">
+      <div class="sidebar-header">幻灯片导航 (12 页)</div>
+      <a href="#slide-1" class="slide-nav-item active" onclick="selectSlide(1)">
+        <span><span class="nav-num">P01</span>封面·立题破局</span>
+        <span class="nav-time">25s</span>
+      </a>
+      <a href="#slide-2" class="slide-nav-item" onclick="selectSlide(2)">
+        <span><span class="nav-num">P02</span>01·第一性原理</span>
+        <span class="nav-time">35s</span>
+      </a>
+      <a href="#slide-3" class="slide-nav-item" onclick="selectSlide(3)">
+        <span><span class="nav-num">P03</span>02·系统架构栈</span>
+        <span class="nav-time">30s</span>
+      </a>
+      <a href="#slide-4" class="slide-nav-item" onclick="selectSlide(4)">
+        <span><span class="nav-num">P04</span>03·五Agent职责</span>
+        <span class="nav-time">35s</span>
+      </a>
+      <a href="#slide-5" class="slide-nav-item" onclick="selectSlide(5)">
+        <span><span class="nav-num">P05</span>04·五阶段闭环</span>
+        <span class="nav-time">35s</span>
+      </a>
+      <a href="#slide-6" class="slide-nav-item" onclick="selectSlide(6)">
+        <span><span class="nav-num">P06</span>05·执行鲁棒性</span>
+        <span class="nav-time">35s</span>
+      </a>
+      <a href="#slide-7" class="slide-nav-item" onclick="selectSlide(7)">
+        <span><span class="nav-num">P07</span>06·Skill工程</span>
+        <span class="nav-time">25s</span>
+      </a>
+      <a href="#slide-8" class="slide-nav-item" onclick="selectSlide(8)">
+        <span><span class="nav-num">P08</span>07·原语与安全</span>
+        <span class="nav-time">30s</span>
+      </a>
+      <a href="#slide-9" class="slide-nav-item" onclick="selectSlide(9)">
+        <span><span class="nav-num">P09</span>08·评测与改造</span>
+        <span class="nav-time">35s</span>
+      </a>
+      <a href="#slide-10" class="slide-nav-item" onclick="selectSlide(10)">
+        <span><span class="nav-num">P10</span>09·现场实操演示</span>
+        <span class="nav-time" style="color: var(--accent-bright); font-weight:700">80s</span>
+      </a>
+      <a href="#slide-11" class="slide-nav-item" onclick="selectSlide(11)">
+        <span><span class="nav-num">P11</span>10·基准压力矩阵</span>
+        <span class="nav-time">35s</span>
+      </a>
+      <a href="#slide-12" class="slide-nav-item" onclick="selectSlide(12)">
+        <span><span class="nav-num">P12</span>11·交付与终结</span>
+        <span class="nav-time">20s</span>
+      </a>
+
+      <div class="sidebar-header" style="margin-top: 14px;">问答防御手册</div>
+      <a href="#qa-section" class="slide-nav-item">
+        <span><span class="nav-num">Q&A</span>评委尖锐提问速查</span>
+        <span class="nav-time">5题</span>
+      </a>
+    </aside>
+
+    <!-- Right Content Area -->
+    <main class="content-area">
+
+      <!-- P01 -->
+      <article class="slide-card active-target" id="slide-1">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 01 / 12</span>
+            <div class="slide-title-group">
+              <h2>封面 · 开篇立论</h2>
+              <small>VERIFIABLE MULTI-AGENT RUNTIME</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 25 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：开门见山抛出主张，亮出 300 家门店、1500 台设备实跑基准</span>
+          <span class="cue-tag">翻页提示：讲完金句直接切 P02</span>
+        </div>
+        <div class="script-body">
+          <p>各位评委老师、现场的同行朋友们，大家下午好！</p>
+          <p>我们是<strong class="hl-accent">逐光团队</strong>，今天我们带来的决赛作品是——<strong class="hl-accent">《店巡 Agent (VeriPatrol)》</strong>，一个专门面向物理实体流程的<strong>可验证多智能体运行时（Verifiable Multi-Agent Runtime）</strong>。</p>
+          <p>我们在零售连锁与 Agent Infra 赛道探索的核心命题非常纯粹，只有一句话：<br/>
+          👉 <strong class="hl-accent">“设备修好，不等于商品安全；独立验证每一次关键处置。”</strong></p>
+          <p>今天，我们将向各位展示一套已在全国 <strong class="hl-accent">300 家门店、1,500 台冷链设备、43.2 万条时序遥测</strong>上经过极限压力验证的工业级智能体系统。</p>
+        </div>
+      </article>
+
+      <!-- P02 -->
+      <article class="slide-card" id="slide-2">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 02 / 12</span>
+            <div class="slide-title-group">
+              <h2>01 · 第一性原理</h2>
+              <small>3 PHYSICAL-DIGITAL AXIOMS</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 35 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：剖析物理世界三大公理，揭示纯软件 Agent 在实体世界的崩溃</span>
+          <span class="cue-tag">手势：伸出三根手指分别阐述</span>
+        </div>
+        <div class="script-body">
+          <p>在实体连锁与工业场景中，现有的智能体系统往往面临一个共同缺陷：<strong>把纯软件的假设生搬硬套到物理世界</strong>。我们提炼出物理实体流程的<strong class="hl-accent">三大不可逆公理</strong>：</p>
+          <p><strong>第一，状态不对称——设备修好 ≠ 商品安全。</strong><br/>
+          冷柜压缩机故障失温，师傅上门换好了零件，温度降回了 4°C，系统工单提示“已修复”。但物理世界有热力学惯性！在失温的数小时里，柜内的巴氏鲜奶可能早已微生物超标变质。</p>
+          <p><strong>第二，执行不可逆——物理动作没有“代码假撤销”。</strong><br/>
+          软件报错可以一键 <code style="color:var(--accent-bright)">git rollback</code>，但物理世界的技工上门、零件更换、通断电、整批报损，都会产生真实责任与高昂成本。</p>
+          <p><strong>第三，反自验闭环——执行者绝无权自证成功！</strong><br/>
+          大模型执行者如果自己验收自己，必然陷入自证幻觉。<strong class="hl-danger">执行者绝不能既当运动员又当裁判员</strong>！必须引入强物理隔离的外部 Auditor 重查客观物理真值。</p>
+        </div>
+      </article>
+
+      <!-- P03 -->
+      <article class="slide-card" id="slide-3">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 03 / 12</span>
+            <div class="slide-title-group">
+              <h2>02 · 系统架构栈</h2>
+              <small>THREE-LAYER DECOUPLING</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 30 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：强调三层解耦与通用内核，0% 业务硬编码</span>
+          <span class="cue-tag">重点：突出 Profile DSL 插件化</span>
+        </div>
+        <div class="script-body">
+          <p>针对上述挑战，我们构建了 <strong class="hl-accent">VeriPatrol 三层解耦架构栈</strong>：</p>
+          <p>• <strong>顶层：跨行业 Profile 插件</strong>。无论是零售冷链的 Arrhenius 动力学、医药温控的 GSP 规范，还是算力中心的结温功耗墙，均以 DSL 形式无侵入注入，<strong class="hl-success">通用核心代码 0% 业务硬编码</strong>；</p>
+          <p>• <strong>中层：VeriPatrol 通用核心引擎</strong>。由确定性状态机 Orchestrator 驱动，包含质控哨兵 Sentry、因果大脑 Diagnoser、受控执行 Executor、带外预言机 Auditor，以及驱动模型进化的 AgentLoop；</p>
+          <p>• <strong>底层：物理-数字交互总线</strong>。提供 500ms 数字拦截、Human-as-a-Tool 维修工单调度、外部客观物理传感器 Oracle，以及金融级只增审计流。</p>
+        </div>
+      </article>
+
+      <!-- P04 -->
+      <article class="slide-card" id="slide-4">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 04 / 12</span>
+            <div class="slide-title-group">
+              <h2>03 · 五 Agent 职责</h2>
+              <small>5 KERNEL AGENTS</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 35 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：点明 Executor 剥夺自验权、Auditor 手握一票否决权</span>
+          <span class="cue-tag">对比：消融实验证明单体自验必漏检</span>
+        </div>
+        <div class="script-body">
+          <p>在我们的系统里，5 个智能体各司其职，拥有不可僭越的职责边界：</p>
+          <p>• <strong>Orchestrator（调度引擎）</strong>：维护确定性状态机，拆解阶段，负责异步等待与超时升级，<strong class="hl-warning">无任何领域写权限</strong>；<br/>
+          • <strong>Sentry（质控哨兵）</strong>：L0 只读监测，采用 Westgard ±3SD 走廊滤除瞬态毛刺与噪声；<br/>
+          • <strong>Diagnoser（推断大脑）</strong>：L0 只读建议，基于物理动力学模型做热应力定损，输出 Top-K 处方；<br/>
+          • <strong>Executor（执行机构）</strong>：拥有 L1 预授权数字熔断与 L2 物理调度权限，<strong class="hl-danger">但被彻底剥夺了自验权</strong>；<br/>
+          • <strong>Auditor（独立预言机）</strong>：拥有<strong class="hl-success">一票否决权</strong>！独立重查外部传感器真值，只有设备与商品双重过关，才允许 Verified Close。</p>
+        </div>
+      </article>
+
+      <!-- P05 -->
+      <article class="slide-card" id="slide-5">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 05 / 12</span>
+            <div class="slide-title-group">
+              <h2>04 · 五阶段闭环</h2>
+              <small>UNIVERSAL 5-STAGE PROTOCOL</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 35 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：讲透 500ms 数字熔断到反自验独立重验的标准全生命周期</span>
+          <span class="cue-tag">关键：设备与商品两条独立确认路径</span>
+        </div>
+        <div class="script-body">
+          <p>任何一次现场异常，系统均会严格执行标准五阶段协议：</p>
+          <p><strong>1. 数字熔断（Interlock）</strong>：Sentry 捕获持续偏离，<strong class="hl-accent">500ms 内向 POS 和外卖中台下发数字熔断锁</strong>，切断对外销售，遏制风险外溢；<br/>
+          <strong>2. 动力学定损（Kinetics）</strong>：Diagnoser 结合牛顿冷却定律与 Arrhenius 积分，精确推算各批次食品的超温暴露应力；<br/>
+          <strong>3. 调度 Human Tool</strong>：将维修师傅抽象为异步工具，通过移动端 HITL 审批流派修，纳入 SLA 超时容灾；<br/>
+          <strong>4. 反自验独立重验（Oracle Verify）</strong>：Auditor 独立重查客观真值。<strong class="hl-success">设备恢复与商品安全走两条独立确认路径</strong>，双双通过才算成功；<br/>
+          <strong>5. 运行时演进（AgentLoop）</strong>：风险归零后闭环，全链路不可篡改 Trace 回流，驱动 Skill 与策略持续进化。</p>
+        </div>
+      </article>
+
+      <!-- P06 -->
+      <article class="slide-card" id="slide-6">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 06 / 12</span>
+            <div class="slide-title-group">
+              <h2>05 · 执行鲁棒性</h2>
+              <small>6 FORMAL INVARIANTS</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 35 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：剖析六大不变式，突出“保持遏制是正确安全结果”</span>
+          <span class="cue-tag">核心场景：重点点名场景 E (红线)</span>
+        </div>
+        <div class="script-body">
+          <p>我们通过形式化方法定义了<strong class="hl-accent">六大执行不变式（A ~ F）</strong>，覆盖所有边界分支：</p>
+          <p>• <strong>场景 A</strong>：硬件修复且资产安全，双重验真成功放行；<br/>
+          • <strong>场景 B/C</strong>：传感器抖动或开门气流扰动，自动识别去噪与自愈；<br/>
+          • <strong>场景 D</strong>：人工审批超时，绝不擅自行动，自动升级区域负责人；<br/>
+          • <strong class="hl-danger">核心红线场景 E</strong>：<strong>硬件虽然修好了、温度降下来了，但巴氏奶超温暴露超标！Auditor 一票否决阻断放行，强制报废</strong>！<br/>
+          • <strong>场景 F</strong>：网络分区或接口部分异常，系统绝不轻信片面回执，阻断并回开事件。</p>
+          <p>在这里，我们确立了一个关键设计理念：<strong class="hl-accent">对于证据不足或商品仍存在风险的情况，系统保持停售，是设计中的正确安全结果，而不是流程失败！</strong></p>
+        </div>
+      </article>
+
+      <!-- P07 -->
+      <article class="slide-card" id="slide-7">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 07 / 12</span>
+            <div class="slide-title-group">
+              <h2>06 · Skill 工程化</h2>
+              <small>6 P0 SKILL CONTRACTS</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 25 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：JSON Schema 强类型契约与 Worker ZIP 确定性镜像分发</span>
+          <span class="cue-tag">亮点：SemVer 与 SHA-256 唯一绑定</span>
+        </div>
+        <div class="script-body">
+          <p>在工具调用层，我们彻底告别不确定性的纯文本 Prompt：</p>
+          <p>• 六个通用 P0 Skill（质控、定损、归因、派修、验真、复盘）严格遵循九要素规范；<br/>
+          • 制定严格的 <strong class="hl-accent">JSON Schema 强类型约束</strong>与负向反例；<br/>
+          • 全面遵循 <strong class="hl-accent">SemVer 语义化版本规范</strong>（Name + Version + SHA-256 唯一指纹）；<br/>
+          • 编译打包进独立 Worker ZIP 镜像，支持热插拔分发与全生命周期防篡改 Trace。</p>
+        </div>
+      </article>
+
+      <!-- P08 -->
+      <article class="slide-card" id="slide-8">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 08 / 12</span>
+            <div class="slide-title-group">
+              <h2>07 · 原语与动作安全</h2>
+              <small>ACTION TAXONOMY & GATES</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 30 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：动作三级分类与四道闸门禁，严禁 Agent 越权处置资金</span>
+          <span class="cue-tag">底线：绝不把物理撤销当代码回滚</span>
+        </div>
+        <div class="script-body">
+          <p>在物理世界，必须遵循严格的动作分类分级：</p>
+          <p>• <strong>可逆数字动作</strong>（如停售）：秒级下发，失败可自动重试；<br/>
+          • <strong>跨系统物理动作</strong>（如派工换件）：产生真实劳务支出，通过取消改派与工单对账实施对冲补偿；<br/>
+          • <strong class="hl-danger">不可逆破坏动作</strong>（如整批报废）：<strong>必须经过移动端 HITL 人工刚性审批，严禁 Agent 越权擅自动用客户资金与资产</strong>！</p>
+          <p>所有动作必须依次穿透四道闸门：<strong class="hl-accent">角色权限、Policy 门禁、幂等 Token 与只增审计</strong>。</p>
+        </div>
+      </article>
+
+      <!-- P09 -->
+      <article class="slide-card" id="slide-9">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 09 / 12</span>
+            <div class="slide-title-group">
+              <h2>08 · 评测证据与反馈改造</h2>
+              <small>EVIDENCE & HARDENING</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 35 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：亮出 161 项测试全绿、初赛三大专家反馈逐项闭环</span>
+          <span class="cue-tag">数据：6/6 不变式、45 证据、0 违规</span>
+        </div>
+        <div class="script-body">
+          <p>在评测与工程质量上，我们用严谨的事实验证：</p>
+          <p>• <strong class="hl-success">161 项严苛工程门禁测试 100% 全部通过（161 pass / 0 fail）</strong>；<br/>
+          • <strong>6/6 不变式、45/45 证据链、26/26 全生命周期 Trace 完整闭环，0 安全违规</strong>；<br/>
+          • 逐项闭环初赛评委的宝贵反馈：<br/>
+          &nbsp;&nbsp;1. <strong>场景聚焦</strong>：深耕高敏冷链极限压力基准，彻底解耦硬件降温与商品安全；<br/>
+          &nbsp;&nbsp;2. <strong>证明多 Agent 增益</strong>：消融实验证明，若移除独立 Auditor，在硬件恢复但商品超温时将发生 <strong class="hl-danger">100% 的重大食安事故漏检</strong>！有力证伪了单体自验假设；<br/>
+          &nbsp;&nbsp;3. <strong>工程声明可复现</strong>：彻底剔除口头陈述，所有指标均有测试脚本与开源代码佐证。</p>
+        </div>
+      </article>
+
+      <!-- P10 -->
+      <article class="slide-card active-target" id="slide-10" style="border: 2px solid var(--accent-bright);">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge" style="background: var(--accent); color: #fff;">SLIDE 10 / 12 · 核心高潮</span>
+            <div class="slide-title-group">
+              <h2>09 · 现场实操演示</h2>
+              <small>300-STORE FLEET & 5-AGENT DEMO</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge" style="background: rgba(56,189,248,0.15); color: var(--accent-bright);">⏱️ 建议用时: 80 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：全场高潮！左手 300 门店大盘，右手创空间 5-Agent 实操，演示 Auditor 一票否决</span>
+          <span class="cue-tag">现场动作：放慢语速，手指大屏幕左右两翼</span>
+        </div>
+
+        <!-- Visual Showcase Inside Card -->
+        <div class="demo-showcase-panel">
+          <div class="demo-half">
+            <div class="demo-half-title">
+              <span>🏪 300 家门店 · 1,500 台设备大盘</span>
+              <span style="font-size: 11px; background: rgba(56,189,248,0.15); color: var(--accent-bright); padding: 2px 6px; border-radius: 4px;">PHX Fleet</span>
+            </div>
+            <div class="demo-data-grid">
+              <div class="demo-data-item">
+                <div class="demo-data-num">300/1500</div>
+                <div class="demo-data-label">门店/设备</div>
+              </div>
+              <div class="demo-data-item">
+                <div class="demo-data-num" style="color:var(--accent-bright)">43.2w</div>
+                <div class="demo-data-label">遥测采样</div>
+              </div>
+              <div class="demo-data-item">
+                <div class="demo-data-num" style="color:var(--success)">¥2.7M</div>
+                <div class="demo-data-label">在保资产</div>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+              • Arrhenius 动力学微积分非线性应力定损<br/>
+              • Isolation Forest 异常检出率 98.4%
+            </div>
+            <a href="phx-fleet.html" target="_blank" class="btn-link-pill" style="background: rgba(56,189,248,0.1); color: var(--accent-bright);">🔗 打开大盘 (sh.mazhi.icu)</a>
+          </div>
+
+          <div class="demo-half" style="border-top: 3px solid var(--success);">
+            <div class="demo-half-title">
+              <span>⚡ 店巡五智能体交互战室</span>
+              <span style="font-size: 11px; background: rgba(16,185,129,0.15); color: var(--success); padding: 2px 6px; border-radius: 4px;">魔搭创空间</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-top: 6px;">
+              ① <strong>Sentry</strong>: 500ms 数字熔断锁定收银<br/>
+              ② <strong>Diagnoser</strong>: 动力学积分 + 根因推断<br/>
+              ③ <strong>Executor</strong>: 调度工单 + 技工换件<br/>
+              ④ <strong style="color:var(--danger)">Auditor</strong>: 独立带外重查，<b style="color:var(--danger)">一票否决阻断放行</b><br/>
+              ⑤ <strong>Orchestrator</strong>: 状态机闭环沉淀知识
+            </div>
+            <a href="https://modelscope.cn/studios/walle1991/veripatrol" target="_blank" class="btn-link-pill" style="background: rgba(16,185,129,0.1); color: var(--success);">🚀 打开创空间 (walle1991/veripatrol)</a>
+          </div>
+        </div>
+
+        <div class="script-body">
+          <p>评委老师们，为了证明这绝不是停留在 PPT 里的纸上谈兵，请看大屏幕——<strong class="hl-accent">这是我们线上稳定运行的全国 300 家门店数智孪生大盘与魔搭创空间实操环境！</strong></p>
+          <span class="stage-direction">👉 手势引导看大屏幕左侧</span>
+          <p>大家看左侧：<strong class="hl-accent">PHX Fleet 数字孪生大盘</strong>。<br/>
+          • 我们实时纳管了全国 12 座核心城市的 <strong>300 家连锁门店、1,500 台智能冷柜</strong>；<br/>
+          • 24 小时累计吞吐 <strong class="hl-accent">43.2 万条高频遥测采样</strong>，实时守护着在库高达 <strong class="hl-success">¥2,719,610 元</strong>的高敏冷链资产；<br/>
+          • 大盘集成了牛顿冷却定律与日间客流开门热负荷仿真，并利用 <strong>Arrhenius 微积分</strong>实时计算巴氏奶的货损应力；<br/>
+          • 结合 <strong>Isolation Forest 无监督孤立森林</strong>，实现了 98.4% 的微小慢泄漏预警！</p>
+          <span class="stage-direction">👉 手势引导转向大屏幕右侧</span>
+          <p>大家再看右侧：<strong class="hl-success">店巡五智能体交互战室（魔搭创空间在线环境）</strong>。<br/>
+          • 当异常爆发瞬间：<strong>① Sentry 哨兵在 500ms 内触发数字熔断</strong>，锁死全渠道收银防误售；<br/>
+          • <strong>② Diagnoser 快速调用因果动力学 Skill</strong>，输出压缩机过载推断与受损商品批次；<br/>
+          • <strong>③ Executor 申请 HITL 审批</strong>并调度技工上门更换冷凝风扇；<br/>
+          • <strong class="hl-danger">最关键的一步是 ④ Auditor</strong>：技工修好后，柜温降至 4.5°C，工单完成；但 Auditor 独立带外重查客观传感器与微积分模型，发现商品曾超温暴露 180 分钟，<strong class="hl-danger">当即行使一票否决权，坚决拒绝解除停售，下发报废处置指令</strong>！<br/>
+          • 最终 <strong>⑤ Orchestrator 驱动状态机安全闭环</strong>并自动生成复盘知识。</p>
+          <p>评委老师在评审席上可以随时点击我们的<strong class="hl-accent">魔搭创空间链接</strong>或扫描屏幕二维码，亲自在线体验这场五智能体实操交互！</p>
+        </div>
+      </article>
+
+      <!-- P11 -->
+      <article class="slide-card" id="slide-11">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 11 / 12</span>
+            <div class="slide-title-group">
+              <h2>10 · 基准压力测试矩阵</h2>
+              <small>UNIVERSAL BENCHMARK MATRIX</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 35 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：展示通用扩展性——医药温控、智算液冷，内核 0 修改</span>
+          <span class="cue-tag">重点：Profile DSL 即插即用</span>
+        </div>
+        <div class="script-body">
+          <p>店巡不仅适用于便利店。凭借内核与业务逻辑的彻底解耦，我们构建了三大跨行业基准测试矩阵，<strong class="hl-success">通用内核代码 0 修改</strong>：</p>
+          <p>1. <strong>基准 01·零售高敏冷链（旗舰基准）</strong>：1,500 台设备实跑，Arrhenius 动力学与 POS 熔断；<br/>
+          2. <strong>基准 02·生物医药温控</strong>：切换为 2~8°C GSP 规范，守护狂犬疫苗与单抗血液制品，库温恢复但一旦破乳化一票否决出库；<br/>
+          3. <strong>基准 03·智算机房液冷</strong>：监控 40kW 高密算力柜热失控，在芯片结温触顶前毫秒级热迁移大模型权重，防止权重热损毁。</p>
+          <p>只需替换 Profile JSON 与物理动力学模型，通用 Agent Infra 底座即插即用！</p>
+        </div>
+      </article>
+
+      <!-- P12 -->
+      <article class="slide-card" id="slide-12">
+        <div class="slide-card-header">
+          <div class="slide-meta">
+            <span class="slide-index-badge">SLIDE 12 / 12</span>
+            <div class="slide-title-group">
+              <h2>11 · 交付与终结</h2>
+              <small>CLOSE WITH EVIDENCE</small>
+            </div>
+          </div>
+          <span class="slide-timing-badge">⏱️ 建议用时: 20 秒</span>
+        </div>
+        <div class="cue-box">
+          <span class="cue-text">🎯 核心抓手：总结升华金句，展示开源仓库与创空间交付，自信致谢</span>
+          <span class="cue-tag">口播：沉着有力，目光坚定</span>
+        </div>
+        <div class="script-body">
+          <p>最后，请允许我们用店巡系统的核心哲学作为总结：<br/>
+          <strong class="hl-accent">“温度恢复不等于商品安全；智能体的自评声明绝不等于业务客观事实。事件只有在证据闭环后才能关闭！”</strong></p>
+          <p>目前，逐光团队已向全球开源社区完整交付：<br/>
+          • <strong>GitHub 开源代码仓库</strong>；<br/>
+          • <strong>ModelScope 魔搭创空间在线交互 Demo</strong>；<br/>
+          • <strong>43.2 万条高频遥测公开数据集</strong>；<br/>
+          • 以及<strong>全国 300 家门店数智孪生大盘</strong>！</p>
+          <p>真诚感谢各位评委老师的聆听与指导，我们期待与大家共同探索物理实体智能体的未来！请评委老师批评指正！</p>
+        </div>
+      </article>
+
+      <!-- Q&A Section -->
+      <section id="qa-section" style="margin-top: 48px; border-top: 2px solid var(--border-subtle); padding-top: 32px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+          <div>
+            <h2 style="font-size: 24px; color: #fff;">🛡️ 评委尖锐提问与一击必杀 Q&A 防御手册</h2>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-top: 4px;">涵盖多Agent必要性、大模型边界、网络异常容灾、300店真实性、商业ROI</p>
+          </div>
+          <span class="slide-index-badge" style="background: rgba(168, 85, 247, 0.15); color: var(--purple); border-color: var(--purple);">内部防守秘籍</span>
+        </div>
+
+        <!-- QA 1 -->
+        <div class="qa-card">
+          <div class="qa-question">Q1：为什么非要用多 Agent？用一个强大的单 Agent（如 GPT-4 / Qwen-Max）配几个工具和状态机不行吗？</div>
+          <div class="qa-golden-quote">💡 答辩金句：“单 Agent 的硬伤不是推理能力不够，而是‘自我验证的幻觉’在物理世界具有不可承受的灾难性代价。”</div>
+          <ul class="qa-points">
+            <li><strong>根因分析</strong>：大模型存在不可避免的倾向自洽偏差。若让 Executor 既派单又验收，它极易把“技工说修好了”顺理成章地推论为“柜内商品没问题”。</li>
+            <li><strong>消融实验铁证</strong>：我们在 161 项门禁测试中专门做了消融实验。移除独立 Auditor 后，面对“硬件修好但商品变质”（场景 E），单 Agent 发生了 <strong>100% 的重大食品安全事故漏检</strong>！只有引入上下文强物理隔离、只查外部传感器真值的 Auditor，才能守住安全底线。</li>
+          </ul>
+        </div>
+
+        <!-- QA 2 -->
+        <div class="qa-card">
+          <div class="qa-question">Q2：这套系统里，大模型的作用究竟是什么？哪些是大模型做的，哪些是规则/算法做的？</div>
+          <div class="qa-golden-quote">💡 答辩金句：“大模型负责认知归因与非确定性决策，确定性状态机与规则算法负责刚性守门，两者的结合才是 Industrial Agent 的正确范式。”</div>
+          <ul class="qa-points">
+            <li><strong>大模型负责</strong>：Diagnoser 从设备异响描述、环境温湿度历史、维修文本等多模态异构信息中推断 Top-K 假设；向店长生成自然语言案情汇报与复盘报告；</li>
+            <li><strong>确定性算法负责</strong>：500ms 毫秒级 POS 熔断、Westgard 走廊、Arrhenius 微分定损积分、Policy 权限门禁。</li>
+            <li><strong>总结</strong>：涉及资金安全和公共卫生的红线，绝对不能依靠大模型的概率掷骰子，必须由确定性门禁做绝对防御！</li>
+          </ul>
+        </div>
+
+        <!-- QA 3 -->
+        <div class="qa-card">
+          <div class="qa-question">Q3：如果外部传感器故障、数据被破坏或者断网，Auditor 怎么防范？</div>
+          <div class="qa-golden-quote">💡 答辩金句：“在店巡的设计哲学里，‘证据不全’直接等价于‘绝对不安全’；保持停售是设计的正确结果，系统绝不盲目绿线通关！”</div>
+          <ul class="qa-points">
+            <li><strong>容灾机制</strong>：对应不变式场景 F。当数据断流或返回 Partial 时，Auditor 判定为 <code>BLOCKED</code> 并触发 <code>Reopen</code>，系统<strong>坚决保持销售熔断锁</strong>，并升级移动端人工介入。在实体世界，“宁可错停等待人工，绝不错放危害公共安全”。</li>
+          </ul>
+        </div>
+
+        <!-- QA 4 -->
+        <div class="qa-card">
+          <div class="qa-question">Q4：300 家门店大盘听起来很壮观，这是真实数据还是模拟？如何接入真实系统？</div>
+          <div class="qa-golden-quote">💡 答辩金句：“我们基于真实连锁拓扑与热力学方程建立了高保真数智孪生；真正接入真实企业，业务核心代码一行不改，只需替换两组适配器。”</div>
+          <ul class="qa-points">
+            <li><strong>数据真实性</strong>：43.2 万条时序数据已在 ModelScope 开源，符合牛顿冷却定律与真实客流开门热负荷分布；</li>
+            <li><strong>接入成本极低</strong>：由于架构采用三层解耦，落地时只需接入 MQTT/HTTP 物联网网关适配器，以及连锁 ERP 停售接口，具备向万店连锁平滑灰度推广的能力。</li>
+          </ul>
+        </div>
+
+        <!-- QA 5 -->
+        <div class="qa-card">
+          <div class="qa-question">Q5：如何量化商业价值与 ROI？</div>
+          <div class="qa-golden-quote">💡 答辩金句：“一降、一升、一保——降货损、升流转、保品牌生命线。”</div>
+          <ul class="qa-points">
+            <li><strong>降货损</strong>：传统失温往往“一刀切”全部扔掉；通过 Arrhenius 精准时序积分，区分边缘超温与核心受损，平均挽回 30%~40% 的非必要报损；</li>
+            <li><strong>升流转</strong>：500ms 毫秒感知 + 自动调度技工，将传统平均 45 分钟的“发现-上报-派单”人工耗时压缩至秒级；</li>
+            <li><strong>保生命线</strong>：杜绝因“设备修好就放行”导致的变质食品误售事件，保护企业数十亿级的品牌声誉免受公关危机与食安重罚。</li>
+          </ul>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Focus Navigation Floating Bar -->
+  <div class="focus-nav-bar">
+    <button class="btn-action" onclick="prevSlide()">◀ 上一页 (←)</button>
+    <span id="focusIndicator" style="font-family: var(--font-mono); font-size: 13px; color: var(--accent-bright); font-weight: 700;">P01 / 12</span>
+    <button class="btn-action primary" onclick="nextSlide()">下一页 (→) ▶</button>
+    <button class="btn-action" style="background: rgba(255,255,255,0.1);" onclick="toggleFocusMode()">退出单页</button>
+  </div>
+
+  <script>
+    // State
+    let currentSlideIndex = 1;
+    const totalSlides = 12;
+    let isFocusMode = false;
+    let currentFontSize = 19;
+
+    // Timer State
+    let timerDuration = 360; // 6 minutes countdown default
+    let timerElapsed = 0;
+    let timerInterval = null;
+    let isTimerRunning = false;
+    let timerMode = 'down'; // 'down' or 'up'
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timerDisplay');
+      let secs = (timerMode === 'down') ? Math.max(0, timerDuration - timerElapsed) : timerElapsed;
+      let m = Math.floor(secs / 60);
+      let s = secs % 60;
+      display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+      // Color warning
+      display.classList.remove('warn', 'danger');
+      if (timerMode === 'down') {
+        if (secs <= 60 && secs > 0) {
+          display.classList.add('warn');
+        } else if (secs === 0) {
+          display.classList.add('danger');
+        }
+      } else {
+        if (secs >= 360) {
+          display.classList.add('danger');
+        } else if (secs >= 300) {
+          display.classList.add('warn');
+        }
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('btnTimerToggle');
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        btn.textContent = '启动';
+        btn.style.background = '';
+      } else {
+        isTimerRunning = true;
+        btn.textContent = '暂停';
+        btn.style.background = 'var(--warning)';
+        timerInterval = setInterval(() => {
+          timerElapsed++;
+          updateTimerDisplay();
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      if (isTimerRunning) toggleTimer();
+      timerElapsed = 0;
+      updateTimerDisplay();
+    }
+
+    function switchTimerMode() {
+      timerMode = (timerMode === 'down') ? 'up' : 'down';
+      document.getElementById('timerModeLabel').textContent = (timerMode === 'down') ? '6分倒计时' : '正向计时';
+      updateTimerDisplay();
+    }
+
+    // Font size
+    function changeFontSize(delta) {
+      currentFontSize = Math.min(32, Math.max(15, currentFontSize + delta));
+      document.documentElement.style.setProperty('--script-font-size', currentFontSize + 'px');
+    }
+
+    // Slide Selection
+    function selectSlide(index) {
+      currentSlideIndex = index;
+      document.querySelectorAll('.slide-nav-item').forEach((item, i) => {
+        if (i < 12) {
+          item.classList.toggle('active', i + 1 === index);
+        }
+      });
+      document.querySelectorAll('.slide-card').forEach((card, i) => {
+        card.classList.toggle('active-target', i + 1 === index);
+        card.classList.toggle('active-focus', i + 1 === index);
+      });
+      document.getElementById('focusIndicator').textContent = `P${index.toString().padStart(2, '0')} / 12`;
+      
+      const target = document.getElementById(`slide-${index}`);
+      if (target && !isFocusMode) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (target && isFocusMode) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 1) selectSlide(currentSlideIndex - 1);
+    }
+
+    function nextSlide() {
+      if (currentSlideIndex < totalSlides) selectSlide(currentSlideIndex + 1);
+    }
+
+    function toggleFocusMode() {
+      isFocusMode = !isFocusMode;
+      document.body.classList.toggle('focus-mode', isFocusMode);
+      const btn = document.getElementById('btnFocusMode');
+      if (isFocusMode) {
+        btn.textContent = '📜 退出单页 (全景)';
+        btn.classList.add('active');
+        selectSlide(currentSlideIndex);
+      } else {
+        btn.textContent = '🎯 提词器单页模式';
+        btn.classList.remove('active');
+        const target = document.getElementById(`slide-${currentSlideIndex}`);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || (e.key === ' ' && !e.target.matches('input, textarea'))) {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFocusMode();
+      }
+    });
+
+    // Init
+    updateTimerDisplay();
+    selectSlide(1);
+  </script>
+</body>
+</html>
