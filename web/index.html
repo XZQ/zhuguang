@@ -810,6 +810,64 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   flex-wrap: wrap;
   gap: 12px;
 }
+
+/* 300 Stores Macro Fleet Bar & City Pills in 1-Min Demo */
+.macro-fleet-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: all 0.2s;
+}
+.macro-fleet-card:hover {
+  border-color: var(--cyan);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15);
+}
+.city-filter-pill {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.city-filter-pill:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.city-filter-pill.active-city {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+.city-filter-pill.alert-city {
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+.city-filter-pill.alert-city.active-city {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: var(--red);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+.step-visual-widget {
+  animation: stepWidgetFadeIn 0.35s ease-in-out;
+}
+@keyframes stepWidgetFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 </style>
 </head>
 <body>
@@ -996,56 +1054,161 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
       <!-- Stepper Steps -->
             <!-- ================= MULTI-STORE FLEET & S03 DEVICE MATRIX IN 1-MIN DEMO ================= -->
-      <div style="background: rgba(3, 7, 18, 0.85); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 20px;">
-        <!-- Level 1: Fleet Bar -->
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span class="pulse-dot"></span>
-            <span style="font-size:13px; font-weight:700; color:#fff;">全网连锁门店巡检态势 (300家门店 · 1,500台冷链设备在线)</span>
-            <div style="display:flex; gap:6px; margin-left:4px;">
-              <button onclick="startSentryScanTour()" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
-                ⚡ 巡检轮询演示
-              </button>
-              <button onclick="resampleCurrentTarget()" style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.4); border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
-                🔄 刷新采样时序
-              </button>
+      <div style="background: rgba(3, 7, 18, 0.88); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 20px;">
+        <!-- Level 0: 300 Stores Macro Fleet Indicator Strip -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:16px;">
+          <div class="macro-fleet-card">
+            <div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between;">
+              <span>全国门店 &amp; 纳管设备</span>
+              <span style="color:var(--cyan); font-weight:700;">12 核心城市</span>
+            </div>
+            <div style="font-size:18px; font-weight:800; color:#fff; font-family:var(--font-mono); margin-top:2px;">
+              300 <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">家门店</span> · 1,500 <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">台设备</span>
+            </div>
+            <div style="font-size:10.5px; color:var(--green); margin-top:2px; display:flex; align-items:center; gap:4px;">
+              <span class="pulse-dot"></span> IoT 实时在线率 99.87%
             </div>
           </div>
-          <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--text-secondary); display:flex; gap:14px;">
-            <span>巡检轮次: <b style="color:var(--green)">28,800次/日</b></span>
-            <span>全网告警: <b id="demo-fleet-alert" style="color:var(--green)">0起异常 (全网全绿巡检中)</b></span>
+
+          <div class="macro-fleet-card">
+            <div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between;">
+              <span>温敏在库货值</span>
+              <span style="color:var(--green); font-weight:700;">全天候护航</span>
+            </div>
+            <div style="font-size:18px; font-weight:800; color:var(--cyan); font-family:var(--font-mono); margin-top:2px;">
+              ¥2,719,610<span style="font-size:12px; color:var(--text-secondary);">.50</span>
+            </div>
+            <div style="font-size:10.5px; color:var(--text-secondary); margin-top:2px;">纳管 5,100 在库温敏商品批次</div>
+          </div>
+
+          <div class="macro-fleet-card">
+            <div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between;">
+              <span>物理时序遥测流</span>
+              <span style="color:#a855f7; font-weight:700; font-family:var(--font-mono);">PHX 边缘算力</span>
+            </div>
+            <div style="font-size:18px; font-weight:800; color:#fff; font-family:var(--font-mono); margin-top:2px;">
+              432,000 <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">条采样</span>
+            </div>
+            <div style="font-size:10.5px; color:#c084fc; margin-top:2px;">100.95.247.115 · P99 8.2ms · 3,600 rps</div>
+          </div>
+
+          <div class="macro-fleet-card">
+            <div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between;">
+              <span>历史闭环与挽损</span>
+              <span style="color:var(--green); font-weight:700;">100% 挽损</span>
+            </div>
+            <div style="font-size:18px; font-weight:800; color:var(--green); font-family:var(--font-mono); margin-top:2px;">
+              156 / 156 <span style="font-size:12px; color:var(--text-secondary); font-weight:normal;">起全闭环</span>
+            </div>
+            <div style="font-size:10.5px; color:var(--green); margin-top:2px;">挽回损失 ¥248,000+ · 0 食安事故</div>
+          </div>
+
+          <div class="macro-fleet-card">
+            <div style="font-size:11px; color:var(--text-secondary); display:flex; justify-content:space-between;">
+              <span>异构模型门禁</span>
+              <span style="color:var(--cyan); font-weight:700;">反自验仲裁</span>
+            </div>
+            <div style="font-size:13px; font-weight:800; color:#fff; margin-top:4px; display:flex; align-items:center; gap:6px;">
+              <span style="background:rgba(16,185,129,0.2); color:var(--green); border:1px solid rgba(16,185,129,0.4); padding:2px 6px; border-radius:4px; font-size:10.5px; font-family:var(--font-mono);">Gate-1 PASS</span>
+              <span style="background:rgba(16,185,129,0.2); color:var(--green); border:1px solid rgba(16,185,129,0.4); padding:2px 6px; border-radius:4px; font-size:10.5px; font-family:var(--font-mono);">Gate-2 PASS</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">Qwen3.8 推导 + DeepSeek-V4-Pro 独立重查</div>
           </div>
         </div>
 
-        <!-- Store Selector Tabs -->
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; margin-bottom:14px;">
-          <div id="demo-store-s03" class="fleet-card-clickable active-target" onclick="inspectStore('s03-1')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px; cursor:pointer; transition:all 0.3s ease;">
+        <!-- Level 1: 12-City Quick Filter Bar -->
+        <div style="border-top:1px solid var(--border-subtle); padding-top:12px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="pulse-dot"></span>
+              <b style="color:#fff; font-size:12.5px;">全国 12 核心城市大盘分布 (点击城市快速下钻巡检)：</b>
+              <div style="display:flex; gap:6px; margin-left:4px;">
+                <button onclick="startSentryScanTour()" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
+                  ⚡ 跨城巡检轮询演示
+                </button>
+                <button onclick="resampleCurrentTarget()" style="background:rgba(16,185,129,0.15); color:#34d399; border:1px solid rgba(16,185,129,0.4); border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
+                  🔄 刷新采样时序
+                </button>
+              </div>
+            </div>
+            <div style="font-size:11.5px; font-family:var(--font-mono); color:var(--text-secondary); display:flex; gap:12px;">
+              <span>巡检轮次: <b style="color:var(--green)">28,800次/日</b></span>
+              <span>全网告警: <b id="demo-fleet-alert" style="color:var(--green)">0起异常 (全网全绿巡检中)</b></span>
+            </div>
+          </div>
+
+          <!-- City Pills -->
+          <div class="city-pills-bar" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+            <button class="city-filter-pill active-city" onclick="selectCityFilter('all')">🌐 全部 300 店 (全域)</button>
+            <button class="city-filter-pill alert-city" onclick="selectCityFilter('hz')">🚨 杭州 (25店·失温演练)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('sh')">上海 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('bj')">北京 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('gz')">广州 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('sz')">深圳 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('cd')">成都 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('wh')">武汉 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('nj')">南京 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('su')">苏州 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('tj')">天津 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('dg')">东莞 (25店)</button>
+            <button class="city-filter-pill" onclick="selectCityFilter('fs')">佛山 (25店)</button>
+          </div>
+        </div>
+
+        <!-- Store Selector Cards (Representative Across Cities) -->
+        <div id="demo-store-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px; margin-bottom:14px;">
+          <!-- Store 1: HZ-018 / S03 Target Anomaly -->
+          <div id="demo-store-s03" class="fleet-card-clickable active-target" onclick="inspectStore('s03-1')" style="background:rgba(255,255,255,0.03); border:1.5px solid var(--green); border-radius:8px; padding:9px 12px; cursor:pointer; transition:all 0.3s ease;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="color:#fff; font-size:12.5px;">S03 广州天河店</b>
+              <b style="color:#fff; font-size:12.5px;">HZ-018 杭州武林门西店</b>
               <span id="demo-store-s03-badge" style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; font-weight:700; padding:1px 6px; border-radius:4px;">全绿正常</span>
             </div>
-            <div id="demo-store-s03-desc" style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 4台冷链设备 · 全部在线达标</div>
+            <div id="demo-store-s03-desc" style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 5台冷链设备 · 全部在线达标</div>
           </div>
-          <div id="demo-store-s01" class="fleet-card-clickable" onclick="inspectStore('s01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px;">
+
+          <!-- Store 2: SH-001 Shanghai -->
+          <div id="demo-store-sh01" class="fleet-card-clickable" onclick="inspectStore('sh01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:9px 12px; cursor:pointer;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="color:var(--text-secondary); font-size:12.5px;">S01 深圳科技园店</b>
+              <b style="color:var(--text-secondary); font-size:12.5px;">SH-001 上海静安寺旗舰店</b>
               <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
             </div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 6台全部在线达标</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 6台全部在线 · 均温 3.4°C</div>
           </div>
-          <div id="demo-store-s02" class="fleet-card-clickable" onclick="inspectStore('s02')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px;">
+
+          <!-- Store 3: BJ-005 Beijing -->
+          <div id="demo-store-bj01" class="fleet-card-clickable" onclick="inspectStore('bj01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:9px 12px; cursor:pointer;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="color:var(--text-secondary); font-size:12.5px;">S02 广州珠江新城店</b>
+              <b style="color:var(--text-secondary); font-size:12.5px;">BJ-005 北京国贸中心店</b>
               <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
             </div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 4台全部在线达标</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 5台全部在线 · 均温 3.6°C</div>
           </div>
-          <div id="demo-store-s04" class="fleet-card-clickable" onclick="inspectStore('s04')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:8px 12px;">
+
+          <!-- Store 4: GZ-002 Guangzhou -->
+          <div id="demo-store-gz01" class="fleet-card-clickable" onclick="inspectStore('gz01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:9px 12px; cursor:pointer;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <b style="color:var(--text-secondary); font-size:12.5px;">S04 佛山千灯湖店</b>
+              <b style="color:var(--text-secondary); font-size:12.5px;">GZ-002 广州天河城店</b>
               <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
             </div>
-            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 5台全部在线达标</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 5台全部在线 · 均温 3.5°C</div>
+          </div>
+
+          <!-- Store 5: SZ-003 Shenzhen -->
+          <div id="demo-store-sz01" class="fleet-card-clickable" onclick="inspectStore('sz01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:9px 12px; cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:var(--text-secondary); font-size:12.5px;">SZ-003 深圳高新园店</b>
+              <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 6台全部在线 · 均温 3.7°C</div>
+          </div>
+
+          <!-- Store 6: CD-006 Chengdu -->
+          <div id="demo-store-cd01" class="fleet-card-clickable" onclick="inspectStore('cd01')" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:9px 12px; cursor:pointer;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <b style="color:var(--text-secondary); font-size:12.5px;">CD-006 成都春熙路店</b>
+              <span style="background:rgba(16,185,129,0.15); color:var(--green); font-size:10px; padding:1px 6px; border-radius:4px;">全绿正常</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">纳管: 5台全部在线 · 均温 3.8°C</div>
           </div>
         </div>
 
@@ -1053,7 +1216,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <div style="border-top:1px solid var(--border-subtle); padding-top:12px; margin-bottom:12px;">
           <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
             <span><b>S03 门店 4 台多温区冷链设备实时监控矩阵：</b> <span style="font-size:11px; color:#38bdf8; font-weight:400;">(🖱️ 点击任意门店或设备卡片，可即时切换查看其温控质控时序)</span></span>
-            <span style="font-size:11px; color:var(--text-muted);">Sentry 排除其余 511 台正常设备，锁定 1 号柜精准闭环</span>
+            <span style="font-size:11px; color:var(--text-muted);">Sentry 毫秒排除全国 1,499 台正常设备，锁定杭州 1 号冷柜精准闭环</span>
           </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px;">
             <!-- Device 1: Target Abnormal -->
@@ -2744,13 +2907,13 @@ const DEMO_STEPS = [
   {
     step: 0,
     time: "00:00 - 00:10",
-    title: "1. Sentry 全网巡检：锁定 S03 店 1号柜失温",
-    desc: "Sentry 并行轮询全网 300 店 1,500 台设备，自动校验时序数据质量并排除传感器断流与漂移。发现 S03 天河店 1号鲜奶柜温度从 3.4°C 飙升至 9.6°C（突破 Westgard +3SD 质控红线），标记 critical 严重度，向 Orchestrator 发起紧急遏制。",
-    agent: "Sentry (全网巡检守卫 · L0 只读)",
+    title: "1. Sentry 全网巡检：锁定 HZ-018 杭州店 1号柜失温",
+    desc: "Sentry 基于 Qwen3.8-Flash 并行轮询全国 12 城市 300 家门店、1,500 台冷链设备。发现 HZ-018 杭州武林门西店 1号鲜奶冷柜温度从稳态 3.4°C 陡增至 9.6°C（突破 8.0°C 上限与 Westgard +3SD 质控红线 8.5°C）。经 PHX 边缘集群 (100.95.247.115) 毫秒确认非平稳漂移，标记 CRITICAL 严重度，向 Orchestrator 发起紧急立案。",
+    agent: "Sentry (全国巡检哨兵 · Qwen3.8-Flash 8ms)",
     skill: "anomaly-detect v1.0.0",
     mcp: "query_device_context",
-    evidence: "EVID-DETECT-S03-20260828 (Hash: e9d9a4...)",
-    trace: "trace-detect-fa4416ba",
+    evidence: "EVID-DETECT-HZ018-20260919 (SHA: e9d9a4...)",
+    trace: "tr-sentry-9912c",
     temp: "9.6°C",
     devState: "Sentry 发现失温 · 发起遏制",
     badgeText: "失温闭环中",
@@ -2762,25 +2925,25 @@ const DEMO_STEPS = [
     showHold: false,
     showBlock: false,
     terminal: [
-      "[09:00:00] [Sentry] FLEET_POLL: 300 stores, 1,500 devices scanned (1,499 normal, 1 anomaly)",
-      "[09:00:00] [Sentry] S03-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
-      "[09:00:01] [Sentry] INVOKE_SKILL: anomaly-detect (sensor_quality=good, suspect=false)",
-      "[09:00:02] [Sentry] VERDICT: anomaly=True, severity=CRITICAL",
-      "[09:00:02] [Sentry] EMIT_REQUEST: request_containment(store_id='S03', device_id='FROST-01')"
+      "[09:00:00] [Sentry@Qwen3.8-Flash] FLEET_POLL: 300 stores, 1,500 devices scanned (1,499 normal, 1 anomaly)",
+      "[09:00:00] [Sentry@PHX-Edge] HZ018-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
+      "[09:00:01] [Sentry] INVOKE_SKILL: anomaly-detect (sensor_quality=good, drift_detected=true)",
+      "[09:00:02] [Sentry] VERDICT: anomaly=True, severity=CRITICAL (Confidence=0.991)",
+      "[09:00:02] [Sentry] EMIT_REQUEST: request_containment(store_id='HZ-018', device_id='FROST-01', incident_id='INC-COLD-A02-0919')"
     ]
   },
   {
     step: 1,
     time: "00:10 - 00:20",
-    title: "2. S03 店 Executor 紧急停售遏制 (食品安全防线)",
-    desc: "食品安全第一！Orchestrator 调度 Executor 立即下发 L1 预授权操作 apply_sales_hold，通过 MCP 锁定 S03 店鲜奶（BATCH-001）与熟食（BATCH-002）2 个批次停售，切断收银结算，防止变质风险外溢；同时其余 511 台正常设备丝器官受影响。",
-    agent: "Executor (受控执行 · L1/L2 受控写)",
+    title: "2. HZ-018 店 Executor 紧急停售遏制 (POS 离线熔断终端)",
+    desc: "食品安全绝对零容忍！总控调度 Executor 立即下发 L1 预授权操作 apply_sales_hold，通过 dianxun-mcp 联动 POS 收银系统，将鲜奶（BATCH-DAIRY-001）与熟食（BATCH-FRESH-001）结算权限锁死。收银台扫码即刻红屏拦截，680ms 极速生效，彻底阻断顾客结账出店，其余 1,499 台设备零干扰。",
+    agent: "Executor (受控执行 · dianxun-mcp POS锁)",
     skill: "sales-containment v1.0.0",
     mcp: "apply_sales_hold, query_inventory_batches",
-    evidence: "EVID-CONTAIN-S03-001 (Hold applied: 2 batches)",
-    trace: "trace-exec-fa4416ba",
+    evidence: "EVID-CONTAIN-HZ018-001 (Hold applied: 2 batches)",
+    trace: "tr-exec-4410",
     temp: "9.6°C",
-    devState: "POS停售锁定 · 等待诊断",
+    devState: "POS停售锁定 · 阻断流出",
     badgeText: "已停售拦截",
     exposure: "25 min",
     goodsVerdict: "HOLD (已隔离封存)",
@@ -2790,50 +2953,51 @@ const DEMO_STEPS = [
     showHold: true,
     showBlock: false,
     terminal: [
-      "[09:00:03] [Orchestrator] DISPATCH: Phase -> CONTAINMENT (Agent: Executor)",
-      "[09:00:04] [Executor] MCP_CALL: query_inventory_batches(device_id='FROST-01')",
-      "[09:00:04] [Executor] FOUND: BATCH-DAIRY-001 (Milk), BATCH-FRESH-001 (Bento)",
-      "[09:00:05] [Executor] MCP_CALL: apply_sales_hold(batches=['BATCH-DAIRY-001','BATCH-FRESH-001'])",
-      "[09:00:05] [Executor] VERDICT: POS sale locked! Zero risk of customer checkout."
+      "[09:00:03] [Orchestrator@Qwen3.8-Max] DISPATCH: Phase -> CONTAINMENT (Agent: Executor)",
+      "[09:00:04] [Executor] MCP_CALL: query_inventory_batches(store_id='HZ-018', device_id='FROST-01')",
+      "[09:00:04] [Executor] FOUND: BATCH-DAIRY-001 (光明优倍鲜奶), BATCH-FRESH-001 (明治鲜奶)",
+      "[09:00:05] [Executor] MCP_CALL: apply_sales_hold(batches=['BATCH-DAIRY-001','BATCH-FRESH-001'], idempotency_key='exec-hz018:v1')",
+      "[09:00:05] [Executor] POS_LOCK_APPLIED: Register #02 locked! Real checkout attempts intercepted = 2, leaked = 0."
     ]
   },
   {
     step: 2,
     time: "00:20 - 00:30",
-    title: "3. Diagnoser 多源特征根因诊断与暴露评估",
-    desc: "Diagnoser 综合分析门磁状态、除霜加热丝电流与设备时序特征。排除柜门未关与除霜周期，锁定 Top-1 压缩机启闭故障（置信度 0.94）。同时调用批次风险评估，计算鲜奶已超温暴露，建议强制报损，熟食转移备用冷库。",
-    agent: "Diagnoser (根因诊断 · L0 只读)",
-    skill: "rootcause-drilldown / coldchain-risk-assess",
+    title: "3. Diagnoser 动力学定损与膨胀阀机理归因",
+    desc: "突破传统阈值定损局限！Diagnoser 综合门磁与除霜电流，排除柜门未关，锁定膨胀阀微漏 (吸气压力 0.12MPa，制冷衰减 68%，置信度 0.94)。同时引入阿伦尼乌斯物理化学动力学公式 k(T)=A*exp(-Ea/RT) 沿时间积分，算出累积劣变系数 Q_loss = 1.48 > 1.0，精准锁定 42 件鲜奶报损 (货值 ¥621.60，防潜在十倍赔偿 ¥6,216.00)。",
+    agent: "Diagnoser (动力学定损 · Qwen3.8-Max 深度思维链)",
+    skill: "rootcause-drilldown / arrhenius-kinetics-assess",
     mcp: "query_device_context, query_inventory_batches",
-    evidence: "EVID-DIAG-S03-001 (Top-1: compressor_failure)",
-    trace: "trace-diag-fa4416ba",
+    evidence: "EVID-DIAG-HZ018-001 (Top-1: compressor_valve_leak)",
+    trace: "tr-diag-9912c",
     temp: "9.4°C",
-    devState: "诊断锁定: 压缩机启动电容",
-    badgeText: "排查完成",
+    devState: "膨胀阀微漏 · 42件鲜奶定损",
+    badgeText: "动力学定损完成",
     exposure: "35 min",
-    goodsVerdict: "CRITICAL (暴露>30m)",
+    goodsVerdict: "CRITICAL (阿伦尼乌斯超标)",
     cursorX: 520,
     cursorY: 34,
     exposureOpacity: 0.75,
     showHold: true,
     showBlock: false,
     terminal: [
-      "[09:00:06] [Diagnoser] SENSOR_ANALYSIS: Door=CLOSED (100%), Defrost=INACTIVE",
-      "[09:00:07] [Diagnoser] HYPOTHESIS_RANK: 1. compressor_failure (0.94) | 2. refrigerant_leak (0.05)",
-      "[09:00:08] [Diagnoser] RISK_ASSESS: BATCH-DAIRY-001 exposure=42min -> DISPOSITION=DISPOSE",
-      "[09:00:08] [Diagnoser] RISK_ASSESS: BATCH-FRESH-001 exposure=42min -> DISPOSITION=TRANSFER_COLD"
+      "[09:00:06] [Diagnoser@Qwen3.8-Max] ARRHENIUS_INTEGRAL: Ea=52.3 kJ/mol, T(t)=3.8->9.6°C, integral Q_loss=1.48 (>1.0)",
+      "[09:00:07] [Diagnoser] HARDWARE_THERMO: Suction pressure 0.12MPa (ref 0.28MPa), current 4.2A -> expansion valve leak (0.94)",
+      "[09:00:08] [Diagnoser] BATCH_VERDICT: BATCH-DAIRY-001 (24 cartons) -> DISPOSE (spoiled, unrecoverable)",
+      "[09:00:08] [Diagnoser] BATCH_VERDICT: BATCH-FRESH-001 (18 cartons) -> TRANSFER_COLD_ROOM_B02 (safe window)",
+      "[09:00:09] [Diagnoser] LOSS_CALC: 42 cartons, value=¥621.60, punitive compensation liability prevented=¥6,216.00"
     ]
   },
   {
     step: 3,
     time: "00:30 - 00:40",
-    title: "4. Human Tool 物理世界异步调用与受控执行 (HITL 审批 + 物理技工换件)",
-    desc: "物理动作无法纯软件虚拟化！系统将线下维修工抽象为标准【Human-as-a-Physical-Tool】协议：具备确定性超时管理（SLA 30min）、结构化参数输入与现场凭据回传。预算超限触发店长移动端 HITL 审批后，异步调度物理技工到场换件，冷柜恢复降温！",
+    title: "4. Human Tool 物理世界异步调用与店长移动端审批",
+    desc: "物理动作无法纯软件虚拟化！系统将线下维修工程师抽象为标准【Human-as-a-Physical-Tool】协议：具备确定性超时 SLA (30min)、结构化入参与工单回传。换件预算超限触发店长移动端 PDA 指纹审批核准后，异步调度驻点技工到场抢修换件；PDA 引导 42 件涉险货品转移备用冷库 B02 (2.1°C)。",
     agent: "Executor + Human Tool (物理世界异步工具协议)",
     skill: "work-order-dispatch v1.0.0",
     mcp: "create_approval, create_workorder",
     evidence: "EVID-WO-REPAIR-8821 (Status: EXECUTED)",
-    trace: "trace-exec-fa4416ba",
+    trace: "tr-exec-4410",
     temp: "7.2°C",
     devState: "技工换件完毕 · 降温中",
     badgeText: "维保修复中",
@@ -2845,51 +3009,53 @@ const DEMO_STEPS = [
     showHold: true,
     showBlock: false,
     terminal: [
-      "[09:01:00] [Executor] POLICY_GATE: Repair budget ¥680 requires HITL approval",
-      "[09:02:00] [HITL] Approval ticket #APPR-01 APPROVED by StoreManager S03",
-      "[09:02:05] [Executor] INVOKE_TOOL: HumanTool.dispatch_technician(vendor='QuickCold', code='COMP_CAPACITOR', timeout=1800s)",
-      "[09:05:00] [HumanTool] CALLBACK: Technician completed physical repair with photo evidence (Status: EXECUTED)"
+      "[09:01:00] [Executor] POLICY_GATE: Valve replacement budget ¥680 requires StoreManager HITL approval",
+      "[09:02:00] [HITL] Approval ticket #APPR-S03-01 APPROVED by StoreManager via mobile PDA",
+      "[09:02:05] [Executor] INVOKE_TOOL: HumanTool.dispatch_technician(vendor='QuickCold', tech='Zhang', SLA=1200s)",
+      "[09:05:00] [HumanTool] CALLBACK: Technician completed expansion valve replacement with photo evidence",
+      "[09:05:10] [StoreStaff] PDA_ACTION: 42 items transferred to backup cold room B02 (temp 2.1°C)"
     ]
   },
   {
     step: 4,
     time: "00:40 - 00:50",
-    title: "5. Anti-Self-Verification 反自验门禁 (执行者不能自证成功 · 独立重查)",
-    desc: "核心安全底座红线：执行者绝不能宣告自身成功！技工完工工单不等于风险消除。Auditor 启动 Anti-Self-Verification，独立重查时序传感器与批次台账双重事实。判定设备降至 4.8°C 达标，但鲜奶超温超标强制报损并维持停售拦截；熟食转移复验放行。杜绝'报单即解决'的伪闭环！",
-    agent: "Auditor (Anti-Self-Verification 独立重验 · 职责分离)",
+    title: "5. Anti-Self-Verification 异构双门禁反自验 (拒绝同源自证)",
+    desc: "核心安全底座红线：执行者绝不能宣告自身成功！裁判 Auditor 采用异构模型 DeepSeek-V4-Pro-0813 独立带外重查。执行双重硬门禁：Gate-1 独立抓取收银流水数据库日志，核验拦截 2 次、售出 0 件 (PASS)；Gate-2 独立读取备用冷库温控 (2.1°C) 与 RFID 盘点流 (PASS)。即使冷柜降温至 4.8°C 恢复硬件指标，鲜奶仍坚决销毁不予放行！",
+    agent: "Auditor (Anti-Self-Verification · DeepSeek-V4-Pro-0813)",
     skill: "outcome-verify v1.1.0",
     mcp: "query_device_context, query_inventory_batches",
-    evidence: "EVID-AUDIT-VERIFY-001 (Verdict: CONDITIONAL_RESOLVED)",
-    trace: "trace-audit-fa4416ba",
+    evidence: "EVID-AUDIT-VERIFY-001 (Gate-1 PASS | Gate-2 PASS)",
+    trace: "tr-audit-ds-0813",
     temp: "4.8°C",
-    devState: "设备已恢复 · 鲜奶阻断!",
-    badgeText: "红线门禁拦截",
-    exposure: "42 min (违规)",
-    goodsVerdict: "UNSAFE (鲜奶已变质·阻断放行)",
+    devState: "设备已恢复 · 鲜奶阻断销毁!",
+    badgeText: "异构门禁双通过",
+    exposure: "42 min (违规变质)",
+    goodsVerdict: "UNSAFE (鲜奶已变质·坚决销毁)",
     cursorX: 740,
     cursorY: 82,
     exposureOpacity: 0.95,
     showHold: true,
     showBlock: true,
     terminal: [
-      "[09:06:00] [Auditor] ANTI_SELF_VERIFY: Rejecting self-reported completion, querying objective ground truth...",
-      "[09:06:01] [Auditor] SENSOR_TRUTH: Device temp=4.8°C (Cooling RECOVERED -> Hardware PASS)",
-      "[09:06:02] [Auditor] ASSET_GUARD: BATCH-DAIRY-001 exposure 42min (>30m limit!) -> VETO RELEASE! Remain HOLD & SCRAP",
-      "[09:06:03] [Auditor] ASSET_GUARD: BATCH-FRESH-001 cold-transfer confirmed -> RELEASE_PERMITTED"
+      "[09:06:00] [Auditor@DeepSeek-V4-Pro] ANTI_SELF_VERIFY: Rejecting self-reported completion, initiating out-of-band audit...",
+      "[09:06:01] [Auditor] GATE-1_INFO_DOMAIN: POS database query -> attempts=2, actual_sold=0 (100% BLOCKED) -> PASS",
+      "[09:06:02] [Auditor] GATE-2_PHYSICAL_DOMAIN: Backup cooler B02 temp=2.1°C, RFID scan verified 42 cartons -> PASS",
+      "[09:06:03] [Auditor] SENSOR_TRUTH: Hardware FROST-01 temp=4.8°C (Cooling recovered), BUT dairy exposed 42min -> SCRAP MANDATORY",
+      "[09:06:04] [Auditor] VERDICT: CONDITIONAL_RESOLVED (Hardware PASS, Dairy SCRAPPED, Bento RELEASED)"
     ]
   },
   {
     step: 5,
     time: "00:50 - 00:60",
-    title: "6. Verified Close 事实驱动关闭与 AgentLoop 持续演化",
-    desc: "唯有客观世界风险归零，状态机才允许推进至 Verified Close！全链路执行 Trace 自动输入 AgentLoop 进化管道：Auditor 生成结构化复盘日志，自动优化冷柜失温诊断规则与处置策略，沉淀新 Skill 候选，实现越跑越准的基座进化闭环！",
-    agent: "Orchestrator + AgentLoop (事实驱动关闭 · 运行时持续演化)",
+    title: "6. Verified Close 事实驱动关闭与全网 300 店知识演化",
+    desc: "唯有客观物理世界风险归零，状态机才允许推进至 Verified Close！本次事件全链路耗时 16.4 分钟，全网累计 156/156 起异常毫秒闭环，挽损 ¥248,000+。全链路执行 Trace 自动输入 AgentLoop 进化管道，将膨胀阀慢泄漏早期特征向量沉淀至向量知识库，实现多智能体运行时越跑越准！",
+    agent: "Orchestrator + AgentLoop (全域闭环终结 · 知识飞轮)",
     skill: "review-report v1.1.0",
     mcp: "IncidentService, search_knowledge",
     evidence: "EVID-REVIEW-LEARN-001 (State: CLOSED)",
-    trace: "trace-learn-fa4416ba",
+    trace: "tr-learn-fa4416ba",
     temp: "4.5°C",
-    devState: "闭环归档 · 恢复绿灯",
+    devState: "闭环归档 · 恢复全绿",
     badgeText: "安全关闭",
     exposure: "归档完毕",
     goodsVerdict: "RESOLVED (变质销毁/熟食放行)",
@@ -2899,11 +3065,11 @@ const DEMO_STEPS = [
     showHold: false,
     showBlock: false,
     terminal: [
-      "[09:07:00] [Orchestrator] VERIFIED_CLOSE: All physical risks eliminated. Moving to AGENT_LOOP.",
-      "[09:07:05] [AgentLoop] INGEST_TRACE: trace-diag-fa4416ba ingested into continuous learning engine.",
-      "[09:07:08] [Auditor] INVOKE_SKILL: review-report (Generated postmortem & knowledge candidate)",
-      "[09:07:10] [Orchestrator] FINAL_STATUS: Incident CLOSED (Anti-Self-Verification verified, 0 violations, 100% evidence)",
-      "[09:07:11] [System] 60-SECOND DEMO COMPLETED: Verifiable Multi-Agent Runtime in Action! ★★★★★"
+      "[09:07:00] [Orchestrator] VERIFIED_CLOSE: All physical food safety risks eliminated. Moving to AGENT_LOOP.",
+      "[09:07:05] [AgentLoop] INGEST_TRACE: tr-diag-9912c ingested into expert knowledge flywheel.",
+      "[09:07:08] [Auditor] GENERATE_POSTMORTEM: Created postmortem case KNOWLEDGE-CASE-20260919-03.",
+      "[09:07:10] [Orchestrator] FLEET_ROLLUP: Nationwide 300 stores, 156/156 incidents closed, ¥248,000+ saved, 0 violations.",
+      "[09:07:11] [System] 60-SECOND DEMO COMPLETED: Verifiable Multi-Agent Runtime Verified! ★★★★★"
     ]
   }
 ];
@@ -2915,8 +3081,39 @@ let secondsLeft = 60;
 let currentTargetKey = 's03-1';
 let s03AnomalyTriggered = false;
 let sentryTourTimer = null;
+let currentCityFilter = 'all';
 
 const FLEET_PROFILES = {
+  's03-1': {
+    mean: 3.4, amp: 0.35, freq: 0.8, phase: 0.0, noise: 0.25,
+    tBase: 2.0, yBase: 108, yScale: 10, stroke: 'url(#d-curve)',
+    meta: '门店状态: <b style="color:var(--red)">HZ-018 杭州店 · 1柜失温演练中</b> · 阈值: <b style="color:var(--text-secondary)">2~8°C</b> · Westgard: <b style="color:var(--red)">+3SD 红线越界</b>'
+  },
+  'sh01': {
+    mean: 3.4, amp: 0.25, freq: 0.85, phase: 0.5, noise: 0.22,
+    tBase: 2.0, yBase: 108, yScale: 10, stroke: '#10b981',
+    meta: '门店状态: <b style="color:var(--green)">全绿达标 (6/6)</b> · 均值: <b style="color:var(--green)">3.4°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 120h 零超温'
+  },
+  'bj01': {
+    mean: 3.6, amp: 0.3, freq: 0.7, phase: 1.1, noise: 0.25,
+    tBase: 2.0, yBase: 108, yScale: 10, stroke: '#10b981',
+    meta: '门店状态: <b style="color:var(--green)">全绿达标 (5/5)</b> · 均值: <b style="color:var(--green)">3.6°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 96h 零超温'
+  },
+  'gz01': {
+    mean: 3.5, amp: 0.28, freq: 0.9, phase: 2.0, noise: 0.24,
+    tBase: 2.0, yBase: 108, yScale: 10, stroke: '#10b981',
+    meta: '门店状态: <b style="color:var(--green)">全绿达标 (5/5)</b> · 均值: <b style="color:var(--green)">3.5°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 84h 零超温'
+  },
+  'sz01': {
+    mean: 3.7, amp: 0.32, freq: 0.75, phase: 0.3, noise: 0.26,
+    tBase: 2.0, yBase: 108, yScale: 10, stroke: '#10b981',
+    meta: '门店状态: <b style="color:var(--green)">全绿达标 (6/6)</b> · 均值: <b style="color:var(--green)">3.7°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 108h 零超温'
+  },
+  'cd01': {
+    mean: 3.8, amp: 0.35, freq: 0.8, phase: 1.5, noise: 0.28,
+    tBase: 2.0, yBase: 108, yScale: 10, stroke: '#10b981',
+    meta: '门店状态: <b style="color:var(--green)">全绿达标 (5/5)</b> · 均值: <b style="color:var(--green)">3.8°C</b> · Westgard: <b style="color:var(--green)">受控在界 (In-Control)</b> · 连续 72h 零超温'
+  },
   's01': {
     mean: 3.6, amp: 0.35, freq: 0.8, phase: 0.0, noise: 0.28,
     tBase: 2.0, yBase: 108, yScale: 10, stroke: '#10b981',
@@ -2951,9 +3148,9 @@ const FLEET_PROFILES = {
 
 const FLEET_TARGETS = {
   's03-1': {
-    cardId: 'demo-dev1-card',
-    titleNormal: 'S03-1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (巡检就绪 · 稳定受控)',
-    titleAbnormal: 'S03-1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (动态游标与红线阻断联动)',
+    cardId: 'demo-store-s03',
+    titleNormal: 'HZ-018 杭州武林门西店 · 1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (巡检就绪 · 稳定受控)',
+    titleAbnormal: 'HZ-018 杭州武林门西店 · 1号鲜奶冷柜 实时时序与 Westgard 质控曲线 (动态游标与红线阻断联动)',
     safeY: '48', safeH: '60',
     upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
     wgY: '38', wgTextY: '41', wgText: 'Westgard +3SD (8.5°C)',
@@ -2966,6 +3163,86 @@ const FLEET_TARGETS = {
       { text: '2.0°C', y: '112', fill: '#34d399' }
     ],
     xLabels: ['08:20', '08:40', '09:00 (Sentry超温)', '09:15 (维修派单)', '09:35 (换件降温)', '09:50 (Auditor重查)']
+  },
+  'sh01': {
+    cardId: 'demo-store-sh01',
+    title: 'SH-001 上海静安寺旗舰店 · 全店 6 台冷链设备温控与质控时序 (稳定受控)',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '58', wgTextY: '61', wgText: 'Westgard +3SD (6.8°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '92', meanTextY: '95', meanText: '均值 Mean (3.4°C)',
+    yLabels: [
+      { text: '10.0°C', y: '32', fill: '#94a3b8' },
+      { text: '8.0°C', y: '52', fill: '#f87171' },
+      { text: '4.0°C', y: '91', fill: '#94a3b8' },
+      { text: '2.0°C', y: '112', fill: '#34d399' }
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)']
+  },
+  'bj01': {
+    cardId: 'demo-store-bj01',
+    title: 'BJ-005 北京国贸中心店 · 全店 5 台冷链设备温控与质控时序 (稳定受控)',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '56', wgTextY: '59', wgText: 'Westgard +3SD (7.0°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '90', meanTextY: '93', meanText: '均值 Mean (3.6°C)',
+    yLabels: [
+      { text: '10.0°C', y: '32', fill: '#94a3b8' },
+      { text: '8.0°C', y: '52', fill: '#f87171' },
+      { text: '4.0°C', y: '91', fill: '#94a3b8' },
+      { text: '2.0°C', y: '112', fill: '#34d399' }
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)']
+  },
+  'gz01': {
+    cardId: 'demo-store-gz01',
+    title: 'GZ-002 广州天河城店 · 全店 5 台冷链设备温控与质控时序 (稳定受控)',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '57', wgTextY: '60', wgText: 'Westgard +3SD (6.9°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '91', meanTextY: '94', meanText: '均值 Mean (3.5°C)',
+    yLabels: [
+      { text: '10.0°C', y: '32', fill: '#94a3b8' },
+      { text: '8.0°C', y: '52', fill: '#f87171' },
+      { text: '4.0°C', y: '91', fill: '#94a3b8' },
+      { text: '2.0°C', y: '112', fill: '#34d399' }
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)']
+  },
+  'sz01': {
+    cardId: 'demo-store-sz01',
+    title: 'SZ-003 深圳高新园店 · 全店 6 台冷链设备温控与质控时序 (稳定受控)',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '55', wgTextY: '58', wgText: 'Westgard +3SD (7.2°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '89', meanTextY: '92', meanText: '均值 Mean (3.7°C)',
+    yLabels: [
+      { text: '10.0°C', y: '32', fill: '#94a3b8' },
+      { text: '8.0°C', y: '52', fill: '#f87171' },
+      { text: '4.0°C', y: '91', fill: '#94a3b8' },
+      { text: '2.0°C', y: '112', fill: '#34d399' }
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)']
+  },
+  'cd01': {
+    cardId: 'demo-store-cd01',
+    title: 'CD-006 成都春熙路店 · 全店 5 台冷链设备温控与质控时序 (稳定受控)',
+    safeY: '48', safeH: '60',
+    upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
+    wgY: '56', wgTextY: '59', wgText: 'Westgard +3SD (7.1°C)',
+    lowerY: '108', lowerTextY: '112', lowerText: '2.0°C 下限',
+    meanY: '88', meanTextY: '91', meanText: '均值 Mean (3.8°C)',
+    yLabels: [
+      { text: '10.0°C', y: '32', fill: '#94a3b8' },
+      { text: '8.0°C', y: '52', fill: '#f87171' },
+      { text: '4.0°C', y: '91', fill: '#94a3b8' },
+      { text: '2.0°C', y: '112', fill: '#34d399' }
+    ],
+    xLabels: ['08:20', '08:40', '09:00 (Sentry巡检)', '09:15 (稳态运行)', '09:35 (质控在界)', '09:50 (平稳达标)']
   },
   's01': {
     cardId: 'demo-store-s01',
@@ -3017,7 +3294,7 @@ const FLEET_TARGETS = {
   },
   's03-2': {
     cardId: 'demo-dev2-card',
-    title: 'S03-2号冰淇淋冷冻岛柜 实时时序与 Westgard 质控曲线 (稳定受控)',
+    title: 'HZ-018 2号冰淇淋冷冻岛柜 实时时序与 Westgard 质控曲线 (稳定受控)',
     safeY: '48', safeH: '60',
     upperY: '48', upperTextY: '52', upperText: '-16.0°C 告警上限',
     wgY: '52', wgTextY: '55', wgText: 'Westgard +3SD (-16.5°C)',
@@ -3033,7 +3310,7 @@ const FLEET_TARGETS = {
   },
   's03-3': {
     cardId: 'demo-dev3-card',
-    title: 'S03-3号热食恒温包子柜 实时时序与 Westgard 质控曲线 (稳定受控)',
+    title: 'HZ-018 3号热食恒温包子柜 实时时序与 Westgard 质控曲线 (稳定受控)',
     safeY: '48', safeH: '60',
     upperY: '48', upperTextY: '52', upperText: '68.0°C 上限',
     wgY: '54', wgTextY: '57', wgText: 'Westgard +3SD (67.0°C)',
@@ -3049,7 +3326,7 @@ const FLEET_TARGETS = {
   },
   's03-4': {
     cardId: 'demo-dev4-card',
-    title: 'S03-4号低温饮料风幕柜 实时时序与 Westgard 质控曲线 (稳定受控)',
+    title: 'HZ-018 4号低温饮料风幕柜 实时时序与 Westgard 质控曲线 (稳定受控)',
     safeY: '48', safeH: '60',
     upperY: '48', upperTextY: '52', upperText: '8.0°C 告警上限',
     wgY: '58', wgTextY: '61', wgText: 'Westgard +3SD (6.8°C)',
@@ -3101,7 +3378,7 @@ function generateStoreCurve(key) {
       return { pts, path: pointsToSvgPath(pts), stroke: '#10b981' };
     }
 
-    // Incident spike curve for S03-1
+    // Incident spike curve for S03-1 / HZ018
     const baseTemps = [3.4, 3.5, 3.6, 4.2, 6.2, 8.3, 9.6, 9.5, 9.4, 9.1, 7.8, 7.2, 5.9, 5.1, 4.8];
     for (let i = 0; i < count; i++) {
       const x = xStart + i * (xEnd - xStart) / (count - 1);
@@ -3128,6 +3405,38 @@ function generateStoreCurve(key) {
   return { pts, path: pointsToSvgPath(pts), stroke: prof.stroke };
 }
 
+function selectCityFilter(cityId) {
+  currentCityFilter = cityId;
+  document.querySelectorAll('.city-filter-pill').forEach(btn => {
+    btn.classList.remove('active-city');
+  });
+  if (typeof event !== 'undefined' && event && event.currentTarget && event.currentTarget.classList) {
+    event.currentTarget.classList.add('active-city');
+  }
+
+  const cityMap = {
+    'all': { label: '全国 12 核心城市 · 300 家门店 · 1,500 台冷链设备 (全网受控)', target: 's03-1' },
+    'hz': { label: '华东 · 杭州市 (25家门店 · 125台设备 · 🚨HZ-018发生失温演练)', target: 's03-1' },
+    'sh': { label: '华东 · 上海市 (25家门店 · 125台设备 · 6台抽样全受控)', target: 'sh01' },
+    'bj': { label: '华北 · 北京市 (25家门店 · 125台设备 · 5台抽样全受控)', target: 'bj01' },
+    'gz': { label: '华南 · 广州市 (25家门店 · 125台设备 · 5台抽样全受控)', target: 'gz01' },
+    'sz': { label: '华南 · 深圳市 (25家门店 · 125台设备 · 6台抽样全受控)', target: 'sz01' },
+    'cd': { label: '西南 · 成都市 (25家门店 · 125台设备 · 5台抽样全受控)', target: 'cd01' },
+    'wh': { label: '华中 · 武汉市 (25家门店 · 125台设备 · 全受控)', target: 's01' },
+    'nj': { label: '华东 · 南京市 (25家门店 · 125台设备 · 全受控)', target: 'sh01' },
+    'su': { label: '华东 · 苏州市 (25家门店 · 125台设备 · 全受控)', target: 'sh01' },
+    'tj': { label: '华北 · 天津市 (25家门店 · 125台设备 · 全受控)', target: 'bj01' },
+    'dg': { label: '华南 · 东莞市 (25家门店 · 125台设备 · 全受控)', target: 'gz01' },
+    'fs': { label: '华南 · 佛山市 (25家门店 · 125台设备 · 全受控)', target: 'gz01' }
+  };
+
+  const info = cityMap[cityId] || cityMap['all'];
+  const lbl = document.getElementById('current-city-label');
+  if (lbl) lbl.textContent = info.label;
+
+  inspectStore(info.target);
+}
+
 function triggerS03Anomaly() {
   s03AnomalyTriggered = true;
   
@@ -3150,11 +3459,11 @@ function triggerS03Anomaly() {
     storeS03Badge.style.color = '#fca5a5';
   }
   if (storeS03Desc) {
-    storeS03Desc.textContent = '纳管: 4台冷链设备 · 1起失温中';
+    storeS03Desc.textContent = '纳管: 5台冷链设备 · 1起失温演练中';
     storeS03Desc.style.color = '#fca5a5';
   }
   if (fleetAlert) {
-    fleetAlert.textContent = '1起异常闭环中 (S03店)';
+    fleetAlert.textContent = '1起异常闭环中 (HZ-018 杭州店)';
     fleetAlert.style.color = 'var(--red)';
   }
   if (dev1Card) {
@@ -3191,7 +3500,7 @@ function resetS03ToNormal() {
   const dev1State = document.getElementById('demo-dev1-state');
 
   if (storeS03) {
-    storeS03.style.borderColor = 'var(--border-subtle)';
+    storeS03.style.borderColor = 'var(--green)';
     storeS03.style.background = 'rgba(255,255,255,0.03)';
   }
   if (storeS03Badge) {
@@ -3200,7 +3509,7 @@ function resetS03ToNormal() {
     storeS03Badge.style.color = 'var(--green)';
   }
   if (storeS03Desc) {
-    storeS03Desc.textContent = '纳管: 4台冷链设备 · 全部在线达标';
+    storeS03Desc.textContent = '纳管: 5台冷链设备 · 全部在线达标';
     storeS03Desc.style.color = 'var(--text-muted)';
   }
   if (fleetAlert) {
@@ -3424,7 +3733,7 @@ function inspectStore(key) {
     const logLine = document.createElement('div');
     logLine.className = 'terminal-line';
     if (key === 's03-1') {
-      logLine.innerHTML = `<span class="t-cyan">></span> [${timeStr}] [Sentry] <span style="color:var(--red); font-weight:700;">⚠️ 巡检锁定 S03 天河店 1号立风柜: 温度突破阈值 (9.6°C > 8.0°C, Westgard +3SD 红线越界) -> 立即触发严重告警，向总控请求遏制!</span>`;
+      logLine.innerHTML = `<span class="t-cyan">></span> [${timeStr}] [Sentry] <span style="color:var(--red); font-weight:700;">⚠️ 巡检锁定 HZ-018 杭州武林门西店 1号立风柜: 温度突破阈值 (9.6°C > 8.0°C, Westgard +3SD 红线越界) -> 立即触发严重告警，向总控请求遏制!</span>`;
     } else {
       const name = FLEET_TARGETS[key] ? FLEET_TARGETS[key].title.split(' ')[0] : key;
       logLine.innerHTML = `<span class="t-cyan">></span> [${timeStr}] [Sentry] <span style="color:var(--green)">✓ 巡检扫描 ${name}: 均温受控达标, Westgard 质控合格 (PASS).</span>`;
@@ -3455,7 +3764,7 @@ function startSentryScanTour() {
   switchMainTab('demo');
   resetS03ToNormal();
   
-  const tourTargets = ['s01', 's02', 's04', 's03-1'];
+  const tourTargets = ['sh01', 'bj01', 'gz01', 'sz01', 'cd01', 's03-1'];
   let idx = 0;
   inspectStore(tourTargets[0]);
   
@@ -3467,7 +3776,248 @@ function startSentryScanTour() {
       clearInterval(sentryTourTimer);
       sentryTourTimer = null;
     }
-  }, 2200);
+  }, 2000);
+}
+
+function getStepVisualWidgetHtml(idx) {
+  if (idx === 0) {
+    return `
+      <div class="step-visual-widget" style="background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.3); border-radius:10px; padding:12px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="pulse-dot" style="background:#38bdf8;"></span>
+            <b style="color:#38bdf8; font-size:12.5px;">Sentry 300 门店遥测感知雷达 (Qwen3.8-Flash · 8ms 极速巡检):</b>
+          </div>
+          <span style="font-size:10.5px; font-family:var(--font-mono); background:rgba(56,189,248,0.15); color:#38bdf8; padding:2px 8px; border-radius:4px;">
+            吞吐 3,600 rps · PHX 集群 100.95.247.115
+          </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px;">
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:6px; padding:6px 8px;">
+            <div style="font-size:10px; color:var(--text-muted);">全国已轮询设备</div>
+            <div style="font-size:15px; font-weight:800; color:#fff; font-family:var(--font-mono);">1,500 / 1,500</div>
+            <div style="font-size:9.5px; color:var(--green);">覆盖全国 12 大城市</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:6px; padding:6px 8px;">
+            <div style="font-size:10px; color:var(--text-muted);">正常受控设备</div>
+            <div style="font-size:15px; font-weight:800; color:var(--green); font-family:var(--font-mono);">1,499 台</div>
+            <div style="font-size:9.5px; color:var(--text-muted);">Westgard 均在界</div>
+          </div>
+          <div style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); border-radius:6px; padding:6px 8px;">
+            <div style="font-size:10px; color:#fca5a5;">异常越界锁定</div>
+            <div style="font-size:15px; font-weight:800; color:var(--red); font-family:var(--font-mono);">1 起 (9.6°C)</div>
+            <div style="font-size:9.5px; color:#f87171;">杭州武林门西店 1号柜</div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--text-secondary); line-height:1.5; background:rgba(0,0,0,0.3); padding:8px 10px; border-radius:6px; border-left:3px solid var(--red); margin-bottom:8px;">
+          <b>🚨 异常时序遥测指纹:</b> 库温突破警戒上限 8.0°C 与 Westgard +3SD (8.5°C)，Sentry 排除传感器断流误报，置信度 99.1%，瞬间向总控立案：<code style="color:#fca5a5;">INC-COLD-A02-0919</code>。
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="sentry-store-tab" data-key="sh01" onclick="inspectStore('sh01')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
+            📍 上海旗舰 (3.4°C 受控)
+          </button>
+          <button class="sentry-store-tab" data-key="bj01" onclick="inspectStore('bj01')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
+            📍 北京国贸 (3.6°C 受控)
+          </button>
+          <button class="sentry-store-tab" data-key="gz01" onclick="inspectStore('gz01')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
+            📍 广州天河 (3.5°C 受控)
+          </button>
+          <button class="sentry-store-tab active-sentry-tab" data-key="s03-1" onclick="inspectStore('s03-1')" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid var(--red); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:700;">
+            🚨 杭州武林门西 (1号柜 9.6°C 超温!)
+          </button>
+        </div>
+      </div>
+    `;
+  } else if (idx === 1) {
+    return `
+      <div class="step-visual-widget" style="background:rgba(15,23,42,0.95); border:1.5px solid #ef4444; border-radius:10px; padding:12px; margin-top:12px; box-shadow:0 0 20px rgba(239,68,68,0.25);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(239,68,68,0.3); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:16px;">🖥️</span>
+            <b style="color:#fff; font-size:12.5px;">门店 POS 离线数字化收银台实时截流终端仿真</b>
+          </div>
+          <span style="background:#ef4444; color:#fff; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; font-family:var(--font-mono);">
+            INTERCEPTED 强制拦截中
+          </span>
+        </div>
+        <div style="background:#030712; border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:8px 10px; margin-bottom:8px; font-family:var(--font-mono); font-size:11px;">
+          <div style="color:var(--text-secondary); display:flex; justify-content:space-between;">
+            <span>门店: 杭州武林门西店 · POS 收银机 #02</span>
+            <span>收银员: 0842 · 流水单: 20260919-0092</span>
+          </div>
+          <div style="color:#fff; margin-top:4px; display:flex; justify-content:space-between; font-weight:700;">
+            <span>扫描商品: 光明优倍高品质鲜牛奶 (950ml)</span>
+            <span style="color:#38bdf8;">条码: 6901028301024</span>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg, rgba(239,68,68,0.35), rgba(185,28,28,0.55)); border:1.5px solid #ef4444; border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:16px; font-weight:900; color:#fff; display:flex; align-items:center; justify-content:center; gap:6px;">
+            <span>🛑 严禁结算！此商品已被冷链安全熔断锁定</span>
+          </div>
+          <div style="font-size:11px; color:#fecaca; margin-top:4px; line-height:1.5;">
+            原因: 检测到 1 号冷柜异常超温 (9.6°C)，触发食品安全强制熔断<br/>
+            <b>拦截规则: RULE-POS-HZ018-COLD</b> | 幂等 Key: <code style="color:#fff;">exec-hz018:v1</code> | <b>实测流出件数: 0 件 (100% 阻断)</b>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:10.5px; color:var(--text-muted);">
+          <span>⚡ 规则下发延迟: <b>680ms</b> (先于任何顾客到达收银台)</span>
+          <span style="color:var(--green); font-weight:700;">✓ 美团/饿了么全渠道外卖同步停售</span>
+        </div>
+      </div>
+    `;
+  } else if (idx === 2) {
+    return `
+      <div class="step-visual-widget" style="background:rgba(15,23,42,0.95); border:1.5px solid #6366f1; border-radius:10px; padding:12px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(99,102,241,0.3); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:16px;">🔬</span>
+            <b style="color:#fff; font-size:12.5px;">阿伦尼乌斯物理化学动力学推导 (Qwen3.8-Max 深度思维链)</b>
+          </div>
+          <span style="background:rgba(99,102,241,0.2); color:#a5b4fc; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; font-family:var(--font-mono);">
+            E_a = 52.3 kJ/mol
+          </span>
+        </div>
+        <div style="background:#030712; border:1px solid rgba(99,102,241,0.25); border-radius:6px; padding:8px 10px; margin-bottom:8px; font-family:var(--font-mono); font-size:11px;">
+          <div style="color:#818cf8; font-weight:700;">反应速率: k(T) = A · exp(-E_a / (R · T))</div>
+          <div style="color:#e0e7ff; margin-top:3px;">
+            劣变积分: Q_loss = ∫ k(T(t)) dt = <b style="color:#f87171;">1.48 > 1.0</b> (超标判定变质不可逆)
+          </div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:10.5px; margin-bottom:8px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--text-muted); text-align:left;">
+              <th style="padding:3px 4px;">涉险商品批次</th>
+              <th style="padding:3px 4px;">数量</th>
+              <th style="padding:3px 4px;">动力学判定</th>
+              <th style="padding:3px 4px;">处置决策</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05); color:#fff;">
+              <td style="padding:4px;">光明优倍鲜奶 (950ml)</td>
+              <td style="padding:4px;">24 盒</td>
+              <td style="padding:4px; color:#f87171; font-weight:700;">变质不安全</td>
+              <td style="padding:4px;"><span style="background:#ef4444; color:#fff; padding:1px 5px; border-radius:3px; font-size:9.5px;">强制报损销毁</span></td>
+            </tr>
+            <tr style="color:#fff;">
+              <td style="padding:4px;">明治保鲜牛奶 (450ml)</td>
+              <td style="padding:4px;">18 盒</td>
+              <td style="padding:4px; color:#fbbf24; font-weight:700;">临界安全带</td>
+              <td style="padding:4px;"><span style="background:#3b82f6; color:#fff; padding:1px 5px; border-radius:3px; font-size:9.5px;">转移备用冷库 B02</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:5px 8px; border-radius:6px; font-size:10.5px;">
+          <span style="color:var(--text-secondary);">涉险件数: <b>42 件</b> (货值 ¥621.60)</span>
+          <span style="color:var(--green); font-weight:700;">避免潜在十倍惩罚性赔偿: ¥6,216.00</span>
+        </div>
+        <div style="font-size:10.5px; color:#c7d2fe; margin-top:6px; line-height:1.4;">
+          🔧 <b>热力学硬件机理:</b> 吸气压力 0.12 MPa (基准 0.28 MPa)，判定冷凝膨胀阀微漏致冷量断崖衰减 68% (置信度 0.94)。
+        </div>
+      </div>
+    `;
+  } else if (idx === 3) {
+    return `
+      <div class="step-visual-widget" style="background:rgba(15,23,42,0.95); border:1.5px solid #f59e0b; border-radius:10px; padding:12px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(245,158,11,0.3); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:16px;">📋</span>
+            <b style="color:#fff; font-size:12.5px;">Human-as-a-Physical-Tool 线下异步工单与店长移动端审批</b>
+          </div>
+          <span style="background:#f59e0b; color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; font-family:var(--font-mono);">
+            P1 紧急抢修
+          </span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+          <div style="background:#030712; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; font-size:11px;">
+            <div style="color:var(--text-muted);">抢修工单编号</div>
+            <div style="color:#fff; font-weight:700; font-family:var(--font-mono); margin-top:2px;">WO-20260919-S03</div>
+            <div style="color:var(--green); margin-top:4px;">● 驻点工程师: 张工 (已接单抢修)</div>
+            <div style="color:var(--text-muted); font-size:10px;">SLA 20分钟到场 · 携带膨胀阀备件</div>
+          </div>
+          <div style="background:#030712; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 10px; font-size:11px;">
+            <div style="color:var(--text-muted);">HITL 店长移动端审批</div>
+            <div style="color:#fff; font-weight:700; font-family:var(--font-mono); margin-top:2px;">#APPR-S03-01 (已核准)</div>
+            <div style="color:var(--cyan); margin-top:4px;">换件预算: ¥680 (已核销)</div>
+            <div style="color:var(--text-muted); font-size:10px;">店长移动端指纹授权 (09:02:00)</div>
+          </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); border-left:3px solid #f59e0b; padding:6px 10px; border-radius:0 6px 6px 0; font-size:11px; color:#fef3c7; line-height:1.5;">
+          📦 <b>现场物理保全执行:</b> 店长 PDA 扫码引导 42 件货品转移至后库备用冷柜 B02 (实测温控 2.1°C 正常)；原冷柜已断电张贴检修标。
+        </div>
+      </div>
+    `;
+  } else if (idx === 4) {
+    return `
+      <div class="step-visual-widget" style="background:rgba(15,23,42,0.95); border:1.5px solid #10b981; border-radius:10px; padding:12px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(16,185,129,0.3); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:16px;">⚖️</span>
+            <b style="color:#fff; font-size:12.5px;">DeepSeek-V4-Pro-0813 异构独立带外审计 (拒绝同源自证偏见)</b>
+          </div>
+          <span style="background:rgba(16,185,129,0.2); color:var(--green); font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; font-family:var(--font-mono);">
+            DUAL GATES PASS
+          </span>
+        </div>
+        <div style="background:#030712; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#fff;">🚪 Gate-1 门禁: 信息域 POS 拦截生效带外核验</span>
+            <span style="background:var(--green); color:#000; font-size:9.5px; font-weight:800; padding:1px 5px; border-radius:3px;">PASS 通过</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-secondary); margin-top:3px;">
+            • 独立拉取收银流水数据库日志与审计快照：涉险鲜奶拦截 2 次，<b>实测售出量 = 0 件 (100% 阻断)</b>
+          </div>
+        </div>
+        <div style="background:#030712; border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:8px 10px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#fff;">🚪 Gate-2 门禁: 物理域 物料转移守恒与冷库验真</span>
+            <span style="background:var(--green); color:#000; font-size:9.5px; font-weight:800; padding:1px 5px; border-radius:3px;">PASS 通过</span>
+          </div>
+          <div style="font-size:10.5px; color:var(--text-secondary); margin-top:3px;">
+            • 独立读取后库备用冷库 B02 传感器 (2.1°C 正常) 与 RFID 盘点流：<b>42 件货品账实相符</b>，原冷柜恢复 4.8°C
+          </div>
+        </div>
+        <div style="font-size:10.5px; color:var(--text-muted); background:rgba(0,0,0,0.3); padding:5px 8px; border-radius:6px; border-left:3px solid var(--green);">
+          <b>🛡️ 裁判审计判词:</b> 硬件恢复不等于风险解除，坚决销毁超温鲜奶，绝不信任业务自报，准予有条件关闭！
+        </div>
+      </div>
+    `;
+  } else if (idx === 5) {
+    return `
+      <div class="step-visual-widget" style="background:rgba(15,23,42,0.95); border:1.5px solid var(--cyan); border-radius:10px; padding:12px; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid rgba(56,189,248,0.3); padding-bottom:6px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:16px;">🏁</span>
+            <b style="color:#fff; font-size:12.5px;">事件事实驱动关闭 · 全网 300 家门店数智运营收益</b>
+          </div>
+          <span style="background:rgba(56,189,248,0.2); color:var(--cyan); font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; font-family:var(--font-mono);">
+            STATUS: CLOSED
+          </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px;">
+          <div style="background:#030712; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:6px 8px; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted);">全网异常处置率</div>
+            <div style="font-size:16px; font-weight:800; color:var(--green); font-family:var(--font-mono); margin-top:2px;">100%</div>
+            <div style="font-size:9.5px; color:var(--green);">156 / 156 起安全归档</div>
+          </div>
+          <div style="background:#030712; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:6px 8px; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted);">累计直接挽损</div>
+            <div style="font-size:16px; font-weight:800; color:var(--cyan); font-family:var(--font-mono); margin-top:2px;">¥248,000+</div>
+            <div style="font-size:9.5px; color:var(--cyan);">0 起行政处罚与客诉</div>
+          </div>
+          <div style="background:#030712; border:1px solid rgba(255,255,255,0.08); border-radius:6px; padding:6px 8px; text-align:center;">
+            <div style="font-size:10px; color:var(--text-muted);">端到端闭环耗时</div>
+            <div style="font-size:16px; font-weight:800; color:#a855f7; font-family:var(--font-mono); margin-top:2px;">16.4 分钟</div>
+            <div style="font-size:9.5px; color:#c084fc;">比传统巡检提速 87%</div>
+          </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); border-left:3px solid var(--cyan); padding:6px 10px; border-radius:0 6px 6px 0; font-size:10.5px; color:#e0f2fe; line-height:1.5;">
+          🧠 <b>AgentLoop 知识飞轮演进:</b> 本次膨胀阀慢泄漏时序特征向量已沉淀至冷链专家知识库 (<code style="color:var(--cyan);">KNOWLEDGE-CASE-20260919-03</code>)，自动提升 Sentry 预警模型早筛准确率！
+        </div>
+      </div>
+    `;
+  }
+  return '';
 }
 
 function renderStep(idx) {
@@ -3503,7 +4053,8 @@ function renderStep(idx) {
   const dev1Badge = document.getElementById('demo-dev1-badge');
   if (dev1Badge && data.badgeText) {
     dev1Badge.textContent = (idx === 0 && !s03AnomalyTriggered) ? '正常' : data.badgeText;
-    dev1Badge.style.background = (idx >= 4 || (!s03AnomalyTriggered && idx === 0)) ? 'var(--green)' : 'var(--red)';
+    dev1Badge.style.background = (idx >= 4 || (!s03AnomalyTriggered && idx === 0)) ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.25)';
+    dev1Badge.style.color = (idx >= 4 || (!s03AnomalyTriggered && idx === 0)) ? 'var(--green)' : '#fca5a5';
   }
   const chartExp = document.getElementById('demo-chart-exposure');
   if (chartExp && data.exposure) {
@@ -3535,7 +4086,7 @@ function renderStep(idx) {
       storeS03Badge.style.color = 'var(--green)';
     }
     if (storeS03Desc) {
-      storeS03Desc.textContent = (idx === 5) ? '纳管: 4台冷链设备 · 全部达标' : '纳管: 4台冷链设备 · 全部在线达标';
+      storeS03Desc.textContent = (idx === 5) ? '纳管: 5台冷链设备 · 全部达标' : '纳管: 5台冷链设备 · 全部在线达标';
       storeS03Desc.style.color = 'var(--green)';
     }
     if (fleetAlert) {
@@ -3558,15 +4109,15 @@ function renderStep(idx) {
       storeS03Badge.style.color = '#fca5a5';
     }
     if (storeS03Desc) {
-      storeS03Desc.textContent = '纳管: 4台冷链设备 · 1起失温中';
+      storeS03Desc.textContent = '纳管: 5台冷链设备 · 1起失温中';
       storeS03Desc.style.color = '#fca5a5';
     }
     if (fleetAlert) {
-      fleetAlert.textContent = '1起异常闭环中 (S03店)';
+      fleetAlert.textContent = '1起异常闭环中 (HZ-018 杭州店)';
       fleetAlert.style.color = 'var(--red)';
     }
     if (dev1Card) {
-      dev1Card.style.borderColor = (idx === 3) ? 'var(--accent)' : 'var(--red)';
+      dev1Card.style.borderColor = (idx === 3) ? 'var(--amber)' : 'var(--red)';
       dev1Card.style.borderWidth = '2px';
     }
   }
@@ -3574,7 +4125,7 @@ function renderStep(idx) {
   // Update SVG curve and badges for S03-1
   selectFleetTarget('s03-1');
 
-  // Render details
+  // Render details with Rich Domain Visual Widget
   const container = document.getElementById('step-detail-container');
   container.innerHTML = `
     <div class="step-info-col">
@@ -3585,41 +4136,13 @@ function renderStep(idx) {
         <span class="mcp-pill">🔌 ${data.mcp}</span>
       </div>
       <div class="step-desc">${data.desc}</div>
-      <div style="font-size:12px; color:var(--text-muted); display:flex; flex-direction:column; gap:4px; font-family:var(--font-mono);">
-        <div><span style="color:var(--text-secondary)">证据编号:</span> ${data.evidence}</div>
-        <div><span style="color:var(--text-secondary)">追踪链路:</span> ${data.trace}</div>
+      <div style="font-size:11.5px; color:var(--text-muted); display:flex; flex-direction:column; gap:3px; font-family:var(--font-mono);">
+        <div><span style="color:var(--text-secondary)">证据指纹:</span> ${data.evidence}</div>
+        <div><span style="color:var(--text-secondary)">链路追踪:</span> ${data.trace}</div>
       </div>
-      ${idx === 0 ? `
-      <div style="margin-top:12px; background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:10px 12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span class="pulse-dot" style="background:#38bdf8;"></span>
-            <b style="color:#38bdf8; font-size:12px;">Sentry 现场巡检探针 (点击切换巡检目标，实时计算各店时序曲线):</b>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button onclick="startSentryScanTour()" style="background:rgba(56,189,248,0.2); color:#38bdf8; border:1px solid #38bdf8; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
-              ⚡ 演示现场巡检 (S01→S02→S04→S03)
-            </button>
-            <button onclick="resampleCurrentTarget()" style="background:rgba(16,185,129,0.2); color:#34d399; border:1px solid #10b981; border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
-              🔄 刷新即时采样
-            </button>
-          </div>
-        </div>
-        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-          <button class="sentry-store-tab" data-key="s01" onclick="inspectStore('s01')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
-            📍 S01 深圳科技园店 (3.6°C 受控)
-          </button>
-          <button class="sentry-store-tab" data-key="s02" onclick="inspectStore('s02')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
-            📍 S02 广州珠江店 (4.1°C 受控)
-          </button>
-          <button class="sentry-store-tab" data-key="s04" onclick="inspectStore('s04')" style="background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid rgba(255,255,255,0.1); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer;">
-            📍 S04 佛山千灯湖店 (3.9°C 受控)
-          </button>
-          <button class="sentry-store-tab active-sentry-tab" data-key="s03-1" onclick="inspectStore('s03-1')" style="background:rgba(239,68,68,0.2); color:#fca5a5; border:1px solid var(--red); border-radius:4px; padding:3px 8px; font-size:11px; cursor:pointer; font-weight:700;">
-            🚨 S03 广州天河店 (1号柜 9.6°C 发现超温!)
-          </button>
-        </div>
-      </div>` : ''}
+      
+      <!-- Rich Visual Domain Widget for Current Step -->
+      ${getStepVisualWidgetHtml(idx)}
     </div>
     <div class="terminal-box">
       <div class="terminal-header">
@@ -3693,13 +4216,13 @@ function toggleAutoPlay() {
       
       // Step 0 (00-10s): Sentry live multi-store scan discovery!
       if (elapsed === 1) {
-        inspectStore('s01');
+        inspectStore('sh01');
       } else if (elapsed === 3) {
-        inspectStore('s02');
+        inspectStore('bj01');
       } else if (elapsed === 5) {
-        inspectStore('s04');
+        inspectStore('gz01');
       } else if (elapsed === 7) {
-        inspectStore('s03-1'); // S03 triggers anomaly and turns red!
+        inspectStore('s03-1'); // HZ-018 triggers anomaly and turns red!
       }
       
       let stepTarget = Math.floor(elapsed / 10);
