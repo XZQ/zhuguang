@@ -2,7 +2,10 @@
 
 [![CI](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml/badge.svg)](https://github.com/XZQ/zhuguang/actions/workflows/ci.yml)
 
-> 让连锁门店异常从“告警已读”走到“证据完备、责任清晰、安全关闭”。
+> **设备修好不等于商品安全，独立验证每一次关键处置**  
+> **团队**：逐光｜夏志强（浙江吉利控股）、马荣（OPPO）  
+> **领域**：零售连锁 / Agent Infra（世界人工智能开源大赛 GOAI 2026 决赛参赛作品）  
+> **核心原则**：对于证据不足、处置未完成或商品仍存在风险的情况，系统继续保持停售并阻止事件关闭，是设计中的正确结果，而不是流程失败。
 
 **逐光**是参赛队伍名称；**店巡 Agent**是面向连锁便利店的多 Agent 异常闭环基础设施，也是 [GOAI Agent Infra 赛道](https://www.goaihz.com/tracks?track=infra)参赛作品。项目采用“一主两辅”展示策略：以**冷柜失温事件**作为首要完整验证场景，缺货与价签异常作为可独立运行的补充场景。
 
