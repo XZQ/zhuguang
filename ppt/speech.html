@@ -753,6 +753,18 @@
           • <strong>Diagnoser（推断大脑）</strong>：L0 只读建议，基于物理动力学模型做热应力定损，输出 Top-K 处方；<br/>
           • <strong>Executor（执行机构）</strong>：拥有 L1 预授权数字熔断与 L2 物理调度权限，<strong class="hl-danger">但被彻底剥夺了自验权</strong>；<br/>
           • <strong>Auditor（独立预言机）</strong>：拥有<strong class="hl-success">一票否决权</strong>！独立重查外部传感器真值，只有设备与商品双重过关，才允许 Verified Close。</p>
+          
+          <div class="cue-box" style="margin-top: 14px; background: rgba(168,85,247,0.06); border-left-color: var(--purple);">
+            <span class="cue-text">⚡ 配合闭环架构动态流向图（动图演练口播）：指引五角色职责、Policy 橙色门禁与 Auditor 红色一票否决闭环</span>
+            <span class="cue-tag" style="background: rgba(168,85,247,0.2); color: #d8b4fe;">动图高光口播</span>
+          </div>
+          <div style="border-left: 2px dashed rgba(168,85,247,0.4); padding-left: 14px; margin-top: 10px;">
+            <span class="stage-direction">👉 配合架构流向图（architecture-flow.svg）口播重点</span>
+            <p>“大家请看我们的多 Agent 闭环架构动态流向：<br/>
+            • 最左侧：门店 IoT 与巡检异常触发，首先流入处于中央调度中枢的 <strong class="hl-accent">Orchestrator（Team Leader）</strong>，负责将复杂处置事件拆解为结构化任务；<br/>
+            • 中间四位执行 Worker 并行展开：<strong>Sentry</strong> 负责流式去噪与失温检测；<strong>Diagnoser</strong> 负责多源假设因果排序与批次热暴露定损；<strong>Executor</strong> 负责受控执行下发物理维修工单，但请注意看它下方的这道<strong class="hl-warning">橙色 Policy 策略门禁</strong>，任何涉及资金和不可逆操作必须经由刚性策略与人工审批，死死卡住执行越权！各个 Worker 将处置事实写入右侧唯一的业务事实中心 <strong>IncidentService</strong>；<br/>
+            • <strong class="hl-danger">整个架构最精妙、最关键的设计，在右下角这条红色的反自验闭环线（Redline）</strong>：<strong>Auditor 独立稽核者</strong>完全隔离上下文，带外重查客观物理传感器。一旦设备修好了但商品超温，<strong class="hl-danger">Auditor 沿着这条红色闭环线，直接行使一票否决权，坚决阻断事件关闭，强制回开事件并打回处置</strong>！这就是我们讲的：执行者绝无权自证成功，必须由独立 Auditor 守住最后一道食安底线。”</p>
+          </div>
         </div>
       </article>
 
