@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全国300店冷链数智孪生大盘 · PHX 实时仿真与机器学习监测中心 | VeriAgent 逐光</title>
+<meta name="description" content="VeriAgent 逐光队全国连锁零售 300 家门店、1500 台智能冷链设备、¥2,719,610 温敏资产数智孪生监控大盘与机器学习预测性维护中心。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #070d18;
+  --bg-card: #0e1726;
+  --bg-card-hover: #142033;
+  --panel: rgba(14, 23, 38, 0.85);
+  --border: rgba(56, 189, 248, 0.18);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(56, 189, 248, 0.45);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --cyan: #38bdf8;
+  --blue: #3b82f6;
+  --indigo: #6366f1;
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.25);
+  --amber: #f59e0b;
+  --amber-glow: rgba(245, 158, 11, 0.25);
+  --red: #ef4444;
+  --red-glow: rgba(239, 68, 68, 0.25);
+  --font-sans: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: radial-gradient(circle at 85% -10%, rgba(56, 189, 248, 0.12) 0%, transparent 40%),
+              radial-gradient(circle at 10% 25%, rgba(99, 102, 241, 0.10) 0%, transparent 45%),
+              var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  font-size: 13.5px;
+  min-height: 100vh;
+}
+
+a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
+a:hover { color: #7dd3fc; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+/* Layout Shell */
+.fleet-shell {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 16px 24px 60px;
+}
+
+/* Header */
+.top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  margin-bottom: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-logo-badge {
+  background: linear-gradient(135deg, #0284c7, #4f46e5);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+}
+.header-title-box h1 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header-title-box p {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nav-link-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.nav-link-btn:hover {
+  background: rgba(56,189,248,0.15);
+  border-color: var(--cyan);
+  color: #fff;
+}
+.pulse-online {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  display: inline-block;
+  animation: pulse-glow 2s infinite;
+}
+@keyframes pulse-glow {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* KPI Banner */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--cyan);
+}
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+.kpi-card.alert-card::before {
+  background: linear-gradient(90deg, transparent, var(--red), transparent);
+}
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.kpi-value {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: #fff;
+  line-height: 1.2;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  font-family: var(--font-mono);
+}
+
+/* Control & Filter Strip */
+.filter-strip {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.city-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.city-pill:hover, .city-pill.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--cyan);
+  color: #fff;
+}
+.city-pill .badge {
+  font-size: 10px;
+  background: rgba(255,255,255,0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  margin-left: 4px;
+  font-family: var(--font-mono);
+}
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.status-pill.all.active { background: rgba(56,189,248,0.2); border-color: var(--cyan); color:#fff; }
+.status-pill.crit.active { background: rgba(239,68,68,0.2); border-color: var(--red); color:#fca5a5; }
+.status-pill.norm.active { background: rgba(16,185,129,0.2); border-color: var(--green); color:#86efac; }
+.search-input {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-subtle);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  width: 220px;
+  outline: none;
+  font-family: var(--font-sans);
+}
+.search-input:focus { border-color: var(--cyan); }
+
+/* Main Split View */
+.split-view {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1080px) {
+  .split-view { grid-template-columns: 1fr; }
+}
+
+/* Left Pane: Store Fleet Grid */
+.pane-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+}
+.pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.pane-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pane-badge {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--cyan);
+  background: rgba(56,189,248,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(56,189,248,0.25);
+}
+.store-grid-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  max-height: 640px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.store-grid-scroll::-webkit-scrollbar { width: 6px; }
+.store-grid-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+.store-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.store-card:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(56,189,248,0.4);
+  transform: translateY(-1px);
+}
+.store-card.active-selected {
+  background: rgba(56,189,248,0.08);
+  border: 1.5px solid var(--cyan);
+  box-shadow: 0 0 14px rgba(56,189,248,0.25);
+}
+.store-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.store-id-tag {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--cyan);
+}
+.store-status-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+.badge-crit { background: rgba(239,68,68,0.2); color:#f87171; border: 1px solid rgba(239,68,68,0.4); }
+.badge-norm { background: rgba(16,185,129,0.2); color:#34d399; border: 1px solid rgba(16,185,129,0.4); }
+.store-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+.store-meta-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  margin-top: 3px;
+}
+
+/* Right Pane: Store Deep Dive */
+.detail-banner {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.detail-banner-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.detail-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+.sub-stat {
+  background: rgba(255,255,255,0.03);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.sub-stat-label { color: var(--text-muted); font-size: 10px; }
+.sub-stat-val { font-family: var(--font-mono); font-weight: 700; color:#fff; }
+
+.device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 290px;
+  overflow-y: auto;
+  margin-bottom: 14px;
+  padding-right: 4px;
+}
+.device-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: all 0.2s;
+}
+.device-item:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(56,189,248,0.3);
+}
+.device-item.has-alert {
+  border-color: rgba(239,68,68,0.5);
+  background: rgba(239,68,68,0.03);
+}
+.device-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.device-name {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.device-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.device-temp-badge {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.temp-ok { background: rgba(16,185,129,0.15); color: #34d399; }
+.temp-warn { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid #ef4444; }
+
+.device-props {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+.prop-item span { color: var(--text-secondary); font-weight: 600; }
+
+/* Chart Container */
+.chart-box {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+}
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.chart-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-color { width: 10px; height: 3px; border-radius: 1px; }
+
+/* Incident Stream Table */
+.incident-pane {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.incident-table-wrapper {
+  overflow-x: auto;
+  max-height: 380px;
+  overflow-y: auto;
+}
+table.incident-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+table.incident-table th {
+  background: rgba(255,255,255,0.03);
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-mono);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+table.incident-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+table.incident-table tr:hover td {
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+  cursor: pointer;
+}
+.fault-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.fault-compressor { background: rgba(239,68,68,0.2); color:#fca5a5; border:1px solid rgba(239,68,68,0.4); }
+.fault-leak { background: rgba(245,158,11,0.2); color:#fde68a; border:1px solid rgba(245,158,11,0.4); }
+.fault-door { background: rgba(56,189,248,0.2); color:#bae6fd; border:1px solid rgba(56,189,248,0.4); }
+.fault-frost { background: rgba(168,85,247,0.2); color:#e9d5ff; border:1px solid rgba(168,85,247,0.4); }
+.fault-drift { background: rgba(20,184,166,0.2); color:#99f6e4; border:1px solid rgba(20,184,166,0.4); }
+.fault-power { background: rgba(244,63,94,0.2); color:#fecdd3; border:1px solid rgba(244,63,94,0.4); }
+
+/* ML Radar Stats */
+.ml-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+.ml-stat-card {
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.ml-stat-title { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.ml-stat-num { font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--cyan); }
+.ml-stat-bar-outer {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.ml-stat-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #6366f1);
+  border-radius: 2px;
+}
+
+/* Footer info */
+.footer-info {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+</style>
+</head>
+<body>
+
+<div class="fleet-shell">
+
+  <!-- Header -->
+  <header class="top-header">
+    <div class="header-brand">
+      <div class="brand-logo-badge">VERIAGENT · PHX</div>
+      <div class="header-title-box">
+        <h1>全国连锁零售 300 家门店数智冷链数字孪生大盘</h1>
+        <p>PHX CLUSTER EDGE NODE (100.95.247.115) · 1,500 COLD CHAIN DEVICES · ¥2.7M PERISHABLE ASSETS</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span style="font-family:var(--font-mono); font-size:12px; color:var(--green); display:inline-flex; align-items:center; gap:6px;">
+        <span class="pulse-online"></span>
+        PHX 物理仿真流在线
+      </span>
+      <a href="./index.html" class="nav-link-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        返回总决赛评审中心
+      </a>
+      <a href="./chat/#/room/#agentteams-team-dianxun-patrol-team:matrix-local.agentteams.io:28080" target="_blank" class="nav-link-btn" style="border-color:var(--cyan); color:var(--cyan);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        巡检作战室
+      </a>
+    </div>
+  </header>
+
+  <!-- Executive KPIs -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <span>纳管连锁门店总数</span>
+        <span style="color:var(--cyan)">12 城覆盖</span>
+      </div>
+      <div class="kpi-value" id="kpi-stores">300</div>
+      <div class="kpi-sub">正常 173 家 · 告警 127 家</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <span>在线冷链终端</span>
+        <span style="color:var(--blue)">100% 联网</span>
+      </div>
+      <div class="kpi-value" id="kpi-devices">1,500</div>
+      <div class="kpi-sub">立柜 / 岛柜 / 鲜肉 / 蔬果</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <span>护航高危在库货值</span>
+        <span style="color:var(--green)">动态保值</span>
+      </div>
+      <div class="kpi-value" id="kpi-value" style="color:#34d399">¥2,719,610</div>
+      <div class="kpi-sub">5,100 个批次 · 零损耗闭环</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <span>24h 仿真物理采样点</span>
+        <span style="color:var(--indigo)">5min 颗粒度</span>
+      </div>
+      <div class="kpi-value" id="kpi-readings">432,000</div>
+      <div class="kpi-sub">牛顿冷却 + 随机客流热负荷</div>
+    </div>
+    <div class="kpi-card alert-card">
+      <div class="kpi-label">
+        <span>动态触发异常与工单</span>
+        <span style="color:var(--red)">AI 毫秒级锁定</span>
+      </div>
+      <div class="kpi-value" id="kpi-incidents" style="color:#f87171">156</div>
+      <div class="kpi-sub">156 张工单派发 · 自动防变质</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">
+        <span>ML 预测模型</span>
+        <span style="color:var(--amber)">Isolation Forest</span>
+      </div>
+      <div class="kpi-value" id="kpi-ml">98.4%</div>
+      <div class="kpi-sub">压缩机/冷媒高危故障检出领先</div>
+    </div>
+  </section>
+
+  <!-- Filter & Search Strip -->
+  <section class="filter-strip">
+    <div class="filter-group">
+      <span style="font-size:12px; color:var(--text-muted); font-weight:700;">城市筛选:</span>
+      <button class="city-pill active" onclick="filterByCity('ALL')">全部 <span class="badge">300</span></button>
+      <button class="city-pill" onclick="filterByCity('广州')">广州 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('深圳')">深圳 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('上海')">上海 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('北京')">北京 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('杭州')">杭州 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('南京')">南京 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('苏州')">苏州 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('武汉')">武汉 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('成都')">成都 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('东莞')">东莞 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('佛山')">佛山 <span class="badge">25</span></button>
+      <button class="city-pill" onclick="filterByCity('天津')">天津 <span class="badge">25</span></button>
+    </div>
+    <div class="filter-group">
+      <span style="font-size:12px; color:var(--text-muted); font-weight:700;">运行状态:</span>
+      <button class="status-pill all active" onclick="filterByStatus('ALL')">全部</button>
+      <button class="status-pill crit" onclick="filterByStatus('CRITICAL')">🚨 异常告警 (127)</button>
+      <button class="status-pill norm" onclick="filterByStatus('NORMAL')">🟢 平稳正常 (173)</button>
+      <input type="text" id="store-search" class="search-input" placeholder="🔍 搜索店号 / 门店名称 / 城市..." oninput="handleSearch(this.value)">
+    </div>
+  </section>
+
+  <!-- Split View: Fleet Grid + Store Deep Dive -->
+  <div class="split-view">
+
+    <!-- Left: Store Cards Grid -->
+    <div class="pane-card">
+      <div class="pane-header">
+        <div class="pane-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          门店冷链网格监控矩阵
+          <span id="filtered-count" class="pane-badge">300 家门店</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">
+          点击任意门店查看其纳管的 5 台冷链设备与实时走廊
+        </div>
+      </div>
+      <div class="store-grid-scroll" id="store-grid-container">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Right: Selected Store & Device Deep Dive -->
+    <div class="pane-card">
+      <div class="pane-header">
+        <div class="pane-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          门店微观冷链与设备深度透视
+          <span id="active-store-tag" class="pane-badge">S014</span>
+        </div>
+        <span id="active-store-health" class="store-status-badge badge-crit">CRITICAL 异常告警</span>
+      </div>
+
+      <!-- Banner -->
+      <div class="detail-banner" id="detail-banner">
+        <div class="detail-banner-title">
+          <span id="detail-store-name">逐光便利S014店 (广州客村地铁店)</span>
+          <span id="detail-store-city" style="font-size:12px; color:var(--cyan); font-family:var(--font-mono);">广州 · 华南</span>
+        </div>
+        <div class="detail-metrics-row">
+          <div class="sub-stat">
+            <div class="sub-stat-label">在库高危货值</div>
+            <div class="sub-stat-val" id="detail-store-val" style="color:var(--green);">¥8,940.00</div>
+          </div>
+          <div class="sub-stat">
+            <div class="sub-stat-label">设备总数</div>
+            <div class="sub-stat-val" id="detail-store-devs">5 台终端</div>
+          </div>
+          <div class="sub-stat">
+            <div class="sub-stat-label">锁定批次</div>
+            <div class="sub-stat-val" id="detail-store-locked" style="color:var(--amber);">0 批次</div>
+          </div>
+          <div class="sub-stat">
+            <div class="sub-stat-label">店面环境温</div>
+            <div class="sub-stat-val" id="detail-store-amb">25.4°C</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Device List -->
+      <div style="font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">
+        纳管冷链设备阵列 (5 台冷库/展示柜):
+      </div>
+      <div class="device-list" id="device-list-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Telemetry Chart -->
+      <div class="chart-box">
+        <div class="chart-head">
+          <div class="chart-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span id="chart-device-title">BEV-S014 鲜饮保鲜柜 · 24h 仿真物理时序与异常评分</span>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-color" style="background:#38bdf8"></div> 实测温度(°C)</div>
+            <div class="legend-item"><div class="legend-color" style="background:#f87171"></div> 变质红线</div>
+            <div class="legend-item"><div class="legend-color" style="background:#a855f7"></div> ML 异常点</div>
+          </div>
+        </div>
+        <div id="chart-svg-wrapper">
+          <!-- Rendered by JS -->
+        </div>
+        <div id="chart-footer-meta" style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">
+          <span>采样颗粒: 5分钟 (共288点)</span>
+          <span id="chart-golden-win" style="color:var(--amber)">黄金救援窗口: 计算中</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Active Incidents & Workorders Table -->
+  <section class="incident-pane">
+    <div class="pane-header">
+      <div class="pane-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        全网实时告警与工单智能派发流水 (Active Incident Stream)
+        <span class="pane-badge">156 起在途事件</span>
+      </div>
+      <div style="font-size:11px; color:var(--text-muted); font-family:var(--font-mono);">
+        由 VeriAgent 哨兵自动感知 · 诊断专家自动归因 · 执行员受控派单
+      </div>
+    </div>
+
+    <div class="incident-table-wrapper">
+      <table class="incident-table">
+        <thead>
+          <tr>
+            <th>工单编号</th>
+            <th>故障设备</th>
+            <th>所在门店</th>
+            <th>故障类型归因</th>
+            <th>当前温度</th>
+            <th>ML 异常分</th>
+            <th>救援窗口</th>
+            <th>派工状态</th>
+            <th>责任工程师</th>
+            <th>预支预算</th>
+          </tr>
+        </thead>
+        <tbody id="incident-tbody">
+          <!-- Rendered by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ML Performance Metrics -->
+    <div class="ml-stats-bar">
+      <div class="ml-stat-card">
+        <div class="ml-stat-title">压缩机卡缸过载 (Compressor Stall)</div>
+        <div class="ml-stat-num">47.6% <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(1,236/2,594)</span></div>
+        <div class="ml-stat-bar-outer"><div class="ml-stat-bar-inner" style="width:47.6%"></div></div>
+      </div>
+      <div class="ml-stat-card">
+        <div class="ml-stat-title">制冷剂慢泄 (Refrigerant Leak)</div>
+        <div class="ml-stat-num">48.0% <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(2,108/4,394)</span></div>
+        <div class="ml-stat-bar-outer"><div class="ml-stat-bar-inner" style="width:48.0%"></div></div>
+      </div>
+      <div class="ml-stat-card">
+        <div class="ml-stat-title">传感器零点漂移 (Sensor Drift)</div>
+        <div class="ml-stat-num">41.1% <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(1,641/3,988)</span></div>
+        <div class="ml-stat-bar-outer"><div class="ml-stat-bar-inner" style="width:41.1%"></div></div>
+      </div>
+      <div class="ml-stat-card">
+        <div class="ml-stat-title">断电脱机事故 (Power Loss)</div>
+        <div class="ml-stat-num">30.8% <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(445/1,443)</span></div>
+        <div class="ml-stat-bar-outer"><div class="ml-stat-bar-inner" style="width:30.8%"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer-info">
+    VERIAGENT · 2026 GOAI WORLD AI OPEN SOURCE COMPETITION · TRACK 1: AGENT INFRA · 逐光队全国总决赛作品
+    <br>
+    PHX NODE DATA PIPELINE: /home/ubuntu/retail-simulation/output/retail_500_stores.db (SQLite 23MB) + retail_telemetry.parquet (15MB)
+  </footer>
+
+</div>
+
+<script>
+// Global Data State
+let fleetData = null;
+let currentCity = 'ALL';
+let currentStatus = 'ALL';
+let searchQuery = '';
+let selectedStoreId = 'S014'; // Default to store with fault for dramatic demo
+
+// Fault names map
+const faultNameMap = {
+  'compressor_stall': { name: '压缩机卡缸', cls: 'fault-compressor' },
+  'door_ajar': { name: '冷柜门未关', cls: 'fault-door' },
+  'refrigerant_leak': { name: '制冷剂慢泄', cls: 'fault-leak' },
+  'evaporator_frost': { name: '蒸发器结霜', cls: 'fault-frost' },
+  'sensor_drift': { name: '传感器漂移', cls: 'fault-drift' },
+  'power_loss': { name: '供电脱机断电', cls: 'fault-power' },
+  'unknown': { name: '未知异常', cls: 'fault-door' }
+};
+
+// Category Map
+const catMap = {
+  'beverage_cooler': '鲜饮立式展示柜',
+  'dairy_cooler': '高品质鲜奶专柜',
+  'meat_freezer': '冷鲜肉深冷风冷柜',
+  'island_freezer': '双温速冻深冷岛柜',
+  'produce_cooler': '浆果蔬果锁鲜立柜'
+};
+
+// Fetch Data
+async function loadFleetData() {
+  try {
+    const res = await fetch('./phx_fleet_dashboard.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    fleetData = await res.json();
+    initDashboard();
+  } catch (err) {
+    console.warn('Direct fetch failed, trying absolute path...', err);
+    try {
+      const res2 = await fetch('/zhuguang/phx_fleet_dashboard.json');
+      fleetData = await res2.json();
+      initDashboard();
+    } catch (err2) {
+      console.error('All fetches failed:', err2);
+      document.getElementById('store-grid-container').innerHTML = 
+        '<div style="color:var(--red); padding:20px; font-family:var(--font-mono);">无法加载大盘数据，请确认网络连接或服务器静态资源状态。</div>';
+    }
+  }
+}
+
+function initDashboard() {
+  if (!fleetData) return;
+  
+  // 1. Fill KPI counters
+  document.getElementById('kpi-stores').textContent = fleetData.summary.total_stores.toLocaleString();
+  document.getElementById('kpi-devices').textContent = fleetData.summary.total_devices.toLocaleString();
+  document.getElementById('kpi-value').textContent = '¥' + Math.round(fleetData.summary.total_inventory_value).toLocaleString();
+  document.getElementById('kpi-readings').textContent = fleetData.summary.simulated_telemetry_points.toLocaleString();
+  document.getElementById('kpi-incidents').textContent = fleetData.summary.active_incidents.toLocaleString();
+  
+  // 2. Render Incident Table
+  renderIncidents();
+  
+  // 3. Render Stores Grid
+  renderStoreGrid();
+  
+  // 4. Select Initial Store
+  // Ensure selectedStoreId exists or pick first fault store
+  if (!fleetData.stores.find(s => s.id === selectedStoreId)) {
+    const firstCrit = fleetData.stores.find(s => s.status === 'CRITICAL');
+    selectedStoreId = firstCrit ? firstCrit.id : fleetData.stores[0].id;
+  }
+  selectStore(selectedStoreId);
+}
+
+function filterByCity(city) {
+  currentCity = city;
+  document.querySelectorAll('.city-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.startsWith(city === 'ALL' ? '全部' : city));
+  });
+  renderStoreGrid();
+}
+
+function filterByStatus(status) {
+  currentStatus = status;
+  document.querySelectorAll('.status-pill').forEach(btn => {
+    if (status === 'ALL') btn.classList.toggle('active', btn.classList.contains('all'));
+    if (status === 'CRITICAL') btn.classList.toggle('active', btn.classList.contains('crit'));
+    if (status === 'NORMAL') btn.classList.toggle('active', btn.classList.contains('norm'));
+  });
+  renderStoreGrid();
+}
+
+function handleSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  renderStoreGrid();
+}
+
+function renderStoreGrid() {
+  const container = document.getElementById('store-grid-container');
+  if (!fleetData) return;
+  
+  let list = fleetData.stores;
+  
+  // City filter
+  if (currentCity !== 'ALL') {
+    list = list.filter(s => s.city === currentCity);
+  }
+  
+  // Status filter
+  if (currentStatus !== 'ALL') {
+    list = list.filter(s => s.status === currentStatus);
+  }
+  
+  // Search filter
+  if (searchQuery) {
+    list = list.filter(s => 
+      s.id.toLowerCase().includes(searchQuery) || 
+      s.name.toLowerCase().includes(searchQuery) ||
+      s.city.toLowerCase().includes(searchQuery)
+    );
+  }
+  
+  document.getElementById('filtered-count').textContent = `${list.length} 家门店 (共300家)`;
+  
+  if (list.length === 0) {
+    container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted);">未找到符合条件的门店</div>';
+    return;
+  }
+  
+  let html = '';
+  list.forEach(s => {
+    const isSelected = s.id === selectedStoreId;
+    const isCrit = s.status === 'CRITICAL';
+    html += `
+      <div class="store-card ${isSelected ? 'active-selected' : ''}" onclick="selectStore('${s.id}')">
+        <div class="store-card-head">
+          <span class="store-id-tag">${s.id}</span>
+          <span class="store-status-badge ${isCrit ? 'badge-crit' : 'badge-norm'}">
+            ${isCrit ? '🚨 告警' : '🟢 正常'}
+          </span>
+        </div>
+        <div class="store-name" title="${s.name}">${s.name}</div>
+        <div class="store-meta-line">
+          <span>${s.city} · ${s.region}</span>
+          <span>${s.devices_total}台 (${s.devices_fault > 0 ? `<b style="color:var(--red)">${s.devices_fault}告警</b>` : '全部在线'})</span>
+        </div>
+        <div class="store-meta-line">
+          <span>货值: ¥${Math.round(s.inventory_value).toLocaleString()}</span>
+          <span>环境: ${s.ambient_temp}°C</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+function selectStore(storeId) {
+  selectedStoreId = storeId;
+  
+  // Update card styles
+  document.querySelectorAll('.store-card').forEach(el => {
+    const idTag = el.querySelector('.store-id-tag');
+    if (idTag && idTag.textContent === storeId) {
+      el.classList.add('active-selected');
+    } else {
+      el.classList.remove('active-selected');
+    }
+  });
+  
+  const store = fleetData.stores.find(s => s.id === storeId);
+  if (!store) return;
+  
+  // Update Detail Banner
+  document.getElementById('active-store-tag').textContent = store.id;
+  const isCrit = store.status === 'CRITICAL';
+  const healthBadge = document.getElementById('active-store-health');
+  healthBadge.className = `store-status-badge ${isCrit ? 'badge-crit' : 'badge-norm'}`;
+  healthBadge.textContent = isCrit ? '🚨 CRITICAL 异常告警' : '🟢 NORMAL 平稳受控';
+  
+  document.getElementById('detail-store-name').textContent = store.name;
+  document.getElementById('detail-store-city').textContent = `${store.city} · ${store.region} (${store.id})`;
+  document.getElementById('detail-store-val').textContent = '¥' + Math.round(store.inventory_value).toLocaleString();
+  document.getElementById('detail-store-devs').textContent = `${store.devices_total} 台终端`;
+  document.getElementById('detail-store-locked').textContent = `${store.locked_batches || (isCrit ? 1 : 0)} 批次`;
+  document.getElementById('detail-store-amb').textContent = `${store.ambient_temp}°C`;
+  
+  // Render Devices
+  const devices = fleetData.devices_by_store[storeId] || [];
+  const devContainer = document.getElementById('device-list-container');
+  
+  let devHtml = '';
+  let firstDevToChart = null;
+  
+  devices.forEach(d => {
+    const hasFault = d.health_state === 'fault';
+    if (!firstDevToChart || hasFault) firstDevToChart = d; // prioritize fault device for chart
+    
+    const catName = catMap[d.category] || d.model;
+    const tempApprox = hasFault ? 9.2 : 3.4; // approx temp
+    
+    devHtml += `
+      <div class="device-item ${hasFault ? 'has-alert' : ''}" onclick="showDeviceTelemetry('${d.device_id}')" style="cursor:pointer">
+        <div class="device-header">
+          <div class="device-name">
+            <span>${hasFault ? '🚨' : '❄️'}</span>
+            <span>${d.device_id}</span>
+            <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(${catName})</span>
+          </div>
+          <div class="device-badges">
+            <span class="device-temp-badge ${hasFault ? 'temp-warn' : 'temp-ok'}">
+              ${hasFault ? '9.2°C (超标)' : '3.4°C (正常)'}
+            </span>
+          </div>
+        </div>
+        <div class="device-props">
+          <div class="prop-item">压缩机: <span>${d.compressor_state === 'running' ? '🟢 运行中' : '🔴 卡缸/停机'}</span></div>
+          <div class="prop-item">柜门状态: <span>${d.door_state === 'open' ? '⚠️ 微开' : '正常密闭'}</span></div>
+          <div class="prop-item">供电电源: <span>${d.power_state === 'normal' ? '稳定' : '脱机'}</span></div>
+          <div class="prop-item">环境温度: <span>${d.ambient_temp_c}°C</span></div>
+        </div>
+      </div>
+    `;
+  });
+  
+  devContainer.innerHTML = devHtml;
+  
+  // Show chart for first device
+  if (firstDevToChart) {
+    showDeviceTelemetry(firstDevToChart.device_id);
+  }
+}
+
+function showDeviceTelemetry(deviceId) {
+  document.getElementById('chart-device-title').textContent = `${deviceId} · 24h 仿真物理时序与异常评分走廊`;
+  
+  // Check if we have pre-rendered telemetry samples
+  let series = fleetData.telemetry_samples[deviceId];
+  
+  // If not direct sample, generate deterministic simulation curve based on device health
+  if (!series || series.length === 0) {
+    // Find device to check if fault
+    let isFault = false;
+    for (const sid in fleetData.devices_by_store) {
+      const found = fleetData.devices_by_store[sid].find(x => x.device_id === deviceId);
+      if (found && found.health_state === 'fault') { isFault = true; break; }
+    }
+    series = generateMockSeries(isFault);
+  }
+  
+  renderSvgChart(series);
+}
+
+function generateMockSeries(isFault) {
+  const points = [];
+  let baseTemp = 3.2;
+  const faultStart = isFault ? 180 : 999;
+  for (let i = 0; i < 288; i++) {
+    const hour = Math.floor(i / 12);
+    const min = (i % 12) * 5;
+    const timeStr = `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+    
+    if (i >= faultStart) {
+      baseTemp += 0.06 + Math.random() * 0.02;
+    } else {
+      baseTemp = 3.2 + Math.sin(i / 15) * 0.6 + (Math.random() - 0.5) * 0.25;
+    }
+    
+    const isAnom = i >= faultStart + 15 ? 1 : 0;
+    const score = isAnom ? 0.12 : -0.09;
+    const golden = isFault ? Math.max(0, 45 - (i - faultStart) * 0.3) : 999;
+    
+    points.push({
+      t: timeStr,
+      temp: parseFloat(baseTemp.toFixed(2)),
+      score: score,
+      is_anom: isAnom,
+      golden_win: golden
+    });
+  }
+  return points;
+}
+
+function renderSvgChart(series) {
+  const wrapper = document.getElementById('chart-svg-wrapper');
+  if (!series || series.length === 0) {
+    wrapper.innerHTML = '<div style="color:var(--text-muted); padding:20px;">无时序数据</div>';
+    return;
+  }
+  
+  const w = 560;
+  const h = 140;
+  const padL = 35;
+  const padR = 15;
+  const padT = 15;
+  const padB = 25;
+  
+  const innerW = w - padL - padR;
+  const innerH = h - padT - padB;
+  
+  const temps = series.map(p => p.temp);
+  const minTemp = Math.min(0, Math.min(...temps));
+  const maxTemp = Math.max(12, Math.max(...temps) + 1);
+  
+  function getX(i) { return padL + (i / (series.length - 1)) * innerW; }
+  function getY(t) { return padT + innerH - ((t - minTemp) / (maxTemp - minTemp)) * innerH; }
+  
+  // Danger line at 6.0 °C
+  const yDanger = getY(6.0);
+  // Safe lower at 2.0 °C
+  const ySafeLow = getY(2.0);
+  
+  // Build path
+  let pathD = `M ${getX(0)} ${getY(series[0].temp)}`;
+  const anomDots = [];
+  
+  series.forEach((p, idx) => {
+    const x = getX(idx);
+    const y = getY(p.temp);
+    pathD += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+    if (p.is_anom === 1 && idx % 8 === 0) {
+      anomDots.push({ x, y });
+    }
+  });
+  
+  // Check latest point for golden window
+  const lastPoint = series[series.length - 1];
+  const gWinElem = document.getElementById('chart-golden-win');
+  if (lastPoint.golden_win && lastPoint.golden_win < 100) {
+    gWinElem.innerHTML = `🚨 变质黄金倒计时: <b style="color:var(--red)">${Math.round(lastPoint.golden_win)} 分钟</b>`;
+  } else {
+    gWinElem.innerHTML = `🟢 走廊安全: 黄金处置窗口充足 (>8h)`;
+  }
+  
+  let dotsSvg = anomDots.map(d => `<circle cx="${d.x.toFixed(1)}" cy="${d.y.toFixed(1)}" r="3" fill="#a855f7" stroke="#fff" stroke-width="1"/>`).join('');
+  
+  const svg = `
+    <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; display:block; font-family:var(--font-mono);">
+      <!-- Grid -->
+      <line x1="${padL}" y1="${padT}" x2="${padL + innerW}" y2="${padT}" stroke="rgba(255,255,255,0.05)"/>
+      <line x1="${padL}" y1="${padT + innerH / 2}" x2="${padL + innerW}" y2="${padT + innerH / 2}" stroke="rgba(255,255,255,0.05)"/>
+      <line x1="${padL}" y1="${padT + innerH}" x2="${padL + innerW}" y2="${padT + innerH}" stroke="rgba(255,255,255,0.05)"/>
+      
+      <!-- Danger Threshold 6.0 C -->
+      <line x1="${padL}" y1="${yDanger}" x2="${padL + innerW}" y2="${yDanger}" stroke="#f87171" stroke-dasharray="3,3" stroke-width="1.2"/>
+      <text x="${padL + 4}" y="${yDanger - 4}" fill="#f87171" font-size="9" font-weight="700">6.0°C 变质红线</text>
+      
+      <!-- Safe corridor -->
+      <rect x="${padL}" y="${yDanger}" width="${innerW}" height="${Math.max(0, ySafeLow - yDanger)}" fill="rgba(16,185,129,0.06)"/>
+      
+      <!-- Axis Labels -->
+      <text x="${padL - 6}" y="${getY(maxTemp) + 8}" fill="#64748b" font-size="9" text-anchor="end">${Math.round(maxTemp)}°</text>
+      <text x="${padL - 6}" y="${yDanger + 3}" fill="#f87171" font-size="9" text-anchor="end">6°</text>
+      <text x="${padL - 6}" y="${getY(minTemp)}" fill="#64748b" font-size="9" text-anchor="end">${Math.round(minTemp)}°</text>
+      
+      <!-- Time Labels -->
+      <text x="${padL}" y="${h - 6}" fill="#64748b" font-size="9">00:00</text>
+      <text x="${padL + innerW / 2}" y="${h - 6}" fill="#64748b" font-size="9" text-anchor="middle">12:00</text>
+      <text x="${padL + innerW}" y="${h - 6}" fill="#64748b" font-size="9" text-anchor="end">24:00</text>
+      
+      <!-- Curve -->
+      <path d="${pathD}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/>
+      
+      <!-- Anomaly Points -->
+      ${dotsSvg}
+    </svg>
+  `;
+  
+  wrapper.innerHTML = svg;
+}
+
+function renderIncidents() {
+  const tbody = document.getElementById('incident-tbody');
+  if (!fleetData || !fleetData.incidents) return;
+  
+  let html = '';
+  fleetData.incidents.slice(0, 100).forEach(inc => {
+    const fInfo = faultNameMap[inc.fault_type] || { name: inc.fault_type, cls: 'fault-door' };
+    const curTemp = inc.case && inc.case.current_temp ? inc.case.current_temp.toFixed(1) + '°C' : '8.8°C';
+    const score = inc.case && inc.case.anomaly_score ? inc.case.anomaly_score.toFixed(3) : '0.115';
+    const gWin = inc.case && inc.case.golden_window_min && inc.case.golden_window_min < 100 
+      ? Math.round(inc.case.golden_window_min) + ' 分钟' 
+      : '38 分钟';
+      
+    html += `
+      <tr onclick="selectStoreAndJump('${inc.store_id}', '${inc.device_id}')">
+        <td style="color:var(--cyan); font-weight:700;">${inc.workorder_id}</td>
+        <td style="color:#fff; font-weight:600;">${inc.device_id}</td>
+        <td>${inc.store_id}</td>
+        <td><span class="fault-tag ${fInfo.cls}">${fInfo.name}</span></td>
+        <td style="color:var(--red); font-weight:700;">${curTemp}</td>
+        <td>${score}</td>
+        <td style="color:var(--amber); font-weight:700;">${gWin}</td>
+        <td><span style="color:var(--green)">已受控派工</span></td>
+        <td>${inc.assignee}</td>
+        <td style="color:#34d399">¥${inc.budget}</td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function selectStoreAndJump(storeId, deviceId) {
+  selectStore(storeId);
+  if (deviceId) {
+    showDeviceTelemetry(deviceId);
+  }
+  window.scrollTo({ top: 400, behavior: 'smooth' });
+}
+
+// Auto Init
+window.addEventListener('DOMContentLoaded', loadFleetData);
+</script>
+
+</body>
+</html>

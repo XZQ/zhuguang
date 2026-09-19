@@ -287,7 +287,7 @@
       <div class="sidebar-group-title">第一部分：核心论证与系统架构</div>
       <a class="sidebar-link" href="#d-ch1"><span class="num">01</span> 物理不可逆三大公理</a>
       <a class="sidebar-link" href="#d-ch2"><span class="num">02</span> 架构栈与基准测试</a>
-      <a class="sidebar-link" href="#d-ch3"><span class="num">03</span> 512 台设备实跑凭证</a>
+      <a class="sidebar-link" href="#d-ch3"><span class="num">03</span> 1,500 台设备实跑凭证</a>
       <a class="sidebar-link" href="#d-ch4"><span class="num">04</span> 三层解耦架构设计</a>
       <a class="sidebar-link" href="#d-ch5"><span class="num">05</span> 5-Agent 职责硬隔离</a>
       <a class="sidebar-link" href="#d-ch6"><span class="num">06</span> 执行不变式与状态机</a>
@@ -365,15 +365,15 @@
       <!-- CHAPTER 3 -->
       <section id="d-ch3" style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;">
         <h3 style="color:#38bdf8; font-size:16px; margin-top:0; display:flex; align-items:center; gap:8px;">
-          <span>03</span> 多门店多设备分布式网络矩阵（128 店 · 512 台设备）
+          <span>03</span> 多门店多设备分布式网络矩阵（300 店 · 1,500 台设备）
         </h3>
         <p style="font-size:13px; color:var(--text-secondary); line-height:1.7;">
-          真实连锁网络包含 128 家门店、512 台多温区冷链设备。Sentry Agent 以 30 秒周期轮询全网，排除正常设备波动，精准锁定异常单柜：
+          真实连锁网络包含 300 家门店、1,500 台多温区冷链设备。Sentry Agent 以 30 秒周期轮询全网，排除正常设备波动，精准锁定异常单柜：
         </p>
         <div style="background:rgba(0,0,0,0.3); border:1px solid var(--border-subtle); border-radius:8px; padding:12px; font-size:12px; font-family:var(--font-mono);">
           • <b>全网态势</b>：S01 深圳科技园店 (6台全绿) · S02 广州珠江新城店 (4台全绿) · S04 佛山千灯湖店 (5台全绿) · <b>S03 广州天河店 (1柜失温中)</b><br>
           • <b>S03 店内矩阵</b>：1号鲜奶冷藏柜 (9.6°C 🚨 失温) · 2号冰淇淋冷冻柜 (-18.4°C 🟢) · 3号鲜食保温柜 (62.5°C 🟢) · 4号饮料冷藏柜 (3.8°C 🟢)<br>
-          • <b>核心价值</b>：Sentry 精准锁定 S03 店 1 号柜发起停售与闭环，其余 511 台正常设备丝毫不受影响，保证全网平稳运营！
+          • <b>核心价值</b>：Sentry 精准锁定 S03 店 1 号柜发起停售与闭环，其余 1,499 台正常设备丝毫不受影响，保证全网平稳运营！
         </div>
       </section>
 
@@ -402,7 +402,7 @@
               <tr>
                 <td style="padding:8px; font-weight:700; color:#fff;">Sentry</td>
                 <td style="padding:8px; color:var(--green);">L0 只读权限</td>
-                <td style="padding:8px;">30s 并行巡检 512 台设备，Westgard 去噪，识别失温</td>
+                <td style="padding:8px;">30s 并行巡检 1,500 台设备，Westgard 去噪，识别失温</td>
                 <td style="padding:8px; color:#fca5a5;">无执行权，仅能向总控发出 request_containment 遏制请求</td>
               </tr>
               <tr>
@@ -526,7 +526,7 @@
           <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(56,189,248,0.4); border-radius:8px; padding:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <b style="color:#38bdf8; font-size:13px;">Benchmark 01 · 零售高敏冷链</b>
-              <span style="font-size:10px; background:#0284c7; color:#fff; padding:1px 6px; border-radius:3px; font-family:var(--font-mono);">512 设备实跑</span>
+              <span style="font-size:10px; background:#0284c7; color:#fff; padding:1px 6px; border-radius:3px; font-family:var(--font-mono);">1,500 设备实跑</span>
             </div>
             <div style="font-size:12px; color:var(--text-secondary); line-height:1.7;">
               • <b>承载资产</b>：巴氏鲜奶、鲜食便当、熟食肉品<br>
@@ -600,7 +600,7 @@
             </div>
             <div style="color:#f8fafc; background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:6px; margin-bottom:6px;">
               “各位评委老师好！我们是第 13 队‘逐光’，今天汇报的作品是面向物理实体流程的可验证多智能体运行时——<b>VeriAgent</b>。<br>
-              当绝大多数团队还在纯代码和文本等虚拟数字空间中打转时，VeriAgent 深入到了物理世界‘原子与比特交织’的最后一百米：<b>通过物理-数字三大不可逆公理、反自验执行机制 (Anti-Self-Verification) 与物理异步 Human Tool 协议，为企业实体业务提供真正敢于放行的确定性可信闭环！</b>本次我们以连锁高敏冷链 512 台设备作为极限压力基准集展开验证。”
+              当绝大多数团队还在纯代码和文本等虚拟数字空间中打转时，VeriAgent 深入到了物理世界‘原子与比特交织’的最后一百米：<b>通过物理-数字三大不可逆公理、反自验执行机制 (Anti-Self-Verification) 与物理异步 Human Tool 协议，为企业实体业务提供真正敢于放行的确定性可信闭环！</b>本次我们以全国连锁高敏冷链 1,500 台设备（300 家门店）作为极限压力基准集展开验证。”
             </div>
             <div style="font-size:11.5px; color:#94a3b8;">
               👀 <b>画面焦点</b>：PPT 封面居中大标题 VeriAgent 与通用可验证运行时定位，右下角 Reference Benchmark 01 徽章。
@@ -876,8 +876,8 @@
             <tbody>
               <tr>
                 <td style="padding:8px; font-weight:700; color:#38bdf8;">00-10s</td>
-                <td style="padding:8px;">全网 128 店扫描，锁定 S03 店 1 号柜（9.6°C 标红）</td>
-                <td style="padding:8px;">“Sentry 巡检全网 512 台设备，自动过滤常规开门波动，精准捕捉到 S03 天河店 1 号鲜奶柜突破 8°C 告警线，排除断流，向总控发出紧急遏制请求。”</td>
+                <td style="padding:8px;">全网 300 店扫描，锁定 S03 店 1 号柜（9.6°C 标红）</td>
+                <td style="padding:8px;">“Sentry 巡检全网 1,500 台设备，自动过滤常规开门波动，精准捕捉到 S03 天河店 1 号鲜奶柜突破 8°C 告警线，排除断流，向总控发出紧急遏制请求。”</td>
                 <td style="padding:8px; color:#38bdf8;">关键链路 · 异常发现</td>
               </tr>
               <tr>

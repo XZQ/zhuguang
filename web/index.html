@@ -898,7 +898,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       </summary>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px; margin-top:10px;">
         <div style="background:rgba(2,132,199,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:6px; padding:10px;">
-          <b style="color:#38bdf8;">基准 01 · 零售高敏冷链</b> (512台实跑)
+          <b style="color:#38bdf8;">基准 01 · 零售高敏冷链</b> (1,500台实跑)
           <div style="color:#cbd5e1; font-size:11px; margin-top:4px; line-height:1.5;">Arrhenius 微生物动力学积分 · 500ms POS/外卖数字熔断 · 冷柜恢复但鲜奶变质则阻断</div>
         </div>
         <div style="background:rgba(5,150,105,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:10px;">
@@ -919,6 +919,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     <button class="nav-tab-btn active" onclick="switchMainTab('demo')">
       ⚡️ 1 分钟答辩 Demo
       <span class="badge-pill">高光演示</span>
+    </button>
+    <button class="nav-tab-btn" onclick="switchMainTab('phx-fleet')">
+      🏪 全国300店大盘
+      <span class="badge-pill" style="background:rgba(16,185,129,0.2); color:#34d399;">PHX 仿真</span>
     </button>
     <button class="nav-tab-btn" onclick="switchMainTab('command')">
       📊 事故指挥台 (6大场景)
@@ -992,7 +996,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <span class="pulse-dot"></span>
-            <span style="font-size:13px; font-weight:700; color:#fff;">全网连锁门店巡检态势 (128家门店 · 512台冷链设备在线)</span>
+            <span style="font-size:13px; font-weight:700; color:#fff;">全网连锁门店巡检态势 (300家门店 · 1,500台冷链设备在线)</span>
             <div style="display:flex; gap:6px; margin-left:4px;">
               <button onclick="startSentryScanTour()" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.4); border-radius:4px; padding:2px 8px; font-size:11px; font-weight:700; cursor:pointer;">
                 ⚡ 巡检轮询演示
@@ -1234,6 +1238,33 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
         <!-- Content will be populated dynamically by JS -->
       </div>
     </div>
+  </section>
+
+  <!-- ==================== SECTION: PHX 300 STORES FLEET DASHBOARD ==================== -->
+  <section id="view-phx-fleet" class="view-section">
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:18px 24px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h2 style="font-size:18px; color:#fff; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+          <span>🏪 全国连锁零售 300 家门店数智冷链数字孪生大盘</span>
+          <span style="font-size:11px; background:rgba(16,185,129,0.15); color:var(--green); border:1px solid rgba(16,185,129,0.3); padding:2px 8px; border-radius:4px; font-weight:700; font-family:var(--font-mono);">
+            PHX 边缘算力集群 (100.95.247.115) 在线
+          </span>
+        </h2>
+        <p style="color:var(--text-secondary); font-size:12.5px; margin-top:4px;">
+          覆盖全国 12 大城市 · 纳管 1,500 台智能冷链设备 · 护航 ¥2,719,610 温敏在库货值 · 432,000 条仿真物理时序流 · 156 起异常毫秒级闭环
+        </p>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <a href="./phx-fleet.html" target="_blank" class="nav-link-btn" style="text-decoration:none; background:linear-gradient(135deg, rgba(56,189,248,0.25), rgba(99,102,241,0.3)); border:1px solid var(--cyan); color:#fff; font-weight:700; padding:8px 16px;">
+          ↗️ 打开独立全屏大盘
+        </a>
+        <a href="./chat/#/room/#agentteams-team-dianxun-patrol-team:matrix-local.agentteams.io:28080" target="_blank" class="nav-link-btn" style="text-decoration:none; background:rgba(255,255,255,0.05); border:1px solid var(--border-subtle); color:var(--cyan); font-weight:600; padding:8px 16px;">
+          💬 进入巡检协同作战室
+        </a>
+      </div>
+    </div>
+    
+    <iframe src="./phx-fleet.html" style="width:100%; height:980px; border:1px solid var(--border); border-radius:12px; background:var(--bg); display:block;" loading="lazy"></iframe>
   </section>
 
   <!-- ==================== SECTION 2: COMMAND CENTER (6 SCENARIOS) ==================== -->
@@ -2709,7 +2740,7 @@ const DEMO_STEPS = [
     step: 0,
     time: "00:00 - 00:10",
     title: "1. Sentry 全网巡检：锁定 S03 店 1号柜失温",
-    desc: "Sentry 并行轮询全网 128 店 512 台设备，自动校验时序数据质量并排除传感器断流与漂移。发现 S03 天河店 1号鲜奶柜温度从 3.4°C 飙升至 9.6°C（突破 Westgard +3SD 质控红线），标记 critical 严重度，向 Orchestrator 发起紧急遏制。",
+    desc: "Sentry 并行轮询全网 300 店 1,500 台设备，自动校验时序数据质量并排除传感器断流与漂移。发现 S03 天河店 1号鲜奶柜温度从 3.4°C 飙升至 9.6°C（突破 Westgard +3SD 质控红线），标记 critical 严重度，向 Orchestrator 发起紧急遏制。",
     agent: "Sentry (全网巡检守卫 · L0 只读)",
     skill: "anomaly-detect v1.0.0",
     mcp: "query_device_context",
@@ -2726,7 +2757,7 @@ const DEMO_STEPS = [
     showHold: false,
     showBlock: false,
     terminal: [
-      "[09:00:00] [Sentry] FLEET_POLL: 128 stores, 512 devices scanned (511 normal, 1 anomaly)",
+      "[09:00:00] [Sentry] FLEET_POLL: 300 stores, 1,500 devices scanned (1,499 normal, 1 anomaly)",
       "[09:00:00] [Sentry] S03-FROST-01 temp=9.6°C (threshold=8.0°C, Westgard +3SD breached!)",
       "[09:00:01] [Sentry] INVOKE_SKILL: anomaly-detect (sensor_quality=good, suspect=false)",
       "[09:00:02] [Sentry] VERDICT: anomaly=True, severity=CRITICAL",
