@@ -10,6 +10,8 @@ data/trace.db
 data/knowledge.db
 data/trace.db-shm
 data/trace.db-wal
+data/*.parquet
+data/retail_300stores_1500devices.db
 demo/state/runtime.db
 demo/state/runtime.db-shm
 demo/state/runtime.db-wal

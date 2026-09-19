@@ -1500,83 +1500,149 @@
 <section class="slide" data-animate="statement">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">08 · 评测证据</div>
-      <div class="r">09 / 12 · LOCAL M4 GATE</div>
+      <div class="l">08 · 评测证据与反馈改造</div>
+      <div class="r">09 / 12 · EVIDENCE & HARDENING</div>
     </div>
-    <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">REAL SQLITE/POLICY · STATEFUL LOCAL ADAPTER</div>
-    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.7vw,6.2vh);line-height:1.05;color:var(--text-primary)">所有本地 P0 门禁通过，口径可追溯</h2>
-    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1.8vw;align-items:stretch;margin:3vh 0">
-      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:3vh 1.8vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
+    <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">REAL SQLITE/POLICY · STATEFUL LOCAL ADAPTER · FEEDBACK-DRIVEN HARDENING</div>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.4vw,5.6vh);line-height:1.05;color:var(--text-primary)">所有本地 P0 门禁通过，初赛反馈逐项闭环</h2>
+    <div data-anim="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.4vw;align-items:stretch;margin:2vh 0 1.6vh">
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:2.2vh 1.4vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(5vw,8.5vh);color:var(--accent-bright);line-height:1">6/6</div>
-          <div style="font-size:max(18px,1.15vw);font-weight:500;color:var(--text-primary);margin-top:1.2vh">不变式全通过</div>
+          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7vh);color:var(--accent-bright);line-height:1">6/6</div>
+          <div style="font-size:max(16px,1vw);font-weight:500;color:var(--text-primary);margin-top:.8vh">不变式全通过</div>
         </div>
-        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">Top-1 / Top-3 诊断召回 100%</div>
+        <div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">Top-1/Top-3 召回 100%</div>
       </div>
-      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:3vh 1.8vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:2.2vh 1.4vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(5vw,8.5vh);color:var(--accent-bright);line-height:1">45/45</div>
-          <div style="font-size:max(18px,1.15vw);font-weight:500;color:var(--text-primary);margin-top:1.2vh">Evidence 完整度</div>
+          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7vh);color:var(--accent-bright);line-height:1">45/45</div>
+          <div style="font-size:max(16px,1vw);font-weight:500;color:var(--text-primary);margin-top:.8vh">Evidence 完整度</div>
         </div>
-        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">incident · source · time · hash</div>
+        <div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">incident · time · hash</div>
       </div>
-      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:3vh 1.8vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-top:3px solid var(--accent-bright);padding:2.2vh 1.4vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(5vw,8.5vh);color:var(--accent-bright);line-height:1">26/26</div>
-          <div style="font-size:max(18px,1.15vw);font-weight:500;color:var(--text-primary);margin-top:1.2vh">全生命周期 Trace</div>
+          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7vh);color:var(--accent-bright);line-height:1">26/26</div>
+          <div style="font-size:max(16px,1vw);font-weight:500;color:var(--text-primary);margin-top:.8vh">全生命周期 Trace</div>
         </div>
-        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">每场景独立 SQLite 隔离库</div>
+        <div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">每场景独立 SQLite 隔离库</div>
       </div>
-      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-top:3px solid var(--success);padding:3vh 1.8vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.3);border-top:3px solid var(--success);padding:2.2vh 1.4vw;border-radius:8px;display:flex;flex-direction:column;justify-content:space-between">
         <div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(5vw,8.5vh);color:var(--success);line-height:1">0</div>
-          <div style="font-size:max(18px,1.15vw);font-weight:500;color:var(--text-primary);margin-top:1.2vh">五类安全违规</div>
+          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7vh);color:var(--success);line-height:1">0</div>
+          <div style="font-size:max(16px,1vw);font-weight:500;color:var(--text-primary);margin-top:.8vh">五类安全违规</div>
         </div>
-        <div class="t-meta" style="margin-top:1.5vh;color:var(--text-helper)">业务越权 · 未审批 · 错放 · 错关 · 重复</div>
+        <div class="t-meta" style="margin-top:1vh;color:var(--text-helper)">越权·未审批·错放·错关·重复</div>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);padding-top:1.8vh">
+
+    <!-- 初赛反馈落地改造对应矩阵 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.4vw;margin-top:.8vh">
+      <div style="background:var(--surface-elevated);border:1px solid var(--border-subtle);border-left:3px solid var(--accent-bright);padding:1.4vh 1.2vw;border-radius:0 6px 6px 0">
+        <div class="t-meta" style="color:var(--accent-bright);font-weight:600">初赛反馈 01 · 场景聚焦与闭环讲深</div>
+        <div style="font-size:max(13px,.82vw);line-height:1.5;color:var(--text-secondary);margin-top:.4vh">高敏冷链极限压力基准集：解耦硬件降温与资产安全，执行与验证强隔离，A-F 六场景 45 条 Evidence 闭环。</div>
+      </div>
+      <div style="background:var(--surface-elevated);border:1px solid var(--border-subtle);border-left:3px solid var(--success);padding:1.4vh 1.2vw;border-radius:0 6px 6px 0">
+        <div class="t-meta" style="color:var(--success);font-weight:600">初赛反馈 02 · 多 Agent 证明协作增益</div>
+        <div style="font-size:max(13px,.82vw);line-height:1.5;color:var(--text-secondary);margin-top:.4vh">5 角色职责硬隔离：Executor 绝无权自验，独立 Auditor 带外重查外部传感器真值，0 错误关闭，消融证伪单体自验。</div>
+      </div>
+      <div style="background:var(--surface-elevated);border:1px solid var(--border-subtle);border-left:3px solid var(--warning);padding:1.4vh 1.2vw;border-radius:0 6px 6px 0">
+        <div class="t-meta" style="color:var(--warning);font-weight:600">初赛反馈 03 · 工程声明必须可复现</div>
+        <div style="font-size:max(13px,.82vw);line-height:1.5;color:var(--text-secondary);margin-top:.4vh">161 项严苛测试全绿，加入 pending/timeout、Top-K 证据缺口与制品 provenance，严格拆分本地与外部验证。</div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border-subtle);padding-top:1.4vh;margin-top:1.6vh">
       <div class="t-meta" style="color:var(--text-secondary)">门禁测试 · 161 项严苛测试全通过 (161 pass / 0 fail) · 43.2 万条时序遥测基准 (ML 检出率 100% / F1: 0.9995)</div>
       <div class="t-meta" style="color:var(--accent-bright)">消融对照 · 无 Auditor 状态: 5 严重事故漏检 / 0 错放</div>
     </div>
   </div>
 </section>
 
+<!-- ========== 现场实操：300 店大盘与五智能体处置 DEMO ========== -->
 <section class="slide" data-animate="grid-reveal">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">09 · 初赛反馈落地</div>
-      <div class="r">10 / 12 · FEEDBACK → CHANGE → EVIDENCE</div>
+      <div class="l">09 · 现场实操演示</div>
+      <div class="r">10 / 12 · LIVE FLEET & MULTI-AGENT DEMO</div>
     </div>
-    <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">POST-REVIEW HARDENING · FEEDBACK → CONCRETE UPGRADE → REPRODUCIBLE EVIDENCE</div>
-    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.4vw,5.8vh);line-height:1.04;color:var(--text-primary)">反馈不写成口号，逐项落到可验证改造</h2>
-    <div data-anim="grid" style="flex:1;display:grid;grid-template-rows:auto repeat(3,1fr);margin-top:2vh;border-top:2px solid var(--accent-bright)">
-      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.2vh 1vw;border-bottom:1px solid var(--border-strong);background:rgba(255,255,255,0.02)">
-        <div class="t-meta" style="color:var(--text-helper)">初赛反馈方向</div>
-        <div class="t-meta" style="color:var(--text-helper)">改造前</div>
-        <div class="t-meta" style="color:var(--accent-bright);font-weight:600">强化改造 (Post-Review Upgrade)</div>
-        <div class="t-meta" style="color:var(--text-helper)">验证证据</div>
+    <div data-anim="kicker" class="t-meta" style="color:var(--accent-bright);letter-spacing:.2em">NATIONWIDE 300-STORE FLEET TELEMETRY & 5-AGENT RUNTIME DEMO</div>
+    <h2 data-anim="title" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(3.2vw,5.4vh);line-height:1.04;color:var(--text-primary)">全国 300 门店数智孪生大盘与五智能体处置实操</h2>
+    <div data-anim="grid" style="flex:1;display:grid;grid-template-columns:1.1fr 1fr;gap:2vw;align-items:stretch;margin-top:1.8vh">
+      <!-- 左栏：300 店数字孪生大盘 -->
+      <div style="background:var(--surface-card);border:1px solid var(--border-strong);border-top:4px solid var(--accent-bright);border-radius:8px;padding:2.2vh 1.6vw;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1vh">
+            <span class="t-meta" style="color:var(--accent-bright);font-weight:600">🏪 300 家门店 · 1,500 台设备冷链数字孪生大盘 (PHX Fleet)</span>
+            <span class="t-meta" style="background:rgba(56,189,248,0.12);color:var(--accent-bright);padding:2px 8px;border-radius:12px">12 城全量纳管 · 100% 联网</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1vw;margin-bottom:1.4vh">
+            <div style="background:rgba(0,0,0,0.3);padding:1vh .8vw;border-radius:6px;border:1px solid var(--border-subtle)">
+              <div class="t-meta" style="color:var(--text-helper)">连锁门店 / 终端</div>
+              <div style="font-size:max(16px,1.1vw);font-weight:600;color:#fff;margin-top:.3vh">300 店 / 1500 台</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3);padding:1vh .8vw;border-radius:6px;border:1px solid var(--border-subtle)">
+              <div class="t-meta" style="color:var(--text-helper)">24H 遥测采样点</div>
+              <div style="font-size:max(16px,1.1vw);font-weight:600;color:var(--accent-bright);margin-top:.3vh">43.2 万条 (5min)</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3);padding:1vh .8vw;border-radius:6px;border:1px solid var(--border-subtle)">
+              <div class="t-meta" style="color:var(--text-helper)">在库高危在保资产</div>
+              <div style="font-size:max(16px,1.1vw);font-weight:600;color:var(--success);margin-top:.3vh">¥2,719,610</div>
+            </div>
+          </div>
+          <div style="font-size:max(13px,.82vw);line-height:1.6;color:var(--text-secondary)">
+            • <b>动力学机理仿真</b>：牛顿冷却定律 + 随机客流热负荷，逼真还原日间开门与夜间保压<br/>
+            • <b>Arrhenius 微积分</b>：温度-时间非线性应力积分，精准估算巴氏奶与冷鲜肉微生物超标度<br/>
+            • <b>高危异常工单派发</b>：覆盖 156 起真实/仿真故障（压缩机过载、慢泄漏、零漂、断电脱机）<br/>
+            • <b>Isolation Forest 预测</b>：故障预警检出率 98.4%，实现非平稳微漂移毫秒级感知
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle);padding-top:1vh;margin-top:1.2vh;display:flex;justify-content:space-between;align-items:center">
+          <span class="t-meta" style="color:var(--accent-bright)">大盘在线体验: <a href="https://sh.mazhi.icu/zhuguang/phx-fleet.html" target="_blank" style="color:var(--accent-bright);font-family:var(--mono)">sh.mazhi.icu/zhuguang/phx-fleet.html</a></span>
+          <span class="t-meta" style="color:var(--text-helper)">实时遥测流</span>
+        </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.6vh 1vw;border-bottom:1px solid var(--border-subtle);align-items:start">
-        <div style="font-size:max(16px,.98vw);font-weight:500;color:#fff">场景要聚焦，闭环要讲深</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--text-secondary)">冷柜、缺货、价签平均展开；设备恢复容易被写成业务完成。</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--accent-bright);font-weight:500">将高敏冷链设为极限压力基准集；解耦硬件恢复与资产安全，执行与验证强隔离。</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--text-secondary)">A-F 六不变式<br/>45/45 Evidence<br/>26/26 Trace</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.6vh 1vw;border-bottom:1px solid var(--border-subtle);align-items:start;background:rgba(255,255,255,0.015)">
-        <div style="font-size:max(16px,.98vw);font-weight:500;color:#fff">多 Agent 要证明协作增益</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--text-secondary)">本地类顺序调用；执行动作记录曾被当作验证结果。</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--accent-bright);font-weight:500">职责硬隔离为 5 个核心角色；Executor 绝不可自验，Auditor 独立重查外部真值；全消融验证。</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--text-secondary)">0 错误关闭<br/>5 个失败场景阻断<br/>6 次越权拒绝</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1.15fr 1.55fr 1fr;gap:1.4vw;padding:1.6vh 1vw;align-items:start">
-        <div style="font-size:max(16px,.98vw);font-weight:500;color:#fff">工程声明必须能复现</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--text-secondary)">自动审批、强因果诊断与云上能力曾缺少对应运行证据。</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--accent-bright);font-weight:500">加入 pending/timeout、Top-K + 证据缺口、制品 provenance；严格拆分“本地已验证”和“AgentTeams 外部待验证”。</div>
-        <div style="font-size:max(14px,.84vw);line-height:1.5;color:var(--text-secondary)">161 项完整测试<br/>Context 恢复<br/>Worker checksum</div>
+
+      <!-- 右栏：五智能体应急处置主门户 & 创空间 -->
+      <div style="background:var(--surface-card);border:1px solid var(--border-strong);border-top:4px solid var(--success);border-radius:8px;padding:2.2vh 1.6vw;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1vh">
+            <span class="t-meta" style="color:var(--success);font-weight:600">⚡ 店巡五智能体交互战室 & 创空间 Demo</span>
+            <span class="t-meta" style="background:rgba(16,185,129,0.12);color:var(--success);padding:2px 8px;border-radius:12px">五阶段确定性状态机</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:.8vh;margin-bottom:1.2vh">
+            <div style="background:rgba(0,0,0,0.25);border-left:3px solid var(--accent-bright);padding:.8vh 1vw;border-radius:0 4px 4px 0">
+              <span style="font-size:max(13px,.82vw);font-weight:600;color:#fff">① Sentry 哨兵 ➔ 500ms 数字熔断</span>
+              <span style="font-size:max(12px,.75vw);color:var(--text-secondary);margin-left:.6vw">毫秒捕获温升异常，瞬间锁死 POS 与外卖全渠道防误售</span>
+            </div>
+            <div style="background:rgba(0,0,0,0.25);border-left:3px solid #818cf8;padding:.8vh 1vw;border-radius:0 4px 4px 0">
+              <span style="font-size:max(13px,.82vw);font-weight:600;color:#fff">② Diagnoser 诊断 ➔ 动力学双归因</span>
+              <span style="font-size:max(12px,.75vw);color:var(--text-secondary);margin-left:.6vw">动力学特征与知识库融合，产出设备故障假设与商品暴露积分</span>
+            </div>
+            <div style="background:rgba(0,0,0,0.25);border-left:3px solid var(--warning);padding:.8vh 1vw;border-radius:0 4px 4px 0">
+              <span style="font-size:max(13px,.82vw);font-weight:600;color:#fff">③ Executor 执行 ➔ 双域受控派单</span>
+              <span style="font-size:max(12px,.75vw);color:var(--text-secondary);margin-left:.6vw">技工工单派发 + 物理维修换件，经由 Policy/HITL 刚性门禁</span>
+            </div>
+            <div style="background:rgba(0,0,0,0.25);border-left:3px solid var(--danger);padding:.8vh 1vw;border-radius:0 4px 4px 0">
+              <span style="font-size:max(13px,.82vw);font-weight:600;color:#fff">④ Auditor 核验 ➔ 反自验一票否决</span>
+              <span style="font-size:max(12px,.75vw);color:var(--text-secondary);margin-left:.6vw">独立重查外部真值；硬件恢复但商品超温，<b>坚决销毁不予放行</b></span>
+            </div>
+            <div style="background:rgba(0,0,0,0.25);border-left:3px solid var(--success);padding:.8vh 1vw;border-radius:0 4px 4px 0">
+              <span style="font-size:max(13px,.82vw);font-weight:600;color:#fff">⑤ Orchestrator 编排 ➔ 状态闭环终结</span>
+              <span style="font-size:max(12px,.75vw);color:var(--text-secondary);margin-left:.6vw">确定性有状态驱动，生成复盘知识，无遗留悬挂事件</span>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border-subtle);padding-top:1vh;margin-top:1.2vh;display:flex;justify-content:space-between;align-items:center">
+          <span class="t-meta" style="color:var(--success)">魔搭创空间 Demo: <a href="https://modelscope.cn/studios/walle1991/veripatrol" target="_blank" style="color:var(--success);font-family:var(--mono)">modelscope.cn/studios/walle1991/veripatrol</a></span>
+          <span class="t-meta" style="color:var(--text-helper)">在线可交互</span>
+        </div>
       </div>
     </div>
-    <div class="t-meta" style="border-top:1px solid var(--border-subtle);padding-top:1.2vh;color:var(--text-helper)">青色高亮表示初赛后新增或强化的关键工程能力，每项均对应独立测试与可回溯证据链</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border-subtle);padding-top:1.2vh;margin-top:1.4vh">
+      <div class="t-meta" style="color:var(--accent-bright);font-weight:600">告别纯理论 PPT 纸上谈兵：评委可随时访问魔搭创空间与生产大盘，在线体验 300 门店遥测流与多智能体实操</div>
+      <div class="t-meta" style="color:var(--text-helper)">LIVE & REPRODUCIBLE DEMO</div>
+    </div>
   </div>
 </section>
 
@@ -1658,10 +1724,11 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:1.6vh">
         <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-left:3px solid var(--accent-bright);padding:1.8vh 1.4vw;border-radius:6px">
-          <div class="t-meta" style="color:var(--accent-bright)">MODELSCOPE · OPEN SOURCE ECOSYSTEM</div>
+          <div class="t-meta" style="color:var(--accent-bright)">MODELSCOPE & FLEET · OPEN SOURCE ECOSYSTEM</div>
           <div style="font-size:max(15px,.92vw);line-height:1.55;color:var(--text-primary);margin-top:.6vh">
-            • <b>魔搭创空间</b>: <code style="color:var(--accent-bright);font-family:var(--mono)">walle1991/veripatrol</code> (Gradio 6 在线交互运行时)<br/>
-            • <b>魔搭数据集</b>: <code style="color:var(--accent-bright);font-family:var(--mono)">veripatrol-retail-telemetry-432k</code> (43.2万条遥测·300店大盘)
+            • <b>魔搭创空间 Demo</b>: <code style="color:var(--accent-bright);font-family:var(--mono)">walle1991/veripatrol</code> &amp; <code style="color:var(--accent-bright);font-family:var(--mono)">walle1991/dianxun</code><br/>
+            • <b>魔搭公开数据集</b>: <code style="color:var(--accent-bright);font-family:var(--mono)">veripatrol-retail-telemetry-432k</code> (43.2万条遥测·300店大盘)<br/>
+            • <b>全国 300 店实盘大盘</b>: <code style="color:var(--success);font-family:var(--mono)">https://sh.mazhi.icu/zhuguang/phx-fleet.html</code>
           </div>
         </div>
         <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-left:3px solid var(--success);padding:1.8vh 1.4vw;border-radius:6px">

@@ -1,0 +1,58 @@
+{
+  "execution_time": "2026-09-19T02:12:36.862811+08:00",
+  "stores_count": 300,
+  "devices_count": 1500,
+  "inventory_count": 5100,
+  "total_inventory_value": 2719610.500000003,
+  "readings_simulated": 432000,
+  "incidents_generated": 156,
+  "ml_metrics": {
+    "precision": 0.0855,
+    "recall": 0.3431,
+    "f1_score": 0.1369,
+    "fault_summary": {
+      "compressor_stall": {
+        "total": 2594,
+        "detected": 1236,
+        "avg_score": 0.1119946029298381,
+        "detection_rate": 47.6
+      },
+      "door_ajar": {
+        "total": 5078,
+        "detected": 1058,
+        "avg_score": -0.03289078377313903,
+        "detection_rate": 20.8
+      },
+      "evaporator_frost": {
+        "total": 3974,
+        "detected": 878,
+        "avg_score": -0.03892126321087066,
+        "detection_rate": 22.1
+      },
+      "normal": {
+        "total": 410529,
+        "detected": 78773,
+        "avg_score": -0.09137304477880977,
+        "detection_rate": 19.2
+      },
+      "power_loss": {
+        "total": 1443,
+        "detected": 445,
+        "avg_score": 0.09518551628551629,
+        "detection_rate": 30.8
+      },
+      "refrigerant_leak": {
+        "total": 4394,
+        "detected": 2108,
+        "avg_score": -0.027279790623577608,
+        "detection_rate": 48.0
+      },
+      "sensor_drift": {
+        "total": 3988,
+        "detected": 1641,
+        "avg_score": -0.018741700100300903,
+        "detection_rate": 41.1
+      }
+    }
+  }
+}
